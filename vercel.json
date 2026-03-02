@@ -1,0 +1,8 @@
+{
+  "crons": [
+    { "path": "/api/cron/process-queue", "schedule": "*/5 * * * *" },
+    { "path": "/api/cron/refresh-tokens", "schedule": "0 */4 * * *" },
+    { "path": "/api/cron/collect-analytics", "schedule": "0 23 * * *" },
+    { "path": "/api/cron/cleanup-state", "schedule": "0 * * * *" }
+  ]
+}
