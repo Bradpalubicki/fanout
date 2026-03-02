@@ -10,6 +10,10 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+  },
   title: "Fanout — One post. Every platform.",
   description:
     "The social API built for agencies. Post to 9 platforms, unlimited clients, zero per-profile fees. Replace Ayrshare in 15 minutes.",

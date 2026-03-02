@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Zap } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 const PLATFORMS = [
   "X / Twitter", "LinkedIn", "Facebook", "Instagram",
@@ -95,11 +96,8 @@ export default function HomePage() {
       {/* Nav */}
       <nav className="border-b border-gray-100 sticky top-0 bg-white/95 backdrop-blur z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-14">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-black rounded-lg flex items-center justify-center">
-              <Zap className="w-3.5 h-3.5 text-white" />
-            </div>
-            <span className="font-bold text-lg">Fanout</span>
+          <div className="flex items-center">
+            <Image src="/fanout-logo.svg" alt="Fanout" width={110} height={30} priority />
           </div>
           <div className="hidden md:flex items-center gap-7 text-sm text-gray-600">
             <Link href="#features" className="hover:text-black">Features</Link>
@@ -186,11 +184,8 @@ export default function HomePage() {
               <div className="flex h-[420px]">
                 {/* Sidebar */}
                 <div className="w-52 border-r border-white/10 bg-[#0d1117] p-4 hidden sm:block">
-                  <div className="flex items-center gap-2 mb-6">
-                    <div className="w-5 h-5 bg-indigo-600 rounded flex items-center justify-center">
-                      <Zap className="w-2.5 h-2.5 text-white" />
-                    </div>
-                    <span className="text-white text-sm font-semibold">Fanout</span>
+                  <div className="flex items-center mb-6">
+                    <Image src="/fanout-logo-dark.svg" alt="Fanout" width={90} height={24} />
                   </div>
                   {["Overview", "Profiles", "Compose", "Schedule", "Analytics", "AI Drafts", "Settings"].map((item, i) => (
                     <div key={item} className={`flex items-center gap-2.5 px-2 py-1.5 rounded-lg mb-0.5 text-sm cursor-pointer ${i === 0 ? "bg-white/10 text-white" : "text-gray-500 hover:text-gray-300"}`}>
@@ -437,11 +432,8 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="py-10 border-t border-gray-100 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-black rounded-md flex items-center justify-center">
-              <Zap className="w-3 h-3 text-white" />
-            </div>
-            <span className="font-bold text-sm">Fanout</span>
+          <div className="flex items-center gap-3">
+            <Image src="/fanout-logo.svg" alt="Fanout" width={90} height={24} />
             <span className="text-gray-400 text-sm">· by NuStack Digital Ventures</span>
           </div>
           <div className="flex items-center gap-6 text-sm text-gray-500">
