@@ -405,6 +405,69 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Ayrshare Comparison Table */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white border-t border-gray-100">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <Badge className="mb-4 bg-red-50 text-red-600 border border-red-100 hover:bg-red-50 text-xs px-3 py-1">
+              Why teams switch from Ayrshare
+            </Badge>
+            <h2 className="text-4xl sm:text-5xl font-black text-black mb-4 leading-tight">
+              Fanout vs Ayrshare
+            </h2>
+            <p className="text-lg text-gray-500 max-w-xl mx-auto">
+              Same idea. Better execution. At a fraction of the price.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+            {/* Table header */}
+            <div className="grid grid-cols-3 bg-gray-50 border-b border-gray-200">
+              <div className="p-4 text-sm font-semibold text-gray-500 uppercase tracking-wider">Feature</div>
+              <div className="p-4 text-center border-l border-gray-200">
+                <span className="text-sm font-bold text-black">Fanout</span>
+                <div className="text-xs text-indigo-600 font-medium mt-0.5">From $49/mo</div>
+              </div>
+              <div className="p-4 text-center border-l border-gray-200">
+                <span className="text-sm font-semibold text-gray-500">Ayrshare</span>
+                <div className="text-xs text-gray-400 mt-0.5">From $648/mo</div>
+              </div>
+            </div>
+
+            {/* Rows */}
+            {[
+              { feature: "Starting price", fanout: "$49/mo", ayrshare: "$648/mo", win: true },
+              { feature: "Client profiles", fanout: "Unlimited (White-Label)", ayrshare: "3 on $648 plan", win: true },
+              { feature: "Platforms", fanout: "9 platforms", ayrshare: "9 platforms", win: false },
+              { feature: "Token ownership", fanout: "You own + encrypt tokens", ayrshare: "Ayrshare holds tokens", win: true },
+              { feature: "AI content generation", fanout: "Built-in (Claude)", ayrshare: "Add-on, extra cost", win: true },
+              { feature: "Multi-tenant / White-label", fanout: "Native (Clerk orgs)", ayrshare: "Enterprise only", win: true },
+              { feature: "API-first", fanout: "Full REST API + webhooks", ayrshare: "API available", win: false },
+              { feature: "Self-hosted option", fanout: "Open architecture", ayrshare: "SaaS only", win: true },
+            ].map((row, i) => (
+              <div
+                key={row.feature}
+                className={`grid grid-cols-3 border-b border-gray-100 last:border-0 ${i % 2 === 0 ? "bg-white" : "bg-gray-50/50"}`}
+              >
+                <div className="p-4 text-sm text-gray-700 font-medium flex items-center">{row.feature}</div>
+                <div className={`p-4 text-center border-l border-gray-100 flex items-center justify-center ${row.win ? "bg-indigo-50/50" : ""}`}>
+                  <span className={`text-sm font-semibold ${row.win ? "text-indigo-700" : "text-gray-700"}`}>
+                    {row.win && <span className="mr-1.5">✓</span>}{row.fanout}
+                  </span>
+                </div>
+                <div className="p-4 text-center border-l border-gray-100 flex items-center justify-center">
+                  <span className={`text-sm ${row.win ? "text-gray-400" : "text-gray-700 font-medium"}`}>{row.ayrshare}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <p className="text-center text-gray-400 text-xs mt-4">
+            Ayrshare pricing as of 2026. Fanout pricing subject to change.
+          </p>
+        </div>
+      </section>
+
       {/* Final CTA — light version */}
       <section className="py-24 bg-white border-t border-gray-100 relative overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[200px] bg-indigo-50 rounded-full blur-3xl" />

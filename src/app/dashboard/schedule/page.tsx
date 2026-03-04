@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CalendarClock, Plus } from "lucide-react";
 import { PLATFORM_LABELS, type Platform } from "@/lib/types";
+import { CancelPostButton } from "./cancel-button";
 
 export const metadata = { title: "Schedule — Fanout" };
 
@@ -147,6 +148,11 @@ export default async function SchedulePage() {
                   <Badge variant="outline" className="text-xs mt-1 capitalize">
                     {post.status as string}
                   </Badge>
+                  {post.status === "pending" && (
+                    <div className="mt-1">
+                      <CancelPostButton postId={post.id} />
+                    </div>
+                  )}
                 </div>
               </div>
             </Card>

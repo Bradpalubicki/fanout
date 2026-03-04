@@ -1,11 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { verifyApiKey } from '@/lib/auth'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 export async function GET(req: NextRequest) {
   const auth = await verifyApiKey(req.headers.get('authorization'))
   if ('error' in auth) {
     return NextResponse.json({ error: auth.error }, { status: auth.status })
+  }
+
+  const rl = await checkRateLimit(auth.profile.id)
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: 'Rate limit exceeded. 100 requests per minute.' },
+      {
+        status: 429,
+        headers: {
+          'Retry-After': String(Math.ceil((rl.resetAt.getTime() - Date.now()) / 1000)),
+          'X-RateLimit-Remaining': '0',
+        },
+      }
+    )
   }
 
   const { data: tokens } = await supabase

@@ -4,6 +4,7 @@ import { fanOutPost } from '@/inngest/functions/fan-out-post'
 import { scheduledPost } from '@/inngest/functions/scheduled-post'
 import { retryFailedPosts } from '@/inngest/functions/retry-failed'
 import { refreshExpiringTokens, refreshSingleToken } from '@/inngest/functions/refresh-tokens'
+import { collectAnalytics } from '@/inngest/functions/collect-analytics'
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
@@ -13,5 +14,6 @@ export const { GET, POST, PUT } = serve({
     retryFailedPosts,
     refreshExpiringTokens,
     refreshSingleToken,
+    collectAnalytics,
   ],
 })
