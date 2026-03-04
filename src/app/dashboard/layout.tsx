@@ -1,16 +1,7 @@
 import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
-import { Zap, LayoutDashboard, Users, PenSquare, CalendarClock, BarChart3, Sparkles, Settings } from "lucide-react";
-
-const NAV = [
-  { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-  { href: "/dashboard/profiles", label: "Profiles", icon: Users },
-  { href: "/dashboard/compose", label: "Compose", icon: PenSquare },
-  { href: "/dashboard/schedule", label: "Schedule", icon: CalendarClock },
-  { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/dashboard/ai", label: "AI Drafts", icon: Sparkles },
-  { href: "/dashboard/settings", label: "Settings", icon: Settings },
-];
+import { Zap } from "lucide-react";
+import { SidebarNav } from "@/components/dashboard/sidebar-nav";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -26,18 +17,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </Link>
         </div>
 
-        <nav className="flex-1 p-3 space-y-0.5">
-          {NAV.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50 hover:text-black transition-colors"
-            >
-              <item.icon className="w-4 h-4" />
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        <SidebarNav />
 
         <div className="p-4 border-t border-gray-100">
           <UserButton afterSignOutUrl="/" />

@@ -1,16 +1,28 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { OrganizationList } from "@clerk/nextjs";
 import { supabase } from "@/lib/supabase";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PenSquare, Plus, Zap, CheckCircle2, XCircle, Clock } from "lucide-react";
 
+export const metadata = { title: "Overview — Fanout" };
+
 export default async function DashboardPage() {
   const { userId, orgId } = await auth();
   if (!userId) redirect("/sign-in");
-  if (!orgId) redirect("/sign-up");
+
+  if (!orgId) {
+    return (
+      <div className="p-6 max-w-xl">
+        <h1 className="text-2xl font-bold text-black mb-2">Select your organization</h1>
+        <p className="text-gray-500 text-sm mb-6">Choose an existing organization or create one to get started with Fanout.</p>
+        <OrganizationList hidePersonal afterSelectOrganizationUrl="/dashboard" afterCreateOrganizationUrl="/dashboard" />
+      </div>
+    );
+  }
 
   const { data: profiles } = await supabase
     .from("profiles")

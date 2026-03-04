@@ -7,10 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus } from "lucide-react";
 
+export const metadata = { title: "Profiles — Fanout" };
+
 export default async function ProfilesPage() {
   const { userId, orgId } = await auth();
   if (!userId) redirect("/sign-in");
-  if (!orgId) redirect("/sign-up");
+  if (!orgId) redirect("/dashboard");
 
   const { data: profiles } = await supabase
     .from("profiles")
