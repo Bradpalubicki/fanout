@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, PenSquare, CalendarClock, BarChart3, Sparkles, Settings, Puzzle } from "lucide-react";
+import { LayoutDashboard, Users, PenSquare, CalendarClock, BarChart3, Sparkles, Settings, Puzzle, Wand2 } from "lucide-react";
 
 const NAV = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
+  { href: "/dashboard/setup", label: "Setup Agent", icon: Wand2 },
   { href: "/dashboard/profiles", label: "Profiles", icon: Users },
   { href: "/dashboard/compose", label: "Compose", icon: PenSquare },
   { href: "/dashboard/schedule", label: "Schedule", icon: CalendarClock },
