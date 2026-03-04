@@ -73,8 +73,7 @@ export async function POST(req: NextRequest) {
     const text = message.content[0].type === 'text' ? message.content[0].text : ''
     const parsed = JSON.parse(text) as { variants: { platform: string; content: string }[] }
     drafts = parsed.variants ?? []
-  } catch (e) {
-    console.error('AI generation error:', e)
+  } catch {
     return NextResponse.json({ error: 'AI generation failed' }, { status: 500 })
   }
 

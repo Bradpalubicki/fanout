@@ -104,21 +104,16 @@ export default function ComposePage() {
 
     setSubmitting(true);
     try {
-      const endpoint = scheduled ? "/api/v1/schedule" : "/api/v1/post";
-      const profile = profiles.find((p) => p.id === selectedProfile);
       const body: Record<string, unknown> = {
         post: content,
         platforms: selectedPlatforms,
-        profileId: profile?.slug ?? selectedProfile,
+        profileId: selectedProfile,
       };
       if (scheduled) body.scheduledFor = new Date(scheduledFor).toISOString();
 
-      const res = await fetch(endpoint, {
+      const res = await fetch("/api/dashboard/post", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer dashboard-session`,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
       const data = await res.json() as { error?: string };

@@ -6,12 +6,13 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, CheckCircle2, XCircle, Clock } from "lucide-react";
-import { SUPPORTED_PLATFORMS, PLATFORM_LABELS, type Platform } from "@/lib/types";
+import { PLATFORM_LABELS, type Platform } from "@/lib/types";
 import { CopyButton } from "@/components/dashboard/copy-button";
+import { PlatformGrid } from "@/components/dashboard/platform-grid";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return { title: `Profile ${id} — Fanout` };
+  return { title: `Profile — Fanout` };
 }
 
 export default async function ProfileDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -36,8 +37,6 @@ export default async function ProfileDetailPage({ params }: { params: Promise<{ 
     expires_at: string | null;
     created_at: string;
   }[];
-
-  const connectedPlatforms = connectedTokens.map((t) => t.platform);
 
   const { data: recentPosts } = await supabase
     .from("posts")
@@ -69,68 +68,21 @@ export default async function ProfileDetailPage({ params }: { params: Promise<{ 
       <Card className="p-5 border-gray-100 mb-6">
         <h2 className="font-semibold text-black mb-3">API Key</h2>
         <p className="text-sm text-gray-500 mb-3">
-          Use this key in the <code className="bg-gray-100 px-1 rounded">Authorization: Bearer</code> header.
+          Use this in the <code className="bg-gray-100 px-1 rounded text-xs">Authorization: Bearer &lt;key&gt;</code> header when calling the API. Go to Settings → API Keys to regenerate.
         </p>
         <div className="flex items-center gap-2">
-          <code className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-600 font-mono">
-            sk_••••••••••••••••••••••••••••••••
+          <code className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-500 font-mono truncate">
+            {profile.id as string}
           </code>
-          <CopyButton text={profile.id as string} label="Copy profile ID" />
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/dashboard/settings?tab=keys">Regenerate</Link>
-          </Button>
+          <CopyButton text={profile.id as string} label="Profile ID copied" />
         </div>
+        <p className="text-xs text-gray-400 mt-2">Note: Profile ID shown. Actual API key hash is stored securely — regenerate from Settings to get a new plaintext key.</p>
       </Card>
 
       {/* Connected Platforms */}
       <Card className="p-5 border-gray-100 mb-6">
         <h2 className="font-semibold text-black mb-4">Connected Platforms</h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {SUPPORTED_PLATFORMS.map((platform) => {
-            const token = connectedTokens.find((t) => t.platform === platform);
-            const isConnected = connectedPlatforms.includes(platform);
-            return (
-              <div
-                key={platform}
-                className={`border rounded-xl p-4 ${
-                  isConnected ? "border-green-100 bg-green-50/30" : "border-gray-100"
-                }`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-medium text-sm text-black">
-                    {PLATFORM_LABELS[platform as Platform]}
-                  </span>
-                  {isConnected ? (
-                    <Badge className="text-xs bg-green-100 text-green-700 border-green-200">Connected</Badge>
-                  ) : (
-                    <Badge variant="outline" className="text-xs text-gray-400">Not connected</Badge>
-                  )}
-                </div>
-                {isConnected && token?.platform_username && (
-                  <p className="text-xs text-gray-500 mb-3">@{token.platform_username}</p>
-                )}
-                {isConnected ? (
-                  <form action={`/api/v1/platforms/${platform}?profileId=${id}`} method="DELETE">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="w-full text-xs text-red-600 hover:text-red-700 border-red-200"
-                      formAction={`/api/v1/platforms/${platform}?profileId=${id}`}
-                    >
-                      Disconnect
-                    </Button>
-                  </form>
-                ) : (
-                  <Button size="sm" variant="outline" className="w-full text-xs" asChild>
-                    <Link href={`/api/oauth/${platform}/authorize?profileId=${id}`}>
-                      Connect
-                    </Link>
-                  </Button>
-                )}
-              </div>
-            );
-          })}
-        </div>
+        <PlatformGrid profileId={id} tokens={connectedTokens} />
       </Card>
 
       {/* Recent Posts */}
