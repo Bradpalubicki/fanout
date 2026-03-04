@@ -4,7 +4,7 @@ import type { AnalyticsSnapshot } from '@/lib/types'
 export class TikTokDistributor extends BaseDistributor {
   platform = 'tiktok'
 
-  async post(payload: PostPayload, accessToken: string): Promise<PostResult> {
+  async post(payload: PostPayload, accessToken: string, _pageId?: string): Promise<PostResult> {
     if (!payload.mediaUrls?.length) {
       return { success: false, error: 'TikTok requires a video URL' }
     }

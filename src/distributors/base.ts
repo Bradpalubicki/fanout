@@ -22,7 +22,7 @@ export interface RefreshResult {
 export abstract class BaseDistributor {
   abstract platform: string
 
-  abstract post(payload: PostPayload, accessToken: string): Promise<PostResult>
+  abstract post(payload: PostPayload, accessToken: string, pageId?: string): Promise<PostResult>
 
   abstract refreshToken(refreshToken: string): Promise<RefreshResult>
 

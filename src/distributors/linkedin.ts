@@ -4,7 +4,7 @@ import type { AnalyticsSnapshot } from '@/lib/types'
 export class LinkedInDistributor extends BaseDistributor {
   platform = 'linkedin'
 
-  async post(payload: PostPayload, accessToken: string): Promise<PostResult> {
+  async post(payload: PostPayload, accessToken: string, _pageId?: string): Promise<PostResult> {
     // Get user URN first
     const { ok: meOk, data: meData } = await this.fetchJson<{
       sub?: string

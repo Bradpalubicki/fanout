@@ -4,7 +4,7 @@ import type { AnalyticsSnapshot } from '@/lib/types'
 export class TwitterDistributor extends BaseDistributor {
   platform = 'twitter'
 
-  async post(payload: PostPayload, accessToken: string): Promise<PostResult> {
+  async post(payload: PostPayload, accessToken: string, _pageId?: string): Promise<PostResult> {
     const body: Record<string, unknown> = { text: payload.content }
 
     const { ok, data } = await this.fetchJson<{

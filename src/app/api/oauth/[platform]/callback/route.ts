@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
-import { encryptToken } from '@/lib/crypto'
+import { encryptToken, generateStateToken } from '@/lib/crypto'
 import { OAUTH_CONFIGS } from '@/lib/oauth-config'
 
 export async function GET(
@@ -141,6 +141,41 @@ export async function GET(
     }
   } catch {
     // Non-fatal — user info enrichment
+  }
+
+  // For Meta platforms (Facebook, Instagram, Threads), store user token first
+  // then redirect to page selector — page token is required for posting
+  if (platform === 'facebook' || platform === 'instagram' || platform === 'threads') {
+    // Store the user token temporarily (will be replaced by page token after selection)
+    await supabase.from('oauth_tokens').upsert(
+      {
+        profile_id: stateRecord.profile_id,
+        platform,
+        access_token: encryptedAccess,
+        refresh_token: encryptedRefresh,
+        expires_at: expiresAt,
+        platform_user_id: platformUserId,
+        platform_username: platformUsername,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'profile_id,platform' }
+    )
+
+    // Redirect to page selector — pass user token via encrypted state in DB
+    const selectorState = generateStateToken()
+    await supabase.from('oauth_state').insert({
+      token: selectorState,
+      profile_id: stateRecord.profile_id,
+      platform,
+      expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+    })
+
+    return NextResponse.redirect(
+      new URL(
+        `/dashboard/profiles/${stateRecord.profile_id}/select-page?platform=${platform}&state=${selectorState}`,
+        req.url
+      )
+    )
   }
 
   // Upsert token

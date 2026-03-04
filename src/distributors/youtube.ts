@@ -4,7 +4,7 @@ import type { AnalyticsSnapshot } from '@/lib/types'
 export class YouTubeDistributor extends BaseDistributor {
   platform = 'youtube'
 
-  async post(payload: PostPayload, accessToken: string): Promise<PostResult> {
+  async post(payload: PostPayload, accessToken: string, _pageId?: string): Promise<PostResult> {
     // YouTube requires video content — for text-only posts, create a community post
     // Community posts require YouTube Partner Program — this posts as a community update
     const body = {

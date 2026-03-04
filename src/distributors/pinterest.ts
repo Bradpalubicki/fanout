@@ -4,7 +4,7 @@ import type { AnalyticsSnapshot } from '@/lib/types'
 export class PinterestDistributor extends BaseDistributor {
   platform = 'pinterest'
 
-  async post(payload: PostPayload, accessToken: string): Promise<PostResult> {
+  async post(payload: PostPayload, accessToken: string, _pageId?: string): Promise<PostResult> {
     // Get user boards to post to first board
     const { ok: boardsOk, data: boardsData } = await this.fetchJson<{
       items?: { id: string; name: string }[]
