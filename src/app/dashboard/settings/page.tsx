@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useUser } from "@clerk/nextjs";
-import { Copy, RefreshCw, AlertTriangle } from "lucide-react";
+import { Copy, RefreshCw, AlertTriangle, ExternalLink } from "lucide-react";
 
 interface Profile {
   id: string;
@@ -31,6 +32,8 @@ export default function SettingsPage() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [webhookEdits, setWebhookEdits] = useState<Record<string, string>>({});
   const [savingWebhook, setSavingWebhook] = useState<string | null>(null);
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     fetch("/api/dashboard/profiles")
@@ -41,6 +44,31 @@ export default function SettingsPage() {
         (d.profiles ?? []).forEach((p) => { edits[p.id] = p.webhook_url ?? ""; });
         setWebhookEdits(edits);
       });
+  }, []);
+
+  useEffect(() => {
+    if (searchParams.get("checkout") === "success") {
+      toast.success("Payment successful! Your plan is now active.");
+    }
+  }, [searchParams]);
+
+  const startCheckout = useCallback(async (plan: string) => {
+    setCheckoutLoading(plan);
+    try {
+      const res = await fetch("/api/payments/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan }),
+      });
+      const data = await res.json() as { url?: string; error?: string };
+      if (!res.ok || !data.url) {
+        toast.error(data.error ?? "Failed to start checkout");
+        return;
+      }
+      window.location.href = data.url;
+    } finally {
+      setCheckoutLoading(null);
+    }
   }, []);
 
   function copyToClipboard(text: string, label = "Copied!") {
@@ -205,37 +233,55 @@ export default function SettingsPage() {
 
         {/* Billing */}
         <TabsContent value="billing">
-          <Card className="p-6 border-gray-100 mb-4">
+          <Card className="p-6 border-gray-100 mb-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="font-semibold text-black">Agency Plan</h2>
-                <p className="text-gray-500 text-sm mt-0.5">$199/mo — renews monthly</p>
+                <h2 className="font-semibold text-black">Current Plan</h2>
+                <p className="text-gray-500 text-sm mt-0.5">14-day free trial — upgrade to activate posting</p>
               </div>
-              <Badge className="bg-black text-white">Active</Badge>
+              <Badge className="bg-indigo-600 text-white">Free Trial</Badge>
             </div>
             <div className="space-y-2 text-sm text-gray-600">
               <div className="flex justify-between">
                 <span>Profiles</span>
-                <span className="font-medium text-black">{profiles.length} / 25</span>
+                <span className="font-medium text-black">{profiles.length} created</span>
               </div>
               <div className="flex justify-between">
                 <span>Platforms</span>
                 <span className="font-medium text-black">9 / 9</span>
               </div>
-              <div className="flex justify-between">
-                <span>AI generation</span>
-                <span className="font-medium text-green-600">Included</span>
-              </div>
             </div>
           </Card>
-          <div className="flex gap-3">
-            <Button variant="outline" className="text-sm" disabled>
-              Manage billing (coming soon)
-            </Button>
-            <Button className="bg-black text-white hover:bg-gray-800 text-sm" disabled>
-              Upgrade to White-Label
-            </Button>
+
+          <h3 className="font-semibold text-black text-sm mb-4">Choose a plan</h3>
+          <div className="grid gap-4 sm:grid-cols-3 mb-6">
+            {[
+              { key: "starter", name: "Starter", price: "$49/mo", desc: "3 profiles · 5 platforms" },
+              { key: "agency", name: "Agency", price: "$199/mo", desc: "25 profiles · all 9 platforms · AI", highlight: true },
+              { key: "white-label", name: "White-Label", price: "$399/mo", desc: "Unlimited profiles · custom domain" },
+            ].map((p) => (
+              <Card key={p.key} className={`p-4 border ${p.highlight ? "border-black ring-1 ring-black" : "border-gray-100"}`}>
+                {p.highlight && <Badge className="bg-black text-white text-xs mb-2">Most popular</Badge>}
+                <div className="font-semibold text-black text-sm">{p.name}</div>
+                <div className="text-xl font-black text-black mt-1">{p.price}</div>
+                <div className="text-xs text-gray-500 mb-3">{p.desc}</div>
+                <Button
+                  size="sm"
+                  className={`w-full text-xs ${p.highlight ? "bg-black text-white hover:bg-gray-800" : "border border-gray-200 text-black hover:bg-gray-50"}`}
+                  variant={p.highlight ? "default" : "outline"}
+                  onClick={() => startCheckout(p.key)}
+                  disabled={checkoutLoading !== null}
+                >
+                  {checkoutLoading === p.key ? (
+                    "Redirecting…"
+                  ) : (
+                    <><ExternalLink className="w-3 h-3 mr-1.5" />Subscribe</>
+                  )}
+                </Button>
+              </Card>
+            ))}
           </div>
+          <p className="text-xs text-gray-400">Payments processed securely by Square. Cancel anytime.</p>
         </TabsContent>
       </Tabs>
     </div>

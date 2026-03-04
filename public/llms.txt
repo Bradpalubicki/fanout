@@ -1,0 +1,48 @@
+# Fanout
+
+> Multi-tenant social media distribution API. Post to 9 platforms with one API call. Built for agencies and SaaS engines.
+
+## What Fanout Does
+
+Fanout is a social media distribution platform that lets agencies and SaaS builders post content to multiple social platforms (X/Twitter, LinkedIn, Facebook, Instagram, TikTok, Pinterest, YouTube, Reddit, Threads) on behalf of their clients via a single REST API.
+
+## Key Features
+
+- **Multi-tenant**: Each client gets isolated OAuth tokens, analytics, and API keys via Clerk orgs
+- **9 Platforms**: X/Twitter, LinkedIn, Facebook, Instagram, TikTok, Pinterest, YouTube, Reddit, Threads
+- **Scheduled posting**: Queue posts in advance, Inngest handles retries and failures
+- **AI generation**: Claude generates platform-optimized copy variants from one prompt
+- **Analytics**: Per-platform engagement metrics (impressions, likes, comments, shares, clicks)
+- **Webhooks**: Per-profile callback URLs for post status events
+- **Token encryption**: OAuth tokens encrypted at rest via Supabase pgcrypto
+
+## API
+
+Base URL: https://fanout.digital
+
+Authentication: Bearer token (API key from dashboard)
+
+### Endpoints
+
+- POST /api/v1/post — Post immediately to one or more platforms
+- POST /api/v1/schedule — Schedule a post for a future time
+- GET /api/v1/platforms — List connected platforms for a profile
+- DELETE /api/v1/platforms/{platform} — Disconnect a platform
+- GET /api/v1/analytics/{postId} — Get engagement analytics for a post
+
+## Pricing
+
+- Starter: $49/mo — 3 profiles, 5 platforms
+- Agency: $199/mo — 25 profiles, all 9 platforms, AI generation, analytics
+- White-Label: $399/mo — unlimited profiles, custom domain, white-label dashboard
+
+## Links
+
+- Homepage: https://fanout.digital
+- Docs: https://fanout.digital/docs
+- Pricing: https://fanout.digital/pricing
+- Sign up: https://fanout.digital/sign-up
+
+## Company
+
+Built by NuStack Digital Ventures. Direct Ayrshare alternative.
