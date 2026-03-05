@@ -73,7 +73,7 @@ export const metadata: Metadata = {
   verification: {
     google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
     other: {
-      "msvalidate.01": process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION ?? "F5BE8B522A66B1E13B5E59322FB38C2F",
+      "msvalidate.01": "F5BE8B522A66B1E13B5E59322FB38C2F",
     },
   },
 };
