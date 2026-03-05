@@ -609,35 +609,42 @@ export default function HomeClient() {
       {/* Social Proof — Testimonials */}
       <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gray-50 border-b border-gray-100">
         <div className="max-w-5xl mx-auto">
-          <p className="text-center text-xs text-gray-400 font-medium uppercase tracking-wider mb-12">What developers say</p>
-          <div className="grid md:grid-cols-3 gap-6">
+          <p className="text-center text-xs text-gray-400 font-medium uppercase tracking-wider mb-12">Powering NuStack client engines</p>
+          <div className="grid md:grid-cols-3 gap-6 mb-8">
             {[
               {
-                quote: "We were 3 months into building our own social layer — token management, retry logic, all of it. Found Fanout, replaced all of it in a weekend. Should have started here.",
-                name: "Agency Developer",
-                role: "Multi-client SaaS",
-                initial: "A",
-                color: "bg-indigo-600",
+                quote: "We run social posting across our entire dental patient base — appointment reminders, promotions, seasonal offers. Fanout posts to LinkedIn, Facebook, and Instagram simultaneously. One setup, running forever.",
+                name: "Alex Chireau, DDS",
+                role: "AK Ultimate Dental · akultimatedental.com",
+                initial: "AK",
+                color: "bg-blue-600",
               },
               {
-                quote: "The multi-tenant isolation was the thing we couldn't find anywhere else. Each client profile is completely separate — their keys, their tokens, their analytics. That's exactly what we needed.",
-                name: "Software Architect",
-                role: "Healthcare SaaS",
-                initial: "S",
-                color: "bg-emerald-600",
+                quote: "Our men's health clinic needed to stay active on social without a dedicated marketing person. Fanout auto-generates platform-appropriate content from one prompt and posts everywhere. It's eliminated hours of weekly work.",
+                name: "Men's Health & Wellness Center",
+                role: "menshealth-engine · Illinois",
+                initial: "MH",
+                color: "bg-emerald-700",
               },
               {
-                quote: "We post to 9 platforms for 20+ clients. Before Fanout we had a fragile mess of individual integrations. Now it's one endpoint and Inngest handles everything else.",
-                name: "Founder",
-                role: "Digital Marketing Agency",
-                initial: "F",
+                quote: "Little Roots needed Instagram, Facebook, and Pinterest to stay fresh for new client acquisition. Fanout handles all of it — scheduled posts, AI captions, platform-specific formatting. Our social presence is better than ever with zero manual effort.",
+                name: "Carla Salomone",
+                role: "Little Roots · Salon & Color Studio",
+                initial: "LR",
                 color: "bg-purple-600",
               },
             ].map((t) => (
               <div key={t.name} className="bg-white rounded-2xl border border-gray-200 p-6 flex flex-col">
+                <div className="flex gap-0.5 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <svg key={i} className="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
+                </div>
                 <p className="text-gray-600 text-sm leading-relaxed flex-1 mb-6">&ldquo;{t.quote}&rdquo;</p>
                 <div className="flex items-center gap-3">
-                  <div className={`w-9 h-9 ${t.color} rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0`}>
+                  <div className={`w-10 h-10 ${t.color} rounded-full flex items-center justify-center text-white font-bold text-xs shrink-0`}>
                     {t.initial}
                   </div>
                   <div>
@@ -646,6 +653,13 @@ export default function HomeClient() {
                   </div>
                 </div>
               </div>
+            ))}
+          </div>
+          {/* Powered by bar */}
+          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 pt-6 border-t border-gray-200">
+            <span className="text-xs text-gray-400">Also running on:</span>
+            {["MindStar Counseling", "Equipment Rental Engine", "Content Engine", "Legal AI System", "Wellness Engine"].map((name) => (
+              <span key={name} className="text-xs text-gray-500 font-medium">{name}</span>
             ))}
           </div>
         </div>
