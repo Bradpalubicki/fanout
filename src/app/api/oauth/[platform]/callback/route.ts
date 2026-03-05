@@ -72,7 +72,9 @@ export async function GET(
   })
 
   if (platform === 'twitter') {
-    tokenBody.set('code_verifier', 'challenge')
+    // Use the PKCE verifier stored alongside the state token (generated at authorize time)
+    const codeVerifier = (stateRecord as { code_verifier?: string }).code_verifier ?? ''
+    if (codeVerifier) tokenBody.set('code_verifier', codeVerifier)
     const creds = Buffer.from(`${clientId}:${clientSecret}`).toString('base64')
     tokenRes = await fetch(config.tokenUrl, {
       method: 'POST',

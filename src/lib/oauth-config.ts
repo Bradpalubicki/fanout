@@ -19,7 +19,9 @@ export const OAUTH_CONFIGS: Record<string, OAuthConfig> = {
   linkedin: {
     authUrl: 'https://www.linkedin.com/oauth/v2/authorization',
     tokenUrl: 'https://www.linkedin.com/oauth/v2/accessToken',
-    scopes: ['w_member_social', 'r_liteprofile', 'openid', 'profile', 'email'],
+    // r_liteprofile is deprecated — removed. openid+profile+email = OIDC flow for user identity.
+    // w_member_social = post on behalf of member. w_organization_social needed for company pages.
+    scopes: ['w_member_social', 'openid', 'profile', 'email'],
     clientIdEnv: 'LINKEDIN_CLIENT_ID',
     clientSecretEnv: 'LINKEDIN_CLIENT_SECRET',
     callbackEnv: 'LINKEDIN_CALLBACK_URL',
@@ -52,9 +54,11 @@ export const OAUTH_CONFIGS: Record<string, OAuthConfig> = {
     callbackEnv: 'YOUTUBE_CALLBACK_URL',
   },
   instagram: {
-    authUrl: 'https://api.instagram.com/oauth/authorize',
-    tokenUrl: 'https://api.instagram.com/oauth/access_token',
-    scopes: ['instagram_business_basic', 'instagram_business_content_publish'],
+    // Instagram Business/Creator publishing requires the Facebook OAuth dialog (Graph API),
+    // NOT api.instagram.com which is the deprecated Basic Display API.
+    authUrl: 'https://www.facebook.com/v19.0/dialog/oauth',
+    tokenUrl: 'https://graph.facebook.com/v19.0/oauth/access_token',
+    scopes: ['instagram_basic', 'instagram_content_publish', 'pages_show_list', 'pages_read_engagement'],
     clientIdEnv: 'INSTAGRAM_APP_ID',
     clientSecretEnv: 'INSTAGRAM_APP_SECRET',
     callbackEnv: 'FACEBOOK_CALLBACK_URL',

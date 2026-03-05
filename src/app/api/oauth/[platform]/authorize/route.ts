@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { supabase } from '@/lib/supabase'
-import { generateStateToken } from '@/lib/crypto'
+import { generateStateToken, generatePkceVerifier } from '@/lib/crypto'
 import { OAUTH_CONFIGS } from '@/lib/oauth-config'
 import { z } from 'zod'
 
@@ -33,11 +33,15 @@ export async function GET(
   const stateToken = generateStateToken()
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000)
 
+  // Generate PKCE verifier for Twitter — stored alongside state so callback can retrieve it
+  const pkceVerifier = platform === 'twitter' ? generatePkceVerifier() : null
+
   await supabase.from('oauth_state').insert({
     token: stateToken,
     profile_id: parsed.data.profileId,
     platform,
     expires_at: expiresAt.toISOString(),
+    code_verifier: pkceVerifier,
   })
 
   const clientId = process.env[config.clientIdEnv]
@@ -57,8 +61,9 @@ export async function GET(
   authUrl.searchParams.set('state', stateToken)
   authUrl.searchParams.set('response_type', 'code')
 
-  if (platform === 'twitter') {
-    authUrl.searchParams.set('code_challenge', 'challenge')
+  if (platform === 'twitter' && pkceVerifier) {
+    // Twitter/X requires PKCE. Using plain method — verifier == challenge (≥43 chars, RFC 7636 ok)
+    authUrl.searchParams.set('code_challenge', pkceVerifier)
     authUrl.searchParams.set('code_challenge_method', 'plain')
   }
   if (platform === 'reddit') {

@@ -30,3 +30,11 @@ export async function decryptToken(encryptedToken: string): Promise<string> {
 export function generateStateToken(): string {
   return randomBytes(32).toString('base64url')
 }
+
+/**
+ * Generate a PKCE code verifier (43–128 chars, URL-safe, RFC 7636 §4.1).
+ * Twitter/X OAuth 2.0 requires this for the PKCE flow.
+ */
+export function generatePkceVerifier(): string {
+  return randomBytes(48).toString('base64url')
+}

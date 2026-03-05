@@ -222,7 +222,8 @@ async function runTool(
         })
 
       if (error) return JSON.stringify({ error: error.message })
-      return JSON.stringify({ success: true, message: `Tone config saved: ${tone} voice, ${topics.length} topics, ${hashtags.length} hashtags` })
+      // Return tone + topics in structured JSON so the setup page can extract them without regex
+      return JSON.stringify({ success: true, tone, topics, hashtags, message: `Tone config saved: ${tone} voice, ${topics.length} topics, ${hashtags.length} hashtags` })
     }
 
     case 'set_schedule': {
@@ -277,8 +278,10 @@ Return ONLY valid JSON (no markdown):
 
       let posts: Array<{ platform: string; content: string }> = []
       try {
-        const raw = (resp.content[0] as Anthropic.TextBlock).text
-        const parsed = JSON.parse(raw) as { posts: Array<{ platform: string; content: string }> }
+        const rawText = (resp.content[0] as Anthropic.TextBlock).text
+        // Strip markdown code fences if Claude wraps the JSON (e.g. ```json ... ```)
+        const stripped = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
+        const parsed = JSON.parse(stripped) as { posts: Array<{ platform: string; content: string }> }
         posts = parsed.posts
       } catch {
         return JSON.stringify({ error: 'Failed to parse seed posts from AI' })
@@ -475,8 +478,8 @@ export async function POST(req: NextRequest) {
     try {
       const colonIdx = toneResult.indexOf(']: ')
       const raw = colonIdx > -1 ? toneResult.slice(colonIdx + 3) : toneResult
-      const parsed = JSON.parse(raw) as { success?: boolean; message?: string }
-      if (parsed.success) {
+      const toneParsed = JSON.parse(raw) as { success?: boolean; tone?: string; topics?: string[]; message?: string }
+      if (toneParsed.success) {
         // Also get profile_id from create_profile result
         const profileResult = toolResults.find((r) => r.startsWith('[create_profile]:'))
         if (profileResult) {
@@ -496,10 +499,9 @@ export async function POST(req: NextRequest) {
             'there'
 
           if (userEmail && profileParsed.profile_id) {
-            // Extract tone/topics from the messages context
-            const toneMsg = parsed.message ?? ''
-            const toneMatch = toneMsg.match(/^Tone config saved: (\w+) voice, .+? topics/)
-            const tone = toneMatch?.[1] ?? 'professional'
+            // Use structured tone/topics returned directly from tool result (no regex needed)
+            const tone = toneParsed.tone ?? 'professional'
+            const topics = toneParsed.topics ?? []
 
             // Fire and forget — don't block response
             void sendSetupEmail({
@@ -508,7 +510,7 @@ export async function POST(req: NextRequest) {
               profileName: profileParsed.name ?? 'Your profile',
               profileId: profileParsed.profile_id,
               tone,
-              topics: [],
+              topics,
             })
           }
         }

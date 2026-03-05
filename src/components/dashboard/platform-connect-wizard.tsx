@@ -108,14 +108,18 @@ export function PlatformConnectWizard({
   function handleSkip() {
     stopPolling();
     const platform = WIZARD_ORDER[activeIndex];
-    const skipped = platform ? [...connected, `__skipped_${platform}`] : connected;
-    advanceToNext(skipped.filter((s) => !s.startsWith("__skipped_")));
-    if (platform) {
-      const nextIdx = firstUnconnected([...connected]);
-      const nextActual = WIZARD_ORDER.findIndex(
-        (p, i) => i > activeIndex && !connected.includes(p)
-      );
-      setActiveIndex(nextActual === -1 ? WIZARD_ORDER.length : nextActual);
+    if (!platform) return;
+    // Find the next unconnected, unskipped platform after the current index
+    const nextActual = WIZARD_ORDER.findIndex(
+      (p, i) => i > activeIndex && !connected.includes(p)
+    );
+    if (nextActual === -1) {
+      // No more platforms — done
+      setDone(true);
+      onComplete?.();
+    } else {
+      setActiveIndex(nextActual);
+      setExpanded(false);
     }
   }
 
