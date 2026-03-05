@@ -42,7 +42,7 @@ export const metadata: Metadata = {
       "Post to Twitter, LinkedIn, Instagram, TikTok, YouTube, Reddit & more with one API call. The Ayrshare alternative built for developers.",
     images: [
       {
-        url: "https://fanout.digital/og-image.png",
+        url: "https://fanout.digital/og",
         width: 1200,
         height: 630,
         alt: "Fanout — Social Media API & Automation Platform",
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     title: "Fanout — Social Media API & Automation Platform",
     description:
       "Post to 9 platforms with one API call. The Ayrshare alternative built for developers. Free 14-day trial.",
-    images: ["https://fanout.digital/og-image.png"],
+    images: ["https://fanout.digital/og"],
   },
   robots: {
     index: true,
@@ -73,7 +73,7 @@ export const metadata: Metadata = {
   verification: {
     google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
     other: {
-      "msvalidate.01": process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION ?? "",
+      "msvalidate.01": process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION ?? "F5BE8B522A66B1E13B5E59322FB38C2F",
     },
   },
 };
