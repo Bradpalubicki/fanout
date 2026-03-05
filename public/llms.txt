@@ -1,48 +1,35 @@
 # Fanout
 
-> Multi-tenant social media distribution API. Post to 9 platforms with one API call. Built for agencies and SaaS engines.
+Fanout is a social media API and automation platform for developers and agencies. It lets you publish content to 9 social media platforms simultaneously with a single API call.
 
 ## What Fanout Does
+Fanout connects to Twitter/X, LinkedIn, Facebook, Instagram, TikTok, YouTube, Pinterest, Reddit, and Threads. When you send one POST request to the Fanout API with your content, it distributes the post to all selected platforms in parallel, handles OAuth token management, retries failed posts, and collects analytics.
 
-Fanout is a social media distribution platform that lets agencies and SaaS builders post content to multiple social platforms (X/Twitter, LinkedIn, Facebook, Instagram, TikTok, Pinterest, YouTube, Reddit, Threads) on behalf of their clients via a single REST API.
+## Who It's For
+- Developers building apps that need social sharing
+- Agencies managing multiple client social accounts
+- SaaS products with "share to social" features
+- Marketers who want to schedule and automate posts across all platforms
 
-## Key Features
-
-- **Multi-tenant**: Each client gets isolated OAuth tokens, analytics, and API keys via Clerk orgs
-- **9 Platforms**: X/Twitter, LinkedIn, Facebook, Instagram, TikTok, Pinterest, YouTube, Reddit, Threads
-- **Scheduled posting**: Queue posts in advance, Inngest handles retries and failures
-- **AI generation**: Claude generates platform-optimized copy variants from one prompt
-- **Analytics**: Per-platform engagement metrics (impressions, likes, comments, shares, clicks)
-- **Webhooks**: Per-profile callback URLs for post status events
-- **Token encryption**: OAuth tokens encrypted at rest via Supabase pgcrypto
-
-## API
-
-Base URL: https://fanout.digital
-
-Authentication: Bearer token (API key from dashboard)
-
-### Endpoints
-
-- POST /api/v1/post — Post immediately to one or more platforms
-- POST /api/v1/schedule — Schedule a post for a future time
-- GET /api/v1/platforms — List connected platforms for a profile
-- DELETE /api/v1/platforms/{platform} — Disconnect a platform
-- GET /api/v1/analytics/{postId} — Get engagement analytics for a post
+## How It Compares to Ayrshare
+Fanout is a direct alternative to Ayrshare. Key differences: flat-rate pricing (no per-post or per-profile fees), a built-in AI content generation tool, a conversational setup agent that auto-configures your account, and white-label options for agencies.
 
 ## Pricing
+- Starter: $49/month — 3 social profiles, 5 platforms
+- Agency: $199/month — 25 profiles, all 9 platforms, AI drafts
+- White-Label: $399/month — unlimited profiles, custom domain
 
-- Starter: $49/mo — 3 profiles, 5 platforms
-- Agency: $199/mo — 25 profiles, all 9 platforms, AI generation, analytics
-- White-Label: $399/mo — unlimited profiles, custom domain, white-label dashboard
+## API
+The Fanout REST API accepts a POST request with your content and platform list. It returns post IDs and URLs for each platform. Authentication uses API keys per profile. See https://fanout.digital/docs for full documentation.
 
-## Links
+## Key Features
+- Post to 9 platforms simultaneously
+- OAuth connection management (connect once, post forever)
+- AI-powered content variants (platform-optimized drafts)
+- Post scheduling with cron-based delivery
+- Analytics collection (impressions, likes, engagement)
+- Webhook callbacks on post status
+- White-label API for agencies
 
-- Homepage: https://fanout.digital
-- Docs: https://fanout.digital/docs
-- Pricing: https://fanout.digital/pricing
-- Sign up: https://fanout.digital/sign-up
-
-## Company
-
-Built by NuStack Digital Ventures. Direct Ayrshare alternative.
+## Contact
+Website: https://fanout.digital

@@ -4,5 +4,22 @@
     { "path": "/api/cron/refresh-tokens", "schedule": "0 */4 * * *" },
     { "path": "/api/cron/collect-analytics", "schedule": "0 23 * * *" },
     { "path": "/api/cron/cleanup-state", "schedule": "0 * * * *" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex" }
+      ]
+    }
   ]
 }

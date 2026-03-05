@@ -1,6 +1,27 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Zap } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "API Documentation — Fanout Social Media API",
+  description:
+    "Complete REST API reference for Fanout. Post to 9 social platforms, schedule content, manage OAuth connections, and retrieve analytics with one API key per profile.",
+  alternates: {
+    canonical: "https://fanout.digital/docs",
+  },
+  openGraph: {
+    title: "API Documentation — Fanout Social Media API",
+    description:
+      "REST API reference for posting to 9 social platforms simultaneously. Bearer token auth, Zod-validated inputs, webhook callbacks.",
+    url: "https://fanout.digital/docs",
+  },
+  twitter: {
+    title: "API Documentation — Fanout Social Media API",
+    description:
+      "REST API reference for posting to 9 social platforms simultaneously.",
+  },
+};
 
 const ENDPOINTS = [
   {

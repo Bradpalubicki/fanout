@@ -6,8 +6,23 @@ import { CheckCircle2, Zap } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Pricing — Fanout",
-  description: "Simple, transparent pricing for social media distribution. 14-day free trial. No credit card required.",
+  title: "Pricing — Fanout Social Media API",
+  description:
+    "Fanout pricing starts at $49/month. Starter, Agency ($199), and White-Label ($399) plans. All plans include API access and scheduled posting. 14-day free trial, no credit card required.",
+  alternates: {
+    canonical: "https://fanout.digital/pricing",
+  },
+  openGraph: {
+    title: "Pricing — Fanout Social Media API",
+    description:
+      "Plans from $49/month. Post to 9 platforms with one API call. 14-day free trial, no credit card required.",
+    url: "https://fanout.digital/pricing",
+  },
+  twitter: {
+    title: "Pricing — Fanout Social Media API",
+    description:
+      "Plans from $49/month. Post to 9 social platforms with one API call.",
+  },
 };
 
 const PLANS = [
