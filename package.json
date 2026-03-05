@@ -6,7 +6,16 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "session:reddit": "node scripts/test-bootstrap.mjs reddit",
+    "session:twitter": "node scripts/test-bootstrap.mjs twitter",
+    "session:linkedin": "node scripts/test-bootstrap.mjs linkedin",
+    "session:youtube": "node scripts/test-bootstrap.mjs youtube",
+    "register:reddit": "node scripts/test-register.mjs reddit",
+    "register:twitter": "node scripts/test-register.mjs twitter",
+    "register:linkedin": "node scripts/test-register.mjs linkedin",
+    "register:youtube": "node scripts/test-register.mjs youtube",
+    "creds:enter": "node scripts/test-enter-manual.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
