@@ -30,6 +30,11 @@ export default async function DashboardPage() {
     .eq("org_id", orgId)
     .limit(10);
 
+  // Redirect new users with 0 profiles to onboarding setup
+  if ((profiles ?? []).length === 0) {
+    redirect("/dashboard/setup");
+  }
+
   const profileIds = (profiles ?? []).map((p) => p.id);
 
   const { data: recentPosts } = profileIds.length

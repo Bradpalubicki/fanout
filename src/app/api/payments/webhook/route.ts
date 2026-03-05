@@ -1,29 +1,72 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { clerkClient } from '@clerk/nextjs/server'
-import { createHmac } from 'crypto'
+import { WebhooksHelper } from 'square'
+import { squareClient } from '@/lib/square'
+import { upsertActiveSubscription, type PlanKey } from '@/lib/subscriptions'
+
+const WEBHOOK_URL = 'https://fanout.digital/api/payments/webhook'
+
+const VALID_PLAN_KEYS = new Set<string>(['starter', 'agency', 'white-label'])
+
+function isPlanKey(value: unknown): value is PlanKey {
+  return typeof value === 'string' && VALID_PLAN_KEYS.has(value)
+}
 
 export async function POST(req: NextRequest) {
   const body = await req.text()
-  const sig = req.headers.get('x-square-hmacsha256-signature') ?? ''
-  const secret = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY ?? ''
+  const signatureHeader = req.headers.get('x-square-hmacsha256-signature') ?? ''
+  const signatureKey = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY ?? ''
 
-  // Verify Square webhook signature
-  const url = `https://fanout.digital/api/payments/webhook`
-  const hmac = createHmac('sha256', secret).update(url + body).digest('base64')
-  if (hmac !== sig) {
+  const isValid = await WebhooksHelper.verifySignature({
+    requestBody: body,
+    signatureHeader,
+    signatureKey,
+    notificationUrl: WEBHOOK_URL,
+  })
+
+  if (!isValid) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
   }
 
-  const event = JSON.parse(body) as {
-    type: string
-    data?: { object?: { payment?: { order_id?: string; status?: string } } }
+  let event: unknown
+  try {
+    event = JSON.parse(body)
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  if (event.type === 'payment.completed') {
-    // Extract org_id and plan from order metadata via Square API
-    // For now log the event — full order lookup requires SQUARE_ACCESS_TOKEN
-    // The webhook handler is wired; metadata extraction added when Square keys arrive
-    console.log('[square webhook] payment.completed', event)
+  if (
+    typeof event !== 'object' ||
+    event === null ||
+    (event as Record<string, unknown>).type !== 'payment.completed'
+  ) {
+    return NextResponse.json({ received: true })
+  }
+
+  const typedEvent = event as Record<string, unknown>
+  const paymentData = (typedEvent.data as Record<string, unknown> | undefined)
+    ?.object as Record<string, unknown> | undefined
+  const payment = paymentData?.payment as Record<string, unknown> | undefined
+  const orderId = payment?.order_id
+
+  if (typeof orderId !== 'string' || !orderId) {
+    return NextResponse.json({ received: true, note: 'no order_id' })
+  }
+
+  // Fetch order to get metadata (org_id, plan)
+  try {
+    const orderResponse = await squareClient.orders.get({ orderId })
+    const order = orderResponse.order
+    const metadata = order?.metadata as Record<string, string> | undefined
+    const orgId = metadata?.org_id
+    const plan = metadata?.plan
+
+    if (!orgId || !isPlanKey(plan)) {
+      return NextResponse.json({ received: true, note: 'missing or invalid metadata' })
+    }
+
+    await upsertActiveSubscription(orgId, plan, orderId)
+  } catch {
+    return NextResponse.json({ error: 'Failed to process payment' }, { status: 500 })
   }
 
   return NextResponse.json({ received: true })

@@ -33,6 +33,8 @@ export default function SettingsPage() {
   const [webhookEdits, setWebhookEdits] = useState<Record<string, string>>({});
   const [savingWebhook, setSavingWebhook] = useState<string | null>(null);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+  const [defaultTimezone, setDefaultTimezone] = useState("UTC");
+  const [savingTimezone, setSavingTimezone] = useState(false);
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -44,6 +46,13 @@ export default function SettingsPage() {
         (d.profiles ?? []).forEach((p) => { edits[p.id] = p.webhook_url ?? ""; });
         setWebhookEdits(edits);
       });
+
+    fetch("/api/dashboard/settings")
+      .then((r) => r.json())
+      .then((d: { defaultTimezone?: string }) => {
+        if (d.defaultTimezone) setDefaultTimezone(d.defaultTimezone);
+      })
+      .catch(() => undefined);
   }, []);
 
   useEffect(() => {
@@ -84,6 +93,21 @@ export default function SettingsPage() {
     if (data.apiKey) {
       await navigator.clipboard.writeText(data.apiKey);
       toast.success(`New key copied to clipboard: ${data.apiKey.slice(0, 8)}...`);
+    }
+  }
+
+  async function saveTimezone() {
+    setSavingTimezone(true);
+    try {
+      const res = await fetch("/api/dashboard/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ defaultTimezone }),
+      });
+      if (res.ok) toast.success("Timezone saved");
+      else toast.error("Failed to save timezone");
+    } finally {
+      setSavingTimezone(false);
     }
   }
 
@@ -138,11 +162,25 @@ export default function SettingsPage() {
               </div>
               <div>
                 <Label className="mb-1.5 block">Default timezone</Label>
-                <select className="border border-gray-200 rounded-lg px-3 py-2 text-sm w-full">
-                  {TIMEZONES.map((tz) => (
-                    <option key={tz} value={tz}>{tz}</option>
-                  ))}
-                </select>
+                <div className="flex gap-2">
+                  <select
+                    className="border border-gray-200 rounded-lg px-3 py-2 text-sm flex-1"
+                    value={defaultTimezone}
+                    onChange={(e) => setDefaultTimezone(e.target.value)}
+                  >
+                    {TIMEZONES.map((tz) => (
+                      <option key={tz} value={tz}>{tz}</option>
+                    ))}
+                  </select>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={saveTimezone}
+                    disabled={savingTimezone}
+                  >
+                    {savingTimezone ? "Saving..." : "Save"}
+                  </Button>
+                </div>
               </div>
             </div>
           </Card>

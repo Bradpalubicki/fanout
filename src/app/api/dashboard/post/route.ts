@@ -3,6 +3,7 @@ import { auth } from '@clerk/nextjs/server'
 import { z } from 'zod'
 import { supabase } from '@/lib/supabase'
 import { inngest } from '@/lib/inngest'
+import { getOrCreateOrgSubscription, isSubscriptionActive, isTrialExpired } from '@/lib/subscriptions'
 
 const PostSchema = z.object({
   post: z.string().min(1).max(5000),
@@ -36,6 +37,21 @@ export async function POST(req: NextRequest) {
 
   const { post, platforms, profileId, mediaUrls } = parsed.data
   const scheduledFor = isScheduled ? (parsed.data as z.infer<typeof ScheduleSchema>).scheduledFor : null
+
+  // Check subscription is active before posting
+  const sub = await getOrCreateOrgSubscription(orgId)
+  if (!isSubscriptionActive(sub)) {
+    const expired = isTrialExpired(sub)
+    return NextResponse.json(
+      {
+        error: expired
+          ? 'Your trial has expired. Upgrade to continue posting.'
+          : 'Your subscription is not active. Please upgrade your plan.',
+        paywall: true,
+      },
+      { status: 402 }
+    )
+  }
 
   // Verify profile belongs to this org
   const { data: profile } = await supabase

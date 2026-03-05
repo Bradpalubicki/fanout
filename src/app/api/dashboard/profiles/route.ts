@@ -3,6 +3,7 @@ import { auth } from '@clerk/nextjs/server'
 import { z } from 'zod'
 import { supabase } from '@/lib/supabase'
 import { generateApiKey, hashApiKey } from '@/lib/crypto'
+import { checkProfileLimit, getOrCreateOrgSubscription } from '@/lib/subscriptions'
 
 const CreateProfileSchema = z.object({
   name: z.string().min(2).max(100),
@@ -33,6 +34,32 @@ export async function POST(req: NextRequest) {
   }
 
   const { name, slug, webhookUrl, timezone } = parsed.data
+
+  // Check plan limits
+  const limitCheck = await checkProfileLimit(orgId)
+  if (!limitCheck.allowed) {
+    if (limitCheck.paywalled) {
+      return NextResponse.json(
+        { error: 'Trial expired. Upgrade your plan to create profiles.', paywall: true },
+        { status: 402 }
+      )
+    }
+    return NextResponse.json(
+      {
+        error: `Profile limit reached. Your ${limitCheck.plan} plan allows ${limitCheck.limit} profile${limitCheck.limit !== 1 ? 's' : ''}.`,
+        paywall: true,
+        limit: limitCheck.limit,
+        current: limitCheck.current,
+        plan: limitCheck.plan,
+      },
+      { status: 402 }
+    )
+  }
+
+  // Start trial on first profile creation
+  if (limitCheck.current === 0) {
+    await getOrCreateOrgSubscription(orgId)
+  }
 
   // Check slug uniqueness
   const { data: existing } = await supabase
