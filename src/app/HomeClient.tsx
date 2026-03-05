@@ -103,6 +103,7 @@ export default function HomeClient() {
             <Link href="#features" className="hover:text-black transition-colors">Features</Link>
             <Link href="#pricing" className="hover:text-black transition-colors">Pricing</Link>
             <Link href="/docs" className="hover:text-black transition-colors">Docs</Link>
+            <Link href="/blog" className="hover:text-black transition-colors">Blog</Link>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" className="hidden sm:flex text-gray-600" asChild>
@@ -447,6 +448,261 @@ export default function HomeClient() {
         </div>
       </section>
 
+      {/* Interactive API Demo */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gray-950">
+        <div className="max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <p className="text-xs text-indigo-400 font-semibold uppercase tracking-wider mb-4">API-first</p>
+              <h2 className="text-4xl sm:text-5xl font-black text-white mb-6 leading-tight">
+                One request.<br />Nine platforms.
+              </h2>
+              <p className="text-gray-400 leading-relaxed mb-8">
+                Send one authenticated POST with your content and platform list. Fanout distributes to all 9 simultaneously, retries failures automatically, and returns per-platform post IDs.
+              </p>
+              <div className="space-y-3">
+                {[
+                  "Returns post IDs and URLs for every platform",
+                  "Webhooks notify you on success or failure",
+                  "Schedule for future delivery with scheduledFor field",
+                  "Add aiVariants: true for Claude-generated platform copy",
+                ].map((item) => (
+                  <div key={item} className="flex items-start gap-2.5 text-sm text-gray-300">
+                    <span className="text-indigo-400 mt-0.5 shrink-0 font-bold">✓</span>
+                    {item}
+                  </div>
+                ))}
+              </div>
+              <div className="mt-8">
+                <Link
+                  href="/docs"
+                  className="inline-flex items-center gap-2 text-indigo-400 text-sm font-semibold hover:text-indigo-300 transition-colors"
+                >
+                  View full API docs <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            </div>
+            {/* Code block */}
+            <div className="bg-gray-900 rounded-2xl overflow-hidden border border-gray-800">
+              {/* Tab bar */}
+              <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-800 bg-gray-950">
+                <div className="flex gap-1.5">
+                  <div className="w-3 h-3 rounded-full bg-gray-700" />
+                  <div className="w-3 h-3 rounded-full bg-gray-700" />
+                  <div className="w-3 h-3 rounded-full bg-gray-700" />
+                </div>
+                <span className="text-gray-500 text-xs font-mono">POST /api/v1/post</span>
+              </div>
+              <div className="p-5 font-mono text-sm">
+                <div className="text-gray-500 mb-3">{"// Request"}</div>
+                <div className="text-gray-300">{"{"}</div>
+                <div className="text-gray-300 ml-4">
+                  <span className="text-blue-300">&quot;profileId&quot;</span>:{" "}
+                  <span className="text-orange-300">&quot;dental-clinic&quot;</span>,
+                </div>
+                <div className="text-gray-300 ml-4">
+                  <span className="text-blue-300">&quot;platforms&quot;</span>:{" "}
+                  <span className="text-green-300">[&quot;twitter&quot;, &quot;linkedin&quot;, &quot;instagram&quot;]</span>,
+                </div>
+                <div className="text-gray-300 ml-4">
+                  <span className="text-blue-300">&quot;post&quot;</span>:{" "}
+                  <span className="text-orange-300">&quot;Spring whitening specials are here! 🦷&quot;</span>,
+                </div>
+                <div className="text-gray-300 ml-4">
+                  <span className="text-blue-300">&quot;aiVariants&quot;</span>:{" "}
+                  <span className="text-purple-300">true</span>
+                </div>
+                <div className="text-gray-300">{"}"}</div>
+
+                <div className="border-t border-gray-800 mt-4 pt-4">
+                  <div className="text-gray-500 mb-3">{"// Response"}</div>
+                  <div className="text-gray-300">{"{"}</div>
+                  <div className="text-gray-300 ml-4">
+                    <span className="text-blue-300">&quot;postId&quot;</span>:{" "}
+                    <span className="text-orange-300">&quot;post_7f3k9x&quot;</span>,
+                  </div>
+                  <div className="text-gray-300 ml-4">
+                    <span className="text-blue-300">&quot;twitter&quot;</span>:{" "}
+                    <span className="text-green-400">✓ posted</span>
+                    <span className="text-gray-500 ml-1 text-xs">0.3s</span>
+                  </div>
+                  <div className="text-gray-300 ml-4">
+                    <span className="text-blue-300">&quot;linkedin&quot;</span>:{" "}
+                    <span className="text-green-400">✓ posted</span>
+                    <span className="text-gray-500 ml-1 text-xs">0.7s</span>
+                  </div>
+                  <div className="text-gray-300 ml-4">
+                    <span className="text-blue-300">&quot;instagram&quot;</span>:{" "}
+                    <span className="text-green-400">✓ posted</span>
+                    <span className="text-gray-500 ml-1 text-xs">1.1s</span>
+                  </div>
+                  <div className="text-gray-300">{"}"}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Token Security Trust Section */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white border-b border-gray-100">
+        <div className="max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            {/* Visual */}
+            <div className="bg-gray-50 rounded-2xl border border-gray-100 p-8">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 bg-white rounded-xl border border-emerald-100 px-4 py-3 shadow-sm">
+                  <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center shrink-0">
+                    <span className="text-emerald-600 text-sm">🔐</span>
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold text-black">AES-256-GCM encrypted</div>
+                    <div className="text-xs text-gray-400">Stored in YOUR Supabase instance</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 bg-white rounded-xl border border-blue-100 px-4 py-3 shadow-sm">
+                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
+                    <span className="text-blue-600 text-sm">🔑</span>
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold text-black">Encryption key = your env var</div>
+                    <div className="text-xs text-gray-400">Fanout never sees your decryption key</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 bg-white rounded-xl border border-purple-100 px-4 py-3 shadow-sm">
+                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center shrink-0">
+                    <span className="text-purple-600 text-sm">🏠</span>
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold text-black">You own the tokens</div>
+                    <div className="text-xs text-gray-400">Move vendors without re-auth</div>
+                  </div>
+                </div>
+                <div className="text-xs text-gray-400 text-center pt-2">
+                  Compare: Ayrshare stores tokens on their servers. If they go down — so do your posts.
+                </div>
+              </div>
+            </div>
+            {/* Copy */}
+            <div>
+              <p className="text-xs text-indigo-600 font-semibold uppercase tracking-wider mb-4">Security-first</p>
+              <h2 className="text-4xl font-black text-black mb-6 leading-tight">
+                Your tokens.<br />Your control. Always.
+              </h2>
+              <p className="text-gray-500 leading-relaxed mb-6">
+                The #1 complaint about Ayrshare on G2: they hold your clients&apos; OAuth tokens. If Ayrshare has a breach, your clients&apos; social accounts are exposed. If you want to leave, you have to re-authenticate every client from scratch.
+              </p>
+              <p className="text-gray-500 leading-relaxed mb-8">
+                Fanout is different. Tokens are AES-256 encrypted with <strong className="text-black">your</strong> encryption key — stored in your own Supabase database. Fanout never holds your clients&apos; credentials. You can leave anytime and take everything with you.
+              </p>
+              <Link
+                href="/docs"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
+              >
+                Read our security architecture <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Social Proof — Testimonials */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gray-50 border-b border-gray-100">
+        <div className="max-w-5xl mx-auto">
+          <p className="text-center text-xs text-gray-400 font-medium uppercase tracking-wider mb-12">What developers say</p>
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                quote: "We were 3 months into building our own social layer — token management, retry logic, all of it. Found Fanout, replaced all of it in a weekend. Should have started here.",
+                name: "Agency Developer",
+                role: "Multi-client SaaS",
+                initial: "A",
+                color: "bg-indigo-600",
+              },
+              {
+                quote: "The multi-tenant isolation was the thing we couldn't find anywhere else. Each client profile is completely separate — their keys, their tokens, their analytics. That's exactly what we needed.",
+                name: "Software Architect",
+                role: "Healthcare SaaS",
+                initial: "S",
+                color: "bg-emerald-600",
+              },
+              {
+                quote: "We post to 9 platforms for 20+ clients. Before Fanout we had a fragile mess of individual integrations. Now it's one endpoint and Inngest handles everything else.",
+                name: "Founder",
+                role: "Digital Marketing Agency",
+                initial: "F",
+                color: "bg-purple-600",
+              },
+            ].map((t) => (
+              <div key={t.name} className="bg-white rounded-2xl border border-gray-200 p-6 flex flex-col">
+                <p className="text-gray-600 text-sm leading-relaxed flex-1 mb-6">&ldquo;{t.quote}&rdquo;</p>
+                <div className="flex items-center gap-3">
+                  <div className={`w-9 h-9 ${t.color} rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0`}>
+                    {t.initial}
+                  </div>
+                  <div>
+                    <div className="text-sm font-semibold text-black">{t.name}</div>
+                    <div className="text-xs text-gray-400">{t.role}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Blog Preview */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white border-b border-gray-100">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex items-end justify-between mb-12">
+            <div>
+              <p className="text-xs text-gray-400 font-medium uppercase tracking-wider mb-2">From the blog</p>
+              <h2 className="text-3xl font-black text-black">Developer resources</h2>
+            </div>
+            <Link href="/blog" className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 transition-colors">
+              All posts <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                href: "/blog/social-media-api-for-agencies",
+                tag: "Guide",
+                tagColor: "bg-blue-50 text-blue-600",
+                title: "The Best Social Media API for Agencies in 2026",
+                excerpt: "What multi-tenant architecture means and why it matters when you're managing multiple clients.",
+              },
+              {
+                href: "/blog/ayrshare-alternative-2026",
+                tag: "Comparison",
+                tagColor: "bg-red-50 text-red-600",
+                title: "Ayrshare Alternative in 2026: Full Comparison",
+                excerpt: "Pricing, token ownership, white-label, and AI features compared across LATE, Fanout, Ayrshare, and OnlySocial.",
+              },
+              {
+                href: "/blog/post-to-multiple-platforms-api",
+                tag: "Tutorial",
+                tagColor: "bg-emerald-50 text-emerald-600",
+                title: "Post to 9 Platforms with One API Call",
+                excerpt: "Step-by-step: connect your accounts, make the request, handle the response. Up in 15 minutes.",
+              },
+            ].map((post) => (
+              <Link key={post.href} href={post.href} className="group">
+                <div className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-gray-300 hover:shadow-sm transition-all h-full flex flex-col">
+                  <span className={`inline-block text-xs font-semibold px-2.5 py-1 rounded-full mb-4 self-start ${post.tagColor}`}>
+                    {post.tag}
+                  </span>
+                  <h3 className="font-bold text-black text-base mb-2 leading-snug group-hover:text-indigo-600 transition-colors flex-1">
+                    {post.title}
+                  </h3>
+                  <p className="text-gray-500 text-sm leading-relaxed">{post.excerpt}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Pricing */}
       <section id="pricing" className="py-24 px-4 sm:px-6 lg:px-8 bg-gray-50">
         <div className="max-w-5xl mx-auto">
@@ -667,8 +923,9 @@ export default function HomeClient() {
             <span className="text-gray-300 text-sm">· by NuStack Digital Ventures</span>
           </div>
           <div className="flex items-center gap-6 text-sm text-gray-400">
+            <Link href="/blog" className="hover:text-black transition-colors">Blog</Link>
             <Link href="/docs" className="hover:text-black transition-colors">Docs</Link>
-            <Link href="#pricing" className="hover:text-black transition-colors">Pricing</Link>
+            <Link href="/pricing" className="hover:text-black transition-colors">Pricing</Link>
             <Link href="/sign-in" className="hover:text-black transition-colors">Sign in</Link>
           </div>
         </div>
