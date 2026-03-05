@@ -47,9 +47,14 @@ export async function GET(
   const clientId = process.env[config.clientIdEnv]
   const callbackUrl = process.env[config.callbackEnv]
 
-  if (!clientId || !callbackUrl) {
+  if (!clientId || clientId === 'placeholder' || !callbackUrl) {
     return NextResponse.json(
-      { error: `Platform ${platform} OAuth not configured` },
+      {
+        error: 'Platform not yet configured',
+        platform,
+        status: 'coming_soon',
+        message: `${platform} OAuth credentials are not yet set up. Contact support to activate this platform.`,
+      },
       { status: 503 }
     )
   }

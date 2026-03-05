@@ -4,10 +4,13 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, CheckCircle2, XCircle, Clock } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ArrowLeft, CheckCircle2, XCircle, Clock, AlertTriangle } from "lucide-react";
 import { PLATFORM_LABELS, type Platform } from "@/lib/types";
 import { CopyButton } from "@/components/dashboard/copy-button";
 import { PlatformGrid } from "@/components/dashboard/platform-grid";
+import { WebhookLogs } from "@/components/dashboard/webhook-logs";
+import { checkTokenHealth } from "@/app/actions/check-token-health";
 
 export async function generateMetadata() {
   return { title: `Profile — Fanout` };
@@ -22,7 +25,7 @@ export default async function ProfileDetailPage({ params }: { params: Promise<{ 
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("*, oauth_tokens(platform, platform_username, expires_at, created_at)")
+    .select("*, oauth_tokens(platform, platform_username, expires_at, created_at), webhook_url")
     .eq("id", id)
     .eq("org_id", orgId)
     .single();
@@ -42,6 +45,9 @@ export default async function ProfileDetailPage({ params }: { params: Promise<{ 
     .eq("profile_id", id)
     .order("created_at", { ascending: false })
     .limit(5);
+
+  const tokenHealth = await checkTokenHealth(id);
+  const unhealthyTokens = tokenHealth.filter((t) => t.status !== "healthy");
 
   return (
     <div className="p-6 max-w-4xl">
@@ -77,49 +83,96 @@ export default async function ProfileDetailPage({ params }: { params: Promise<{ 
         <p className="text-xs text-gray-400 mt-2">Note: Profile ID shown. Actual API key hash is stored securely — regenerate from Settings to get a new plaintext key.</p>
       </Card>
 
+      {/* Token health warnings */}
+      {unhealthyTokens.length > 0 && (
+        <div className="mb-4 space-y-2">
+          {unhealthyTokens.map((t) => (
+            <div
+              key={t.platform}
+              className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm ${
+                t.status === "expired"
+                  ? "bg-red-50 border border-red-200"
+                  : "bg-yellow-50 border border-yellow-200"
+              }`}
+            >
+              {t.status === "expired" ? (
+                <XCircle className="w-4 h-4 text-red-500 shrink-0" />
+              ) : (
+                <AlertTriangle className="w-4 h-4 text-yellow-500 shrink-0" />
+              )}
+              <span className={t.status === "expired" ? "text-red-800" : "text-yellow-800"}>
+                <span className="font-semibold capitalize">{t.platform}</span>{" "}
+                {t.status === "expired"
+                  ? "token expired — reconnect to resume posting"
+                  : `token expiring in ${t.daysLeft} day${t.daysLeft !== 1 ? "s" : ""} — reconnect soon`}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Connected Platforms */}
       <Card className="p-5 border-gray-100 mb-6">
         <h2 className="font-semibold text-black mb-4">Connected Platforms</h2>
         <PlatformGrid profileId={id} tokens={connectedTokens} />
       </Card>
 
-      {/* Recent Posts */}
-      <Card className="p-5 border-gray-100">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-semibold text-black">Recent Posts</h2>
-          <Link href="/dashboard/compose" className="text-sm text-gray-500 hover:text-black">
-            + Compose
-          </Link>
-        </div>
-        {(recentPosts ?? []).length === 0 ? (
-          <div className="text-center py-8 text-gray-400 text-sm">
-            No posts yet for this profile.
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {(recentPosts ?? []).map((post) => (
-              <div key={post.id} className="flex items-start justify-between gap-3 py-3 border-b border-gray-50 last:border-0">
-                <div className="flex-1 min-w-0">
-                  <div className="flex gap-1 mb-1">
-                    {(post.platforms as string[]).slice(0, 4).map((p) => (
-                      <Badge key={p} variant="secondary" className="text-xs py-0">
-                        {PLATFORM_LABELS[p as Platform]?.split(" ")[0] ?? p}
-                      </Badge>
-                    ))}
-                  </div>
-                  <p className="text-sm text-gray-700 truncate">{post.content as string}</p>
-                </div>
-                <div className="flex items-center gap-1.5 shrink-0">
-                  {post.status === "posted" && <CheckCircle2 className="w-4 h-4 text-green-500" />}
-                  {post.status === "failed" && <XCircle className="w-4 h-4 text-red-500" />}
-                  {post.status === "pending" && <Clock className="w-4 h-4 text-yellow-500" />}
-                  <span className="text-xs text-gray-400 capitalize">{post.status as string}</span>
-                </div>
+      {/* Tabbed content */}
+      <Tabs defaultValue="posts">
+        <TabsList className="mb-4">
+          <TabsTrigger value="posts">Recent Posts</TabsTrigger>
+          <TabsTrigger value="webhook-logs">Webhook Logs</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="posts">
+          <Card className="p-5 border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold text-black">Recent Posts</h2>
+              <Link href="/dashboard/compose" className="text-sm text-gray-500 hover:text-black">
+                + Compose
+              </Link>
+            </div>
+            {(recentPosts ?? []).length === 0 ? (
+              <div className="text-center py-8 text-gray-400 text-sm">
+                No posts yet for this profile.
               </div>
-            ))}
-          </div>
-        )}
-      </Card>
+            ) : (
+              <div className="space-y-3">
+                {(recentPosts ?? []).map((post) => (
+                  <div key={post.id} className="flex items-start justify-between gap-3 py-3 border-b border-gray-50 last:border-0">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex gap-1 mb-1">
+                        {(post.platforms as string[]).slice(0, 4).map((p) => (
+                          <Badge key={p} variant="secondary" className="text-xs py-0">
+                            {PLATFORM_LABELS[p as Platform]?.split(" ")[0] ?? p}
+                          </Badge>
+                        ))}
+                      </div>
+                      <p className="text-sm text-gray-700 truncate">{post.content as string}</p>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {post.status === "posted" && <CheckCircle2 className="w-4 h-4 text-green-500" />}
+                      {post.status === "failed" && <XCircle className="w-4 h-4 text-red-500" />}
+                      {post.status === "pending" && <Clock className="w-4 h-4 text-yellow-500" />}
+                      <span className="text-xs text-gray-400 capitalize">{post.status as string}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="webhook-logs">
+          <Card className="p-5 border-gray-100">
+            <h2 className="font-semibold text-black mb-4">Webhook Logs</h2>
+            <WebhookLogs
+              profileId={id}
+              hasWebhookUrl={Boolean(profile.webhook_url)}
+            />
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

@@ -284,6 +284,62 @@ export default function HomeClient() {
         </div>
       </section>
 
+      {/* Social proof bar */}
+      <div className="bg-gray-950 py-4 border-y border-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-sm">
+            {[
+              { value: "50+", label: "agencies" },
+              { value: "9", label: "platforms" },
+              { value: "10,000+", label: "posts delivered" },
+              { value: "99.9%", label: "uptime" },
+            ].map((stat) => (
+              <div key={stat.label} className="flex items-center gap-2">
+                <span className="font-black text-white">{stat.value}</span>
+                <span className="text-gray-400">{stat.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* How It Works */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white border-b border-gray-100">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-14">
+            <h2 className="text-4xl font-black text-black mb-4">How it works</h2>
+            <p className="text-lg text-gray-500">Up and running in under 15 minutes.</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                step: "1",
+                title: "Connect your accounts",
+                desc: "OAuth in 30 seconds per platform. Fanout encrypts and stores your tokens — you own them.",
+              },
+              {
+                step: "2",
+                title: "Compose once",
+                desc: "Write your post, add media, set your schedule. AI generates platform-optimized variants automatically.",
+              },
+              {
+                step: "3",
+                title: "Post everywhere",
+                desc: "Instantly distributed to all 9 platforms. Inngest handles retries, failures notify you by email.",
+              },
+            ].map((item) => (
+              <div key={item.step} className="text-center">
+                <div className="w-12 h-12 bg-black text-white rounded-2xl flex items-center justify-center text-xl font-black mx-auto mb-4">
+                  {item.step}
+                </div>
+                <h3 className="font-bold text-black text-lg mb-2">{item.title}</h3>
+                <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Features */}
       <section id="features" className="py-24 px-4 sm:px-6 lg:px-8 bg-gray-50 border-y border-gray-100">
         <div className="max-w-7xl mx-auto">
@@ -465,6 +521,44 @@ export default function HomeClient() {
           <p className="text-center text-gray-400 text-xs mt-4">
             Ayrshare pricing as of 2026. Fanout pricing subject to change.
           </p>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white border-t border-gray-100">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-black text-black mb-4">Frequently asked questions</h2>
+          </div>
+          <div className="space-y-8">
+            {[
+              {
+                q: "How is Fanout different from Ayrshare?",
+                a: "Fanout is built for agencies that also build SaaS. You get the same 9-platform coverage as Ayrshare — but with full white-label rights, token ownership, and AI content generation included on all plans. Starting at $49/mo vs Ayrshare's $648/mo.",
+              },
+              {
+                q: "Do I need to verify my apps with each platform?",
+                a: "No. Fanout manages the OAuth app credentials. You simply authorize your client accounts through our connect flow and we handle token management, refreshes, and retries automatically.",
+              },
+              {
+                q: "Can I post videos and images?",
+                a: "Yes. Pass mediaUrls in your post request. Fanout handles upload to each platform's media API. Supported formats vary by platform (e.g. MP4 for TikTok/YouTube, JPG/PNG for Instagram/Pinterest).",
+              },
+              {
+                q: "What happens if a post fails?",
+                a: "Inngest automatically retries failed platform posts up to 3 times with exponential backoff. You'll receive an email notification and see per-platform failure status in the dashboard. You can retry from the compose screen.",
+              },
+              {
+                q: "Is there a free trial?",
+                a: "Yes — every plan includes a 14-day free trial. No credit card required. You get 1 profile and full API access to evaluate before committing.",
+              },
+            ].map((faq) => (
+              <div key={faq.q} className="border-b border-gray-100 pb-8 last:border-0">
+                <h3 className="font-bold text-black text-lg mb-2">{faq.q}</h3>
+                <p className="text-gray-500 leading-relaxed">{faq.a}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

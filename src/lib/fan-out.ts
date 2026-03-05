@@ -152,15 +152,31 @@ export async function fanOut(
     .single()
 
   if (profile?.webhook_url) {
+    const payload = { postId, results: fanOutResults }
+    const eventType = fanOutResults.every((r) => !r.success) ? 'post.failed' : 'post.published'
+    let responseStatus: number | null = null
+    let responseBody: string | null = null
     try {
-      await fetch(profile.webhook_url, {
+      const webhookRes = await fetch(profile.webhook_url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ postId, results: fanOutResults }),
+        body: JSON.stringify({ event: eventType, ...payload }),
       })
-    } catch {
-      // webhook failures are non-fatal
+      responseStatus = webhookRes.status
+      responseBody = await webhookRes.text().catch(() => null)
+    } catch (err) {
+      responseStatus = 0
+      responseBody = err instanceof Error ? err.message : 'Network error'
     }
+
+    await supabase.from('webhook_logs').insert({
+      profile_id: profileId,
+      event_type: eventType,
+      payload,
+      response_status: responseStatus,
+      response_body: responseBody,
+      attempts: 1,
+    })
   }
 
   return fanOutResults

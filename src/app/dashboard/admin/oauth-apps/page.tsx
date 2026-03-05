@@ -49,7 +49,7 @@ function StatusBadge({ status }: { status: string }) {
 export default function OAuthAppsAdminPage() {
   const { user, isLoaded } = useUser()
   const [credentials, setCredentials] = useState<OAuthAppCredential[]>([])
-  const [loading, setLoading] = useState(true)
+  const [, setLoading] = useState(true)
   const [manualPlatform, setManualPlatform] = useState<string | null>(null)
   const [manualClientId, setManualClientId] = useState('')
   const [manualClientSecret, setManualClientSecret] = useState('')
@@ -67,10 +67,22 @@ export default function OAuthAppsAdminPage() {
   }, [isLoaded, isAdmin])
 
   useEffect(() => {
-    if (isAdmin) fetchCredentials()
+    if (!isAdmin) return
+    const loadCredentials = async () => {
+      setLoading(true)
+      const res = await fetch('/api/admin/oauth-apps-list', {
+        headers: { 'x-admin-key': process.env.NEXT_PUBLIC_FANOUT_ADMIN_KEY ?? '' },
+      })
+      if (res.ok) {
+        const data = await res.json() as OAuthAppCredential[]
+        setCredentials(data)
+      }
+      setLoading(false)
+    }
+    void loadCredentials()
   }, [isAdmin])
 
-  async function fetchCredentials() {
+  const fetchCredentials = async () => {
     setLoading(true)
     const res = await fetch('/api/admin/oauth-apps-list', {
       headers: { 'x-admin-key': process.env.NEXT_PUBLIC_FANOUT_ADMIN_KEY ?? '' },

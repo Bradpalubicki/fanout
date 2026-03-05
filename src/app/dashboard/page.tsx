@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { checkTokenHealth } from "@/app/actions/check-token-health";
 import {
   PenSquare,
   Plus,
@@ -15,6 +16,7 @@ import {
   Clock,
   Plug,
   ArrowRight,
+  AlertTriangle,
 } from "lucide-react";
 
 export const metadata = { title: "Overview — Fanout" };
@@ -105,6 +107,14 @@ export default async function DashboardPage() {
 
   const tokens = tokensResult.data ?? [];
 
+  // Token health checks for all profiles
+  const tokenHealthResults = await Promise.all(
+    profileIds.map((pid) => checkTokenHealth(pid))
+  );
+  const allTokenHealth = tokenHealthResults.flat();
+  const expiringTokens = allTokenHealth.filter((t) => t.status === "expiring_soon");
+  const expiredTokens = allTokenHealth.filter((t) => t.status === "expired");
+
   // Platform connection stats
   const uniquePlatforms = new Set(tokens.map((t) => t.platform));
   const totalPlatformConnections = uniquePlatforms.size;
@@ -142,6 +152,44 @@ export default async function DashboardPage() {
           </Link>
         </Button>
       </div>
+
+      {/* Token health warnings */}
+      {expiredTokens.length > 0 && (
+        <div className="mb-4 flex items-start gap-3 bg-red-50 border border-red-200 rounded-xl p-4">
+          <XCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-red-800">
+              {expiredTokens.length} platform token{expiredTokens.length !== 1 ? "s" : ""} expired
+            </p>
+            <p className="text-xs text-red-600 mt-0.5">
+              {expiredTokens.map((t) => t.platform).join(", ")} — posts will fail until reconnected.
+            </p>
+          </div>
+          {firstProfile && (
+            <Button size="sm" variant="outline" className="text-xs border-red-300 text-red-700 hover:bg-red-100 shrink-0" asChild>
+              <Link href={`/dashboard/profiles/${firstProfile.id}`}>Reconnect →</Link>
+            </Button>
+          )}
+        </div>
+      )}
+      {expiringTokens.length > 0 && expiredTokens.length === 0 && (
+        <div className="mb-4 flex items-start gap-3 bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+          <AlertTriangle className="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-yellow-800">
+              {expiringTokens.length} platform token{expiringTokens.length !== 1 ? "s" : ""} expiring soon
+            </p>
+            <p className="text-xs text-yellow-700 mt-0.5">
+              {expiringTokens.map((t) => `${t.platform} (${t.daysLeft}d)`).join(", ")}
+            </p>
+          </div>
+          {firstProfile && (
+            <Button size="sm" variant="outline" className="text-xs border-yellow-300 text-yellow-700 hover:bg-yellow-100 shrink-0" asChild>
+              <Link href={`/dashboard/profiles/${firstProfile.id}`}>Reconnect →</Link>
+            </Button>
+          )}
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
