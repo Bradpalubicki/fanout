@@ -89,7 +89,7 @@ export default function HomeClient() {
       {/* Announcement bar */}
       <div className="bg-indigo-600 text-white text-sm py-2.5 px-4 text-center">
         <span className="bg-white text-indigo-600 text-xs font-bold px-2 py-0.5 rounded mr-2">NEW</span>
-        Fanout replaces Ayrshare — save $599/mo per engine.{" "}
+        Stop managing 9 social APIs separately. One endpoint, all platforms.{" "}
         <Link href="#pricing" className="underline underline-offset-2 font-medium">See pricing →</Link>
       </div>
 
@@ -130,25 +130,25 @@ export default function HomeClient() {
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 text-center">
           <Badge className="mb-6 bg-indigo-50 text-indigo-600 border border-indigo-200 hover:bg-indigo-50 text-xs px-3 py-1">
-            Direct Ayrshare alternative · Save $599/mo
+            Direct Ayrshare alternative · From $49/mo
           </Badge>
 
           <h1 className="text-5xl sm:text-7xl font-black text-black mb-6 leading-[1.05] tracking-tight">
-            Fan out to the world.
+            Stop rebuilding<br className="hidden sm:block" /> social integrations.
           </h1>
           <p className="text-xl text-gray-500 max-w-2xl mx-auto mb-10 leading-relaxed">
             One API call posts to 9 platforms on behalf of any client.
-            Unlimited profiles, encrypted tokens, built-in AI. Replace Ayrshare in 15 minutes.
+            Encrypted token management, built-in AI content generation, white-label ready. Replace Ayrshare in 15 minutes.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-16">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6">
             <Button
               size="lg"
               className="bg-black hover:bg-gray-800 text-white h-12 px-7 text-base rounded-xl font-semibold"
               asChild
             >
               <Link href="/sign-up">
-                Get Fanout free <ArrowRight className="ml-2 w-4 h-4" />
+                Start free — 14 days <ArrowRight className="ml-2 w-4 h-4" />
               </Link>
             </Button>
             <Button
@@ -159,6 +159,15 @@ export default function HomeClient() {
             >
               <Link href="/docs">View API docs</Link>
             </Button>
+          </div>
+
+          {/* Risk removers */}
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mb-12 text-sm text-gray-400">
+            {["No credit card required", "Cancel anytime", "Full API access on trial"].map((item) => (
+              <span key={item} className="flex items-center gap-1.5">
+                <span className="text-emerald-500 font-bold">✓</span> {item}
+              </span>
+            ))}
           </div>
 
           {/* Product screenshot / dashboard mockup */}
@@ -284,24 +293,79 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* Social proof bar */}
-      <div className="bg-gray-950 py-4 border-y border-gray-900">
+      {/* Stats bar */}
+      <div className="bg-gray-950 py-5 border-y border-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-sm">
+          <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-3 text-sm">
             {[
-              { value: "50+", label: "agencies" },
-              { value: "9", label: "platforms" },
-              { value: "10,000+", label: "posts delivered" },
-              { value: "99.9%", label: "uptime" },
+              { value: "9", label: "platforms · one integration" },
+              { value: "1", label: "API call to post everywhere" },
+              { value: "15 min", label: "to replace Ayrshare" },
+              { value: "99.9%", label: "uptime SLA" },
             ].map((stat) => (
               <div key={stat.label} className="flex items-center gap-2">
-                <span className="font-black text-white">{stat.value}</span>
+                <span className="font-black text-white text-base">{stat.value}</span>
                 <span className="text-gray-400">{stat.label}</span>
               </div>
             ))}
           </div>
         </div>
       </div>
+
+      {/* Before / After pain block */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 border-b border-gray-100">
+        <div className="max-w-5xl mx-auto">
+          <p className="text-center text-xs text-gray-400 font-medium uppercase tracking-wider mb-10">Why developers switch</p>
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Before */}
+            <div className="bg-white rounded-2xl border border-red-100 p-6">
+              <div className="flex items-center gap-2 mb-5">
+                <div className="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center">
+                  <span className="text-red-500 text-xs font-bold">✕</span>
+                </div>
+                <span className="text-sm font-semibold text-red-600">Without Fanout</span>
+              </div>
+              <ul className="space-y-3">
+                {[
+                  "9 separate OAuth apps, each needing platform approval",
+                  "Token storage, refresh logic, and encryption — all on you",
+                  "Rate limit handling per platform — different rules everywhere",
+                  "API breaks when Twitter/Instagram changes their schema",
+                  "Months of dev time before your first post ships",
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-2.5 text-sm text-gray-600">
+                    <span className="text-red-400 mt-0.5 shrink-0">—</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {/* After */}
+            <div className="bg-white rounded-2xl border border-emerald-100 p-6">
+              <div className="flex items-center gap-2 mb-5">
+                <div className="w-6 h-6 bg-emerald-100 rounded-full flex items-center justify-center">
+                  <span className="text-emerald-600 text-xs font-bold">✓</span>
+                </div>
+                <span className="text-sm font-semibold text-emerald-700">With Fanout</span>
+              </div>
+              <ul className="space-y-3">
+                {[
+                  "One POST request distributes to all 9 platforms simultaneously",
+                  "Fanout manages OAuth, token refresh, and AES encryption",
+                  "Inngest handles retries, backoff, and failure notifications",
+                  "We maintain the platform integrations — you ship features",
+                  "First post in 15 minutes. All 9 platforms. No platform approval needed.",
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-2.5 text-sm text-gray-600">
+                    <span className="text-emerald-500 mt-0.5 shrink-0 font-bold">✓</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* How It Works */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white border-b border-gray-100">
@@ -486,14 +550,14 @@ export default function HomeClient() {
               </div>
               <div className="p-4 text-center border-l border-gray-200">
                 <span className="text-sm font-semibold text-gray-500">Ayrshare</span>
-                <div className="text-xs text-gray-400 mt-0.5">From $648/mo</div>
+                <div className="text-xs text-gray-400 mt-0.5">From $149/mo</div>
               </div>
             </div>
 
             {/* Rows */}
             {[
-              { feature: "Starting price", fanout: "$49/mo", ayrshare: "$648/mo", win: true },
-              { feature: "Client profiles", fanout: "Unlimited (White-Label)", ayrshare: "3 on $648 plan", win: true },
+              { feature: "Starting price", fanout: "$49/mo", ayrshare: "$149/mo", win: true },
+              { feature: "Client profiles", fanout: "Unlimited (White-Label)", ayrshare: "Limited by plan tier", win: true },
               { feature: "Platforms", fanout: "9 platforms", ayrshare: "9 platforms", win: false },
               { feature: "Token ownership", fanout: "You own + encrypt tokens", ayrshare: "Ayrshare holds tokens", win: true },
               { feature: "AI content generation", fanout: "Built-in (Claude)", ayrshare: "Add-on, extra cost", win: true },
@@ -519,7 +583,7 @@ export default function HomeClient() {
           </div>
 
           <p className="text-center text-gray-400 text-xs mt-4">
-            Ayrshare pricing as of 2026. Fanout pricing subject to change.
+            Ayrshare pricing as of March 2026 per ayrshare.com/pricing. Fanout pricing locked for all active subscribers.
           </p>
         </div>
       </section>
@@ -534,7 +598,11 @@ export default function HomeClient() {
             {[
               {
                 q: "How is Fanout different from Ayrshare?",
-                a: "Fanout is built for agencies that also build SaaS. You get the same 9-platform coverage as Ayrshare — but with full white-label rights, token ownership, and AI content generation included on all plans. Starting at $49/mo vs Ayrshare's $648/mo.",
+                a: "Fanout is built for agencies that also build SaaS. You get the same 9-platform coverage as Ayrshare — but with full white-label rights, token ownership, and Claude-powered AI content generation included on all plans. Ayrshare starts at $149/mo with limited profiles; Fanout starts at $49/mo with a path to unlimited.",
+              },
+              {
+                q: "Why not use LATE or another cheaper API?",
+                a: "LATE (getlate.dev) is a solid developer API at $19/mo — great if you're building a single integration. Fanout is built for agencies running multiple client accounts: multi-tenant isolation via Clerk orgs, per-profile API keys, built-in AI content generation, and white-label dashboard rights. If you manage one account, LATE works. If you manage many clients under your own brand, Fanout is built for that.",
               },
               {
                 q: "Do I need to verify my apps with each platform?",
@@ -567,10 +635,10 @@ export default function HomeClient() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[200px] bg-indigo-50 rounded-full blur-3xl" />
         <div className="relative max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-4xl sm:text-6xl font-black text-black mb-4 leading-tight">
-            Replace Ayrshare<br />in 15 minutes.
+            Ship social in 15 minutes,<br />not 3 months.
           </h2>
           <p className="text-gray-500 text-lg mb-10">
-            One env var swap. Every engine. Every client. Forever.
+            One API endpoint. Nine platforms. Zero OAuth headaches.
           </p>
           <Button
             size="lg"
@@ -578,9 +646,16 @@ export default function HomeClient() {
             asChild
           >
             <Link href="/sign-up">
-              Get Fanout free <ArrowRight className="ml-2 w-4 h-4" />
+              Start free — 14 days <ArrowRight className="ml-2 w-4 h-4" />
             </Link>
           </Button>
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-6 text-sm text-gray-400">
+            {["No credit card required", "Full API access", "Cancel anytime"].map((item) => (
+              <span key={item} className="flex items-center gap-1.5">
+                <span className="text-emerald-500 font-bold">✓</span> {item}
+              </span>
+            ))}
+          </div>
         </div>
       </section>
 

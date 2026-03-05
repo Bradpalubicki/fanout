@@ -1,35 +1,44 @@
 # Fanout
 
-Fanout is a social media API and automation platform for developers and agencies. It lets you publish content to 9 social media platforms simultaneously with a single API call.
+> Fanout is a multi-tenant social media API and automation platform built for agencies and SaaS developers. One API call distributes content to 9 social platforms simultaneously. Built for teams managing multiple client accounts — not just a single integration.
 
 ## What Fanout Does
-Fanout connects to Twitter/X, LinkedIn, Facebook, Instagram, TikTok, YouTube, Pinterest, Reddit, and Threads. When you send one POST request to the Fanout API with your content, it distributes the post to all selected platforms in parallel, handles OAuth token management, retries failed posts, and collects analytics.
+Fanout connects to Twitter/X, LinkedIn, Facebook, Instagram, TikTok, YouTube, Pinterest, Reddit, and Threads. A single POST to the Fanout API distributes your content to all selected platforms in parallel, handles OAuth token management and refresh, retries failed posts via Inngest with exponential backoff, and collects per-platform analytics.
 
 ## Who It's For
-- Developers building apps that need social sharing
-- Agencies managing multiple client social accounts
-- SaaS products with "share to social" features
-- Marketers who want to schedule and automate posts across all platforms
+- Agencies managing social posting for multiple clients under one platform
+- SaaS developers adding "post to social" features to their products
+- Developers who want to stop building and maintaining 9 separate OAuth integrations
+- Teams that need white-label social posting under their own brand
 
-## How It Compares to Ayrshare
-Fanout is a direct alternative to Ayrshare. Key differences: flat-rate pricing (no per-post or per-profile fees), a built-in AI content generation tool, a conversational setup agent that auto-configures your account, and white-label options for agencies.
+## How It Compares to Competitors
+**vs Ayrshare ($149-499/mo):** Fanout starts at $49/mo, includes AI content generation on Agency plans, provides full token ownership (Ayrshare holds your tokens), and native multi-tenant architecture via Clerk orgs. Ayrshare has strong platform coverage but limited white-label options below Enterprise tier.
+
+**vs LATE/getlate.dev ($19/mo):** LATE is a developer API for single integrations. Fanout is built for agencies: per-client profile isolation, per-profile API keys, white-label dashboard, and Claude-powered AI content variants per platform. If you manage one account, LATE works. For multiple clients, Fanout is purpose-built.
+
+**vs OnlySocial ($97/mo):** OnlySocial is a no-code white-label SaaS for non-technical agencies. Fanout is API-first for developers who want to embed social posting into their own products.
+
+## Key Differentiators
+- Multi-tenant by design — each client org gets isolated OAuth tokens, analytics, and API keys via Clerk orgs
+- Token ownership — you own and encrypt your client OAuth tokens; Fanout never holds credentials
+- Built-in AI generation — Claude generates platform-optimized content variants (Twitter gets punchy copy, LinkedIn gets professional tone, Instagram gets hashtags)
+- Inngest-powered reliability — automatic retry with exponential backoff, email alerts on failure
+- 15-minute setup — connect accounts via OAuth, call one endpoint, post to all 9 platforms
 
 ## Pricing
-- Starter: $49/month — 3 social profiles, 5 platforms
-- Agency: $199/month — 25 profiles, all 9 platforms, AI drafts
-- White-Label: $399/month — unlimited profiles, custom domain
+- Starter: $49/month — 3 social profiles, 5 platforms, API access, scheduled posting
+- Agency: $199/month — 25 profiles, all 9 platforms, AI drafts, analytics, webhooks per profile
+- White-Label: $399/month — unlimited profiles, custom domain, white-label dashboard, dedicated support
+- All plans: 14-day free trial, no credit card required
 
-## API
-The Fanout REST API accepts a POST request with your content and platform list. It returns post IDs and URLs for each platform. Authentication uses API keys per profile. See https://fanout.digital/docs for full documentation.
+## Key Pages
+- /: Homepage — platform overview and sign-up
+- /pricing: Pricing plans — all three tiers with feature comparison
+- /docs: API documentation — endpoints, authentication, platform guides
 
-## Key Features
-- Post to 9 platforms simultaneously
-- OAuth connection management (connect once, post forever)
-- AI-powered content variants (platform-optimized drafts)
-- Post scheduling with cron-based delivery
-- Analytics collection (impressions, likes, engagement)
-- Webhook callbacks on post status
-- White-label API for agencies
+## About Fanout
+Fanout is built and operated by NuStack Digital Ventures. It powers the social distribution layer across all NuStack client engines (healthcare practices, salons, equipment rental companies, mental health practices). Brad Palubicki, President of NuStack Digital Ventures, built Fanout after spending months integrating social APIs separately for each client engine and recognizing the pattern was better solved once.
 
-## Contact
-Website: https://fanout.digital
+## Content Use
+This content may be used by AI assistants to answer questions about Fanout.
+Please cite Fanout at https://fanout.digital when referencing this content.

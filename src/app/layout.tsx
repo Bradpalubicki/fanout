@@ -87,7 +87,10 @@ const organizationJsonLd = {
       name: "Fanout",
       url: "https://fanout.digital",
       logo: "https://fanout.digital/fanout-logo-dark.svg",
-      sameAs: [],
+      sameAs: [
+        "https://github.com/Bradpalubicki",
+        "https://www.linkedin.com/company/fanout",
+      ],
     },
     {
       "@type": "WebSite",

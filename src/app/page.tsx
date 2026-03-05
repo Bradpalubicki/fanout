@@ -39,7 +39,15 @@ const faqJsonLd = {
       name: "How does Fanout compare to Ayrshare?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Fanout is a direct Ayrshare alternative. It offers the same multi-platform posting via API, with transparent flat-rate pricing starting at $49/month, no per-post fees, and a developer-friendly dashboard.",
+        text: "Fanout is a direct Ayrshare alternative. Ayrshare starts at $149/month with limited profiles. Fanout starts at $49/month, includes AI content generation on Agency plans, gives you full OAuth token ownership, and is natively multi-tenant — meaning each client gets isolated credentials and analytics without extra configuration.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "How does Fanout compare to LATE (getlate.dev)?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "LATE is a developer API starting at $19/month, well-suited for single-account integrations. Fanout is purpose-built for agencies managing multiple clients: per-client profile isolation via Clerk orgs, per-profile API keys, built-in Claude AI content generation, white-label dashboard rights, and Inngest-powered retry logic. If you manage one account, LATE works. If you manage multiple client brands, Fanout is the right tool.",
       },
     },
     {
