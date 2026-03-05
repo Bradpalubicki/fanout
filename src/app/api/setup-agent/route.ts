@@ -3,7 +3,10 @@ import { auth } from '@clerk/nextjs/server'
 import { z } from 'zod'
 import Anthropic from '@anthropic-ai/sdk'
 import { supabase } from '@/lib/supabase'
+import FirecrawlApp from '@mendable/firecrawl-js'
 import { generateApiKey, hashApiKey } from '@/lib/crypto'
+
+const firecrawl = new FirecrawlApp({ apiKey: process.env.FIRECRAWL_API_KEY ?? '' })
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -103,6 +106,17 @@ const TOOLS: Anthropic.Tool[] = [
       required: ['profile_id'],
     },
   },
+  {
+    name: 'crawl_website',
+    description: 'Crawl a business website URL to automatically extract business name, description, industry, location, services, and brand voice. Call this when the client shares their website URL instead of describing their business manually.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        url: { type: 'string', description: 'Full URL of the business website (e.g. https://nustack.digital)' },
+      },
+      required: ['url'],
+    },
+  },
 ]
 
 // ---------------------------------------------------------------------------
@@ -120,6 +134,7 @@ interface ToolInput {
   hashtags: string[]
   cta_style?: string
   avoid?: string
+  url: string
   platforms: Array<{
     platform: string
     posts_per_week: number
@@ -306,6 +321,36 @@ Return ONLY valid JSON (no markdown):
       })
     }
 
+    case 'crawl_website': {
+      const { url } = input as Pick<ToolInput, 'url'>
+
+      // Normalize URL
+      const normalized = url.startsWith('http') ? url : `https://${url}`
+
+      try {
+        const result = await firecrawl.scrape(normalized, {
+          formats: ['markdown'],
+          onlyMainContent: true,
+        })
+
+        if (!result.markdown) {
+          return JSON.stringify({ error: 'Could not scrape the website. It may be blocking crawlers.' })
+        }
+
+        // Truncate to avoid token overload — first 3000 chars is enough for business info
+        const content = result.markdown.slice(0, 3000)
+
+        return JSON.stringify({
+          success: true,
+          url: normalized,
+          content,
+          message: `Website scraped successfully. Use this content to infer business name, industry, location, services, and brand voice — then proceed with setup without asking the user to repeat any of it.`,
+        })
+      } catch {
+        return JSON.stringify({ error: 'Website crawl failed. Ask the client to describe their business instead.' })
+      }
+    }
+
     default:
       return JSON.stringify({ error: `Unknown tool: ${name}` })
   }
@@ -327,7 +372,9 @@ Conversation style:
 - Warm but efficient. One focused question at a time if you need info.
 - Don't ask for info you can infer (e.g. if they say "dental office in Chicago", use America/Chicago timezone)
 - Once you have enough info, ACT — don't ask for permission to use tools
-- Use tools in order: create_profile → set_tone_config → set_schedule → generate_seed_posts → check_connected_platforms
+- If the client shares a website URL, IMMEDIATELY call crawl_website — do not ask them to describe their business first
+- After crawling, use the scraped content to fill in all business details automatically, then confirm with a brief summary
+- Use tools in order: [crawl_website if URL given] → create_profile → set_tone_config → set_schedule → generate_seed_posts → check_connected_platforms
 - After all tools run, give a clean summary with a checklist
 
 Important:

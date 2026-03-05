@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { CheckCircle2, Sparkles, Clock, Plus } from "lucide-react";
+import { CheckCircle2, Sparkles, Clock, Plus, Image, X, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { SUPPORTED_PLATFORMS, PLATFORM_LABELS, type Platform } from "@/lib/types";
 
@@ -22,6 +22,12 @@ interface Profile {
 interface AiDraft {
   platform: string;
   content: string;
+}
+
+interface UploadedMedia {
+  url: string;
+  name: string;
+  type: string;
 }
 
 export default function ComposePage() {
@@ -39,6 +45,9 @@ export default function ComposePage() {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [media, setMedia] = useState<UploadedMedia[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetch("/api/dashboard/profiles")
@@ -72,6 +81,37 @@ export default function ComposePage() {
     setSelectedPlatforms((prev) =>
       prev.includes(platform) ? prev.filter((p) => p !== platform) : [...prev, platform]
     );
+  }
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0) return;
+    if (media.length + files.length > 4) {
+      toast.error("Max 4 media files per post");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append("file", file);
+        const res = await fetch("/api/upload", { method: "POST", body: formData });
+        const data = await res.json() as { url?: string; error?: string };
+        if (!res.ok) { toast.error(data.error ?? "Upload failed"); continue; }
+        setMedia((prev) => [...prev, { url: data.url!, name: file.name, type: file.type }]);
+      }
+      toast.success("Media uploaded");
+    } catch {
+      toast.error("Upload failed");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  function removeMedia(url: string) {
+    setMedia((prev) => prev.filter((m) => m.url !== url));
   }
 
   async function generateAiDrafts() {
@@ -108,6 +148,7 @@ export default function ComposePage() {
         post: content,
         platforms: selectedPlatforms,
         profileId: selectedProfile,
+        mediaUrls: media.map((m) => m.url),
       };
       if (scheduled) body.scheduledFor = new Date(scheduledFor).toISOString();
 
@@ -162,7 +203,7 @@ export default function ComposePage() {
             {scheduled ? "Your post is scheduled for distribution." : "Fanout is distributing your post to all selected platforms."}
           </p>
           <div className="flex gap-3 justify-center">
-            <Button variant="outline" onClick={() => { setSuccess(false); setContent(""); setAiDrafts([]); }}>
+            <Button variant="outline" onClick={() => { setSuccess(false); setContent(""); setAiDrafts([]); setMedia([]); }}>
               Compose another
             </Button>
             <Button asChild className="bg-black text-white hover:bg-gray-800">
@@ -207,6 +248,66 @@ export default function ComposePage() {
             className="min-h-32 text-sm"
           />
           <div className="text-xs text-gray-400 mt-1 text-right">{content.length} chars</div>
+        </div>
+
+        {/* Media upload */}
+        <div>
+          <label className="text-sm font-medium text-black mb-2 block">Media (optional)</label>
+
+          {media.length > 0 && (
+            <div className="flex flex-wrap gap-3 mb-3">
+              {media.map((m) => (
+                <div key={m.url} className="relative group">
+                  {m.type.startsWith("image/") ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={m.url}
+                      alt={m.name}
+                      className="w-24 h-24 object-cover rounded-lg border border-gray-200"
+                    />
+                  ) : (
+                    <div className="w-24 h-24 bg-gray-100 rounded-lg border border-gray-200 flex flex-col items-center justify-center gap-1">
+                      <Image className="w-6 h-6 text-gray-400" />
+                      <span className="text-xs text-gray-400 truncate px-1 w-full text-center">
+                        {m.name.length > 10 ? m.name.slice(0, 10) + "…" : m.name}
+                      </span>
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => removeMedia(m.url)}
+                    className="absolute -top-2 -right-2 w-5 h-5 bg-black text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/quicktime"
+            multiple
+            className="hidden"
+            onChange={handleFileChange}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="gap-2 text-xs"
+            disabled={uploading || media.length >= 4}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {uploading ? (
+              <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Uploading…</>
+            ) : (
+              <><Image className="w-3.5 h-3.5" /> Add media</>
+            )}
+          </Button>
+          <p className="text-xs text-gray-400 mt-1.5">Up to 4 files · JPG, PNG, GIF, WebP, MP4 · Max 50MB each</p>
         </div>
 
         {/* Platform selector */}
