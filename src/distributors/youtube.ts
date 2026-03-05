@@ -37,7 +37,7 @@ export class YouTubeDistributor extends BaseDistributor {
     )
 
     // YouTube community posts use a different API endpoint
-    const communityRes = await fetch(
+    await fetch(
       'https://www.googleapis.com/youtube/v3/channelSections?part=snippet',
       {
         method: 'POST',

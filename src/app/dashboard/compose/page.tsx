@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { CheckCircle2, Sparkles, Clock, Plus, Image, X, Loader2 } from "lucide-react";
+import { CheckCircle2, Sparkles, Clock, Plus, Image as ImageIcon, X, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { SUPPORTED_PLATFORMS, PLATFORM_LABELS, type Platform } from "@/lib/types";
 
@@ -267,7 +267,7 @@ export default function ComposePage() {
                     />
                   ) : (
                     <div className="w-24 h-24 bg-gray-100 rounded-lg border border-gray-200 flex flex-col items-center justify-center gap-1">
-                      <Image className="w-6 h-6 text-gray-400" />
+                      <ImageIcon className="w-6 h-6 text-gray-400" aria-hidden="true" />
                       <span className="text-xs text-gray-400 truncate px-1 w-full text-center">
                         {m.name.length > 10 ? m.name.slice(0, 10) + "…" : m.name}
                       </span>
@@ -304,7 +304,7 @@ export default function ComposePage() {
             {uploading ? (
               <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Uploading…</>
             ) : (
-              <><Image className="w-3.5 h-3.5" /> Add media</>
+              <><ImageIcon className="w-3.5 h-3.5" aria-hidden="true" /> Add media</>
             )}
           </Button>
           <p className="text-xs text-gray-400 mt-1.5">Up to 4 files · JPG, PNG, GIF, WebP, MP4 · Max 50MB each</p>

@@ -3,15 +3,13 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, CheckCircle2, XCircle, Clock } from "lucide-react";
 import { PLATFORM_LABELS, type Platform } from "@/lib/types";
 import { CopyButton } from "@/components/dashboard/copy-button";
 import { PlatformGrid } from "@/components/dashboard/platform-grid";
 
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export async function generateMetadata() {
   return { title: `Profile — Fanout` };
 }
 

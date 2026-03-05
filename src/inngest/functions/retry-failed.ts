@@ -1,6 +1,5 @@
 import { inngest } from '@/lib/inngest'
 import { supabase } from '@/lib/supabase'
-import { fanOut } from '@/lib/fan-out'
 
 export const retryFailedPosts = inngest.createFunction(
   {

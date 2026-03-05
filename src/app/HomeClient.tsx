@@ -25,7 +25,7 @@ const FEATURES = [
     description: "Each client org gets isolated OAuth tokens, analytics, and API keys. Multi-tenant by design via Clerk orgs — not bolted on.",
     preview: (
       <div className="bg-gray-900 rounded-xl p-4 font-mono text-xs text-left mt-4">
-        <div className="text-gray-500 mb-2">// Each engine calls with its own key</div>
+        <div className="text-gray-500 mb-2">{'// Each engine calls with its own key'}</div>
         <div className="text-green-400">POST /api/v1/post</div>
         <div className="text-gray-300 mt-1">{"{"}</div>
         <div className="text-gray-300 ml-4">&quot;profileId&quot;: <span className="text-orange-300">&quot;ak-dental&quot;</span>,</div>

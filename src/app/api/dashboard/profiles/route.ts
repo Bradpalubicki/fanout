@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ profile, apiKey }, { status: 201 })
 }
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   const { userId, orgId } = await auth()
   if (!userId || !orgId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

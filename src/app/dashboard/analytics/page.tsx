@@ -42,7 +42,6 @@ export default async function AnalyticsPage() {
   const allResults = results ?? [];
   const totalPosts = (posts ?? []).length;
   const successCount = allResults.filter((r) => r.status === "success").length;
-  const failedCount = allResults.filter((r) => r.status === "failed").length;
   const successRate = allResults.length > 0 ? Math.round((successCount / allResults.length) * 100) : 0;
   const activePlatforms = [...new Set(allResults.map((r) => r.platform))].length;
 
