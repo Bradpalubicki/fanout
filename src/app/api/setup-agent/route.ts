@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
+import { auth, currentUser } from '@clerk/nextjs/server'
 import { z } from 'zod'
 import Anthropic from '@anthropic-ai/sdk'
 import { supabase } from '@/lib/supabase'
 import FirecrawlApp from '@mendable/firecrawl-js'
 import { generateApiKey, hashApiKey } from '@/lib/crypto'
+import { sendSetupEmail } from '@/app/actions/send-setup-email'
 
 function getFirecrawl() {
   const key = process.env.FIRECRAWL_API_KEY
@@ -466,6 +467,55 @@ export async function POST(req: NextRequest) {
 
     // Add tool results message
     anthropicMessages.push({ role: 'user', content: toolResultContents })
+  }
+
+  // Fire welcome email if set_tone_config ran successfully in this batch
+  const toneResult = toolResults.find((r) => r.startsWith('[set_tone_config]:'))
+  if (toneResult) {
+    try {
+      const colonIdx = toneResult.indexOf(']: ')
+      const raw = colonIdx > -1 ? toneResult.slice(colonIdx + 3) : toneResult
+      const parsed = JSON.parse(raw) as { success?: boolean; message?: string }
+      if (parsed.success) {
+        // Also get profile_id from create_profile result
+        const profileResult = toolResults.find((r) => r.startsWith('[create_profile]:'))
+        if (profileResult) {
+          const pColonIdx = profileResult.indexOf(']: ')
+          const pRaw = pColonIdx > -1 ? profileResult.slice(pColonIdx + 3) : profileResult
+          const profileParsed = JSON.parse(pRaw) as {
+            profile_id?: string
+            name?: string
+          }
+
+          const clerkUser = await currentUser()
+          const userEmail =
+            clerkUser?.emailAddresses?.[0]?.emailAddress ?? ''
+          const userName =
+            clerkUser?.firstName ??
+            userEmail.split('@')[0] ??
+            'there'
+
+          if (userEmail && profileParsed.profile_id) {
+            // Extract tone/topics from the messages context
+            const toneMsg = parsed.message ?? ''
+            const toneMatch = toneMsg.match(/^Tone config saved: (\w+) voice, .+? topics/)
+            const tone = toneMatch?.[1] ?? 'professional'
+
+            // Fire and forget — don't block response
+            void sendSetupEmail({
+              userEmail,
+              userName,
+              profileName: profileParsed.name ?? 'Your profile',
+              profileId: profileParsed.profile_id,
+              tone,
+              topics: [],
+            })
+          }
+        }
+      }
+    } catch {
+      // Email send failure never blocks agent response
+    }
   }
 
   return NextResponse.json({ reply: finalText, toolResults })

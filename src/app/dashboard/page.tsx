@@ -6,9 +6,30 @@ import { supabase } from "@/lib/supabase";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PenSquare, Plus, Zap, CheckCircle2, XCircle, Clock } from "lucide-react";
+import {
+  PenSquare,
+  Plus,
+  Zap,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  Plug,
+  ArrowRight,
+} from "lucide-react";
 
 export const metadata = { title: "Overview — Fanout" };
+
+const PLATFORM_DOTS: Record<string, string> = {
+  linkedin: "bg-blue-700",
+  twitter: "bg-black",
+  facebook: "bg-blue-600",
+  instagram: "bg-pink-600",
+  reddit: "bg-orange-500",
+  pinterest: "bg-red-600",
+  youtube: "bg-red-500",
+  tiktok: "bg-gray-900",
+  threads: "bg-gray-800",
+};
 
 export default async function DashboardPage() {
   const { userId, orgId } = await auth();
@@ -18,8 +39,14 @@ export default async function DashboardPage() {
     return (
       <div className="p-6 max-w-xl">
         <h1 className="text-2xl font-bold text-black mb-2">Select your organization</h1>
-        <p className="text-gray-500 text-sm mb-6">Choose an existing organization or create one to get started with Fanout.</p>
-        <OrganizationList hidePersonal afterSelectOrganizationUrl="/dashboard" afterCreateOrganizationUrl="/dashboard" />
+        <p className="text-gray-500 text-sm mb-6">
+          Choose an existing organization or create one to get started with Fanout.
+        </p>
+        <OrganizationList
+          hidePersonal
+          afterSelectOrganizationUrl="/dashboard"
+          afterCreateOrganizationUrl="/dashboard"
+        />
       </div>
     );
   }
@@ -37,26 +64,53 @@ export default async function DashboardPage() {
 
   const profileIds = (profiles ?? []).map((p) => p.id);
 
-  const { data: recentPosts } = profileIds.length
-    ? await supabase
-        .from("posts")
-        .select("id, content, platforms, status, created_at, profiles(name)")
-        .in("profile_id", profileIds)
-        .order("created_at", { ascending: false })
-        .limit(10)
-    : { data: [] };
+  const [postsResult, postResultsResult, tokensResult] = await Promise.all([
+    profileIds.length
+      ? supabase
+          .from("posts")
+          .select("id, content, platforms, status, created_at, profiles(name)")
+          .in("profile_id", profileIds)
+          .order("created_at", { ascending: false })
+          .limit(10)
+      : Promise.resolve({ data: [] }),
+    profileIds.length
+      ? supabase
+          .from("post_results")
+          .select("status")
+          .in(
+            "post_id",
+            [] as string[] // populated after posts query — we'll compute inline
+          )
+      : Promise.resolve({ data: [] }),
+    profileIds.length
+      ? supabase
+          .from("oauth_tokens")
+          .select("profile_id, platform, platform_username")
+          .in("profile_id", profileIds)
+      : Promise.resolve({ data: [] }),
+  ]);
 
-  const { data: postResults } = profileIds.length
+  const recentPosts = postsResult.data ?? [];
+
+  // Re-fetch post results with actual post IDs
+  const { data: postResults } = recentPosts.length
     ? await supabase
         .from("post_results")
         .select("status")
         .in(
           "post_id",
-          (recentPosts ?? []).map((p) => p.id)
+          recentPosts.map((p) => p.id)
         )
     : { data: [] };
 
-  const totalPosts = recentPosts?.length ?? 0;
+  const tokens = tokensResult.data ?? [];
+
+  // Platform connection stats
+  const uniquePlatforms = new Set(tokens.map((t) => t.platform));
+  const totalPlatformConnections = uniquePlatforms.size;
+  const firstProfile = profiles?.[0];
+
+  const totalPosts = recentPosts.length;
   const successCount = (postResults ?? []).filter((r) => r.status === "success").length;
   const failedCount = (postResults ?? []).filter((r) => r.status === "failed").length;
   const successRate =
@@ -78,7 +132,8 @@ export default async function DashboardPage() {
         <div>
           <h1 className="text-2xl font-bold text-black">Overview</h1>
           <p className="text-gray-500 text-sm mt-0.5">
-            {(profiles ?? []).length} active profile{(profiles ?? []).length !== 1 ? "s" : ""} connected
+            {(profiles ?? []).length} active profile{(profiles ?? []).length !== 1 ? "s" : ""}{" "}
+            connected
           </p>
         </div>
         <Button className="bg-black text-white hover:bg-gray-800" asChild>
@@ -98,6 +153,78 @@ export default async function DashboardPage() {
         ))}
       </div>
 
+      {/* Platform connections banner */}
+      {totalPlatformConnections === 0 ? (
+        <Card className="p-6 border-dashed border-gray-300 mb-6 bg-gray-50/50">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shrink-0">
+                <Plug className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-bold text-black mb-0.5">Connect your platforms to start posting</h3>
+                <p className="text-sm text-gray-500">
+                  0/9 platforms connected — Fanout needs OAuth access to post on your behalf
+                </p>
+              </div>
+            </div>
+            {firstProfile && (
+              <Button className="bg-black text-white hover:bg-gray-800 shrink-0" asChild>
+                <Link href={`/dashboard/profiles/${firstProfile.id}`}>
+                  Connect Platforms <ArrowRight className="w-4 h-4 ml-1.5" />
+                </Link>
+              </Button>
+            )}
+          </div>
+        </Card>
+      ) : (
+        <Card className="p-5 border-gray-100 mb-6">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 bg-green-100 rounded-xl flex items-center justify-center shrink-0">
+                <Plug className="w-4 h-4 text-green-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-black text-sm">
+                  {totalPlatformConnections}/9 platform
+                  {totalPlatformConnections !== 1 ? "s" : ""} connected
+                </h3>
+                <div className="flex items-center gap-1.5 mt-1">
+                  {Array.from(uniquePlatforms).map((p) => (
+                    <div
+                      key={p}
+                      className={`w-2 h-2 rounded-full ${PLATFORM_DOTS[p] ?? "bg-gray-400"}`}
+                      title={p}
+                    />
+                  ))}
+                  {totalPlatformConnections < 9 && (
+                    <span className="text-xs text-gray-400 ml-1">
+                      + {9 - totalPlatformConnections} more available
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              {/* mini progress */}
+              <div className="w-32 h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-black rounded-full"
+                  style={{ width: `${(totalPlatformConnections / 9) * 100}%` }}
+                />
+              </div>
+              {totalPlatformConnections < 9 && firstProfile && (
+                <Button size="sm" variant="outline" className="text-xs shrink-0" asChild>
+                  <Link href={`/dashboard/profiles/${firstProfile.id}`}>
+                    Connect more →
+                  </Link>
+                </Button>
+              )}
+            </div>
+          </div>
+        </Card>
+      )}
+
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Recent posts */}
         <div className="lg:col-span-2">
@@ -108,7 +235,7 @@ export default async function DashboardPage() {
             </Link>
           </div>
           <div className="space-y-3">
-            {(recentPosts ?? []).length === 0 ? (
+            {recentPosts.length === 0 ? (
               <Card className="p-8 border-dashed border-gray-200 text-center">
                 <div className="text-gray-400 text-sm mb-3">No posts yet</div>
                 <Button variant="outline" size="sm" asChild>
@@ -118,22 +245,34 @@ export default async function DashboardPage() {
                 </Button>
               </Card>
             ) : (
-              (recentPosts ?? []).map((post) => (
-                <Card key={post.id} className="p-4 border-gray-100 hover:border-gray-200 transition-colors">
+              recentPosts.map((post) => (
+                <Card
+                  key={post.id}
+                  className="p-4 border-gray-100 hover:border-gray-200 transition-colors"
+                >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1.5">
                         <span className="text-xs font-medium text-gray-500">
-                          {((post.profiles as unknown) as { name: string } | null)?.name ?? "Unknown"}
+                          {(
+                            (post.profiles as unknown) as { name: string } | null
+                          )?.name ?? "Unknown"}
                         </span>
                         <div className="flex gap-1">
                           {(post.platforms as string[]).slice(0, 4).map((p: string) => (
-                            <Badge key={p} variant="outline" className="text-xs py-0 px-1.5 h-5">
+                            <Badge
+                              key={p}
+                              variant="outline"
+                              className="text-xs py-0 px-1.5 h-5"
+                            >
                               {p}
                             </Badge>
                           ))}
                           {(post.platforms as string[]).length > 4 && (
-                            <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
+                            <Badge
+                              variant="outline"
+                              className="text-xs py-0 px-1.5 h-5"
+                            >
                               +{(post.platforms as string[]).length - 4}
                             </Badge>
                           )}
@@ -142,10 +281,18 @@ export default async function DashboardPage() {
                       <p className="text-sm text-gray-700 truncate">{post.content}</p>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
-                      {post.status === "posted" && <CheckCircle2 className="w-4 h-4 text-green-500" />}
-                      {post.status === "failed" && <XCircle className="w-4 h-4 text-red-500" />}
-                      {post.status === "pending" && <Clock className="w-4 h-4 text-yellow-500" />}
-                      <span className="text-xs text-gray-400 capitalize">{post.status as string}</span>
+                      {post.status === "posted" && (
+                        <CheckCircle2 className="w-4 h-4 text-green-500" />
+                      )}
+                      {post.status === "failed" && (
+                        <XCircle className="w-4 h-4 text-red-500" />
+                      )}
+                      {post.status === "pending" && (
+                        <Clock className="w-4 h-4 text-yellow-500" />
+                      )}
+                      <span className="text-xs text-gray-400 capitalize">
+                        {post.status as string}
+                      </span>
                     </div>
                   </div>
                 </Card>
@@ -158,7 +305,10 @@ export default async function DashboardPage() {
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-black">Profiles</h2>
-            <Link href="/dashboard/profiles/new" className="text-sm text-gray-500 hover:text-black">
+            <Link
+              href="/dashboard/profiles/new"
+              className="text-sm text-gray-500 hover:text-black"
+            >
               + Add
             </Link>
           </div>
@@ -173,23 +323,34 @@ export default async function DashboardPage() {
                 </Button>
               </Card>
             ) : (
-              (profiles ?? []).map((profile) => (
-                <Link key={profile.id} href={`/dashboard/profiles/${profile.id}`}>
-                  <Card className="p-4 border-gray-100 hover:border-gray-300 transition-colors cursor-pointer">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center">
-                        <span className="text-white text-xs font-bold">
-                          {profile.name.charAt(0).toUpperCase()}
-                        </span>
+              (profiles ?? []).map((profile) => {
+                const profileTokens = tokens.filter((t) => t.profile_id === profile.id);
+                return (
+                  <Link key={profile.id} href={`/dashboard/profiles/${profile.id}`}>
+                    <Card className="p-4 border-gray-100 hover:border-gray-300 transition-colors cursor-pointer">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center">
+                          <span className="text-white text-xs font-bold">
+                            {profile.name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-sm text-black">{profile.name}</div>
+                          <div className="text-xs text-gray-400">{profile.slug}</div>
+                        </div>
+                        {profileTokens.length > 0 && (
+                          <Badge
+                            variant="outline"
+                            className="text-xs shrink-0 border-green-200 text-green-700"
+                          >
+                            {profileTokens.length} platform{profileTokens.length !== 1 ? "s" : ""}
+                          </Badge>
+                        )}
                       </div>
-                      <div>
-                        <div className="font-medium text-sm text-black">{profile.name}</div>
-                        <div className="text-xs text-gray-400">{profile.slug}</div>
-                      </div>
-                    </div>
-                  </Card>
-                </Link>
-              ))
+                    </Card>
+                  </Link>
+                );
+              })
             )}
           </div>
         </div>

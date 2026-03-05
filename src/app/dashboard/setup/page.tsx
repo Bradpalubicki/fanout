@@ -4,7 +4,6 @@ import { useState, useRef, useEffect, useTransition } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
   Bot,
@@ -14,17 +13,14 @@ import {
   CheckCircle2,
   Wrench,
   ArrowRight,
+  Plug,
 } from "lucide-react";
 import Link from "next/link";
+import { PlatformConnectWizard } from "@/components/dashboard/platform-connect-wizard";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
-}
-
-interface ToolResult {
-  name: string;
-  result: string;
 }
 
 const STARTER_PROMPTS = [
@@ -34,30 +30,124 @@ const STARTER_PROMPTS = [
   "Local restaurant in Denver, Instagram + Facebook, showcase food and events, 6x/week, vibrant and fun",
 ];
 
-function ToolCallBadge({ raw }: { raw: string }) {
+// Tools we consider "setup complete" when all 4 have run successfully
+const REQUIRED_TOOLS = ["create_profile", "set_tone_config", "set_schedule", "generate_seed_posts"];
+
+interface ParsedToolResult {
+  success?: boolean;
+  profile_id?: string;
+  tone?: string;
+  topics?: string[];
+  message?: string;
+}
+
+function extractProfileId(toolResults: string[]): string | null {
+  for (const r of toolResults) {
+    if (r.includes("create_profile")) {
+      const colonIdx = r.indexOf("]: ");
+      const raw = colonIdx > -1 ? r.slice(colonIdx + 3) : r;
+      try {
+        const parsed = JSON.parse(raw) as ParsedToolResult;
+        if (parsed.profile_id) return parsed.profile_id;
+      } catch {
+        // ignore
+      }
+    }
+  }
+  return null;
+}
+
+function extractToneInfo(toolResults: string[]): { tone: string; topics: string[] } {
+  for (const r of toolResults) {
+    if (r.includes("set_tone_config")) {
+      const colonIdx = r.indexOf("]: ");
+      const raw = colonIdx > -1 ? r.slice(colonIdx + 3) : r;
+      try {
+        const parsed = JSON.parse(raw) as ParsedToolResult;
+        return {
+          tone: parsed.tone ?? "professional",
+          topics: parsed.topics ?? [],
+        };
+      } catch {
+        // ignore
+      }
+    }
+  }
+  return { tone: "professional", topics: [] };
+}
+
+function checkSetupComplete(allToolResults: string[]): {
+  complete: boolean;
+  ranTools: string[];
+} {
+  const ranTools = new Set<string>();
+  for (const r of allToolResults) {
+    const colonIdx = r.indexOf("]: ");
+    const raw = colonIdx > -1 ? r.slice(colonIdx + 3) : r;
+    try {
+      const parsed = JSON.parse(raw) as ParsedToolResult;
+      if (parsed.success) {
+        for (const tool of REQUIRED_TOOLS) {
+          if (r.includes(`[${tool}]`)) ranTools.add(tool);
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }
+  // fallback: check by tool name prefix in the result string
+  for (const r of allToolResults) {
+    for (const tool of REQUIRED_TOOLS) {
+      if (r.startsWith(`[${tool}]:`)) {
+        const colonIdx = r.indexOf("]: ");
+        const raw = colonIdx > -1 ? r.slice(colonIdx + 3) : r;
+        try {
+          const parsed = JSON.parse(raw) as ParsedToolResult;
+          if (parsed.success) ranTools.add(tool);
+        } catch {
+          // ignore
+        }
+      }
+    }
+  }
+  return {
+    complete: REQUIRED_TOOLS.every((t) => ranTools.has(t)),
+    ranTools: Array.from(ranTools),
+  };
+}
+
+function parseToolCallBadge(raw: string): { msg: string; success: boolean } | null {
   try {
-    const parsed = JSON.parse(raw) as Record<string, unknown>;
-    const msg = (parsed.message as string) ?? raw.slice(0, 100);
-    const success = !!parsed.success;
-    return (
-      <div
-        className={`flex items-start gap-2 text-xs rounded-lg px-3 py-2 mt-1 ${
-          success
-            ? "bg-green-50 text-green-700 border border-green-100"
-            : "bg-red-50 text-red-700 border border-red-100"
-        }`}
-      >
-        {success ? (
-          <CheckCircle2 className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-        ) : (
-          <Wrench className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-        )}
-        <span>{msg}</span>
-      </div>
-    );
+    const parsed = JSON.parse(raw) as ParsedToolResult;
+    return {
+      msg: (parsed.message as string | undefined) ?? raw.slice(0, 100),
+      success: !!parsed.success,
+    };
   } catch {
     return null;
   }
+}
+
+function ToolCallBadge({ raw }: { raw: string }) {
+  const data = parseToolCallBadge(raw);
+  if (!data) return null;
+  const { msg, success } = data;
+  return (
+    <div
+      className={`flex items-start gap-2 text-xs rounded-lg px-3 py-2 mt-1 ${
+        success
+          ? "bg-green-50 text-green-700 border border-green-100"
+          : "bg-red-50 text-red-700 border border-red-100"
+      }`}
+    >
+      {success ? (
+        <CheckCircle2 className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+      ) : (
+        <Wrench className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+      )}
+      <span>{msg}</span>
+    </div>
+  );
 }
 
 function MessageBubble({
@@ -94,7 +184,7 @@ function MessageBubble({
         {toolResults && toolResults.length > 0 && (
           <div className="max-w-[85%] space-y-1 pl-1">
             {toolResults.map((r, i) => {
-              const colonIdx = r.indexOf(']: ');
+              const colonIdx = r.indexOf("]: ");
               const raw = colonIdx > -1 ? r.slice(colonIdx + 3) : r;
               return <ToolCallBadge key={i} raw={raw} />;
             })}
@@ -126,6 +216,70 @@ function TypingIndicator() {
   );
 }
 
+interface SetupCompleteScreenProps {
+  profileId: string;
+  ranTools: string[];
+}
+
+function SetupCompleteScreen({ profileId, ranTools }: SetupCompleteScreenProps) {
+  const steps = [
+    { tool: "create_profile", label: "Profile created" },
+    { tool: "set_tone_config", label: "Brand voice configured" },
+    { tool: "set_schedule", label: "Posting schedule set" },
+    { tool: "generate_seed_posts", label: "5 seed posts drafted" },
+  ];
+
+  return (
+    <div className="flex-1 overflow-y-auto px-6 py-8">
+      <div className="max-w-2xl mx-auto space-y-8">
+        {/* Completion checklist */}
+        <div>
+          <div className="flex items-center gap-2 mb-6">
+            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+              <CheckCircle2 className="w-4 h-4 text-green-600" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-black">Setup complete</h2>
+              <p className="text-xs text-gray-400">Your profile is configured and ready</p>
+            </div>
+          </div>
+          <div className="space-y-2">
+            {steps.map(({ tool, label }) => (
+              <div
+                key={tool}
+                className="flex items-center gap-3 py-2 px-3 rounded-lg bg-green-50 border border-green-100"
+              >
+                <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
+                <span className="text-sm text-green-800 font-medium">{label}</span>
+              </div>
+            ))}
+            {ranTools.length < 4 && (
+              <p className="text-xs text-gray-400 px-3">
+                Some steps may still be processing. Check your profile for full details.
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Platform wizard */}
+        <div>
+          <div className="flex items-center gap-2 mb-4">
+            <Plug className="w-4 h-4 text-black" />
+            <h3 className="font-bold text-black">Now let&apos;s connect your platforms</h3>
+          </div>
+          <p className="text-sm text-gray-500 mb-5">
+            Connect each social account so Fanout can start posting automatically. This takes 2–5 minutes total.
+          </p>
+          <PlatformConnectWizard
+            profileId={profileId}
+            initialConnected={[]}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function SetupAgentPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -135,8 +289,12 @@ export default function SetupAgentPage() {
     },
   ]);
   const [toolResultsMap, setToolResultsMap] = useState<Record<number, string[]>>({});
+  const [allToolResults, setAllToolResults] = useState<string[]>([]);
   const [input, setInput] = useState("");
   const [isPending, startTransition] = useTransition();
+  const [setupComplete, setSetupComplete] = useState(false);
+  const [completedProfileId, setCompletedProfileId] = useState<string | null>(null);
+  const [ranTools, setRanTools] = useState<string[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -173,7 +331,7 @@ export default function SetupAgentPage() {
           body: JSON.stringify({ messages: newMessages }),
         });
 
-        const data = await res.json() as {
+        const data = (await res.json()) as {
           reply?: string;
           toolResults?: string[];
           error?: string;
@@ -189,9 +347,24 @@ export default function SetupAgentPage() {
           content: data.reply ?? "Done! Check your dashboard.",
         };
 
-        const newIdx = newMessages.length; // index of the upcoming assistant message
-        if (data.toolResults && data.toolResults.length > 0) {
-          setToolResultsMap((prev) => ({ ...prev, [newIdx]: data.toolResults! }));
+        const newIdx = newMessages.length;
+        const newToolResults = data.toolResults ?? [];
+
+        if (newToolResults.length > 0) {
+          setToolResultsMap((prev) => ({ ...prev, [newIdx]: newToolResults }));
+          setAllToolResults((prev) => {
+            const updated = [...prev, ...newToolResults];
+            const { complete, ranTools: ran } = checkSetupComplete(updated);
+            if (complete) {
+              const profileId = extractProfileId(updated);
+              if (profileId) {
+                setCompletedProfileId(profileId);
+                setRanTools(ran);
+                setSetupComplete(true);
+              }
+            }
+            return updated;
+          });
         }
 
         setMessages((prev) => [...prev, assistantMsg]);
@@ -202,6 +375,33 @@ export default function SetupAgentPage() {
   }
 
   const showStarters = messages.length === 1;
+
+  if (setupComplete && completedProfileId) {
+    return (
+      <div className="flex flex-col h-full max-h-screen">
+        {/* Header */}
+        <div className="border-b border-gray-100 px-6 py-4 flex items-center justify-between bg-white">
+          <div>
+            <h1 className="text-lg font-bold text-black flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-indigo-600" />
+              Setup Agent
+            </h1>
+            <p className="text-xs text-gray-400 mt-0.5">
+              Profile configured — now connect your platforms
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" asChild className="text-xs gap-1.5">
+              <Link href={`/dashboard/profiles/${completedProfileId}`}>
+                View Profile <ArrowRight className="w-3 h-3" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+        <SetupCompleteScreen profileId={completedProfileId} ranTools={ranTools} />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full max-h-screen">
