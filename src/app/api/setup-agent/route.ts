@@ -6,7 +6,11 @@ import { supabase } from '@/lib/supabase'
 import FirecrawlApp from '@mendable/firecrawl-js'
 import { generateApiKey, hashApiKey } from '@/lib/crypto'
 
-const firecrawl = new FirecrawlApp({ apiKey: process.env.FIRECRAWL_API_KEY ?? '' })
+function getFirecrawl() {
+  const key = process.env.FIRECRAWL_API_KEY
+  if (!key) throw new Error('FIRECRAWL_API_KEY not configured')
+  return new FirecrawlApp({ apiKey: key })
+}
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -328,7 +332,7 @@ Return ONLY valid JSON (no markdown):
       const normalized = url.startsWith('http') ? url : `https://${url}`
 
       try {
-        const result = await firecrawl.scrape(normalized, {
+        const result = await getFirecrawl().scrape(normalized, {
           formats: ['markdown'],
           onlyMainContent: true,
         })
