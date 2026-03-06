@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from 'recharts'
-import { BarChart3, TrendingUp, CheckCircle2, XCircle, Download } from 'lucide-react'
+import { BarChart3, TrendingUp, CheckCircle2, XCircle, Download, FileText } from 'lucide-react'
 import { PLATFORM_LABELS, type Platform } from '@/lib/types'
 
 interface AnalyticsData {
@@ -86,6 +86,22 @@ export default function AnalyticsV2Page() {
     URL.revokeObjectURL(url)
   }
 
+  async function exportPdf() {
+    const res = await fetch('/api/reports/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ days: parseInt(dateRange, 10) }),
+    })
+    if (!res.ok) return
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `fanout-report-${dateRange}d.pdf`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   const maxHeatmap = data
     ? Math.max(...data.timeHeatmap.map((h) => h.count), 1)
     : 1
@@ -111,6 +127,9 @@ export default function AnalyticsV2Page() {
           </Select>
           <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={exportCsv} disabled={!data}>
             <Download className="w-3.5 h-3.5" /> Export CSV
+          </Button>
+          <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={exportPdf} disabled={!data}>
+            <FileText className="w-3.5 h-3.5" /> PDF Report
           </Button>
         </div>
       </div>
