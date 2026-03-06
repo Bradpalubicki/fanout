@@ -47,7 +47,6 @@ export async function POST(req: NextRequest) {
   const formData = await req.formData()
   const from = formData.get('From') as string
   const body = formData.get('Body') as string
-  const to = formData.get('To') as string
 
   if (!from || !body) {
     return new NextResponse('<?xml version="1.0"?><Response></Response>', {

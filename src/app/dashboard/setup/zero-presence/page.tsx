@@ -75,7 +75,6 @@ export default function ZeroPresencePage() {
   const [platformBios, setPlatformBios] = useState<PlatformBio[]>([])
   const [generatingBios, setGeneratingBios] = useState(false)
   const [launching, setLaunching] = useState(false)
-  const [setupJobId, setSetupJobId] = useState<string | null>(null)
   const [platformStatuses, setPlatformStatuses] = useState<Record<string, string>>({})
 
   const stepIndex = STEPS.findIndex((s) => s.key === step)
@@ -192,7 +191,7 @@ export default function ZeroPresencePage() {
       })
       const data = await res.json() as { jobId?: string; profileId?: string; error?: string }
       if (!res.ok) { toast.error(data.error ?? 'Setup failed'); return }
-      setSetupJobId(data.jobId ?? null)
+      void data.jobId
 
       // Simulate platform setup progress
       for (const p of selectedPlatforms) {

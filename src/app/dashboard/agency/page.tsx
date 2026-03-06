@@ -55,7 +55,7 @@ export default async function AgencyPage() {
 
   const orgIds = (subscriptions as OrgSubscription[] | null)?.map((s) => s.org_id) ?? [];
 
-  const [profilesResult, tokensResult] = await Promise.all([
+  const [profilesResult] = await Promise.all([
     orgIds.length
       ? supabaseAdmin
           .from("profiles")

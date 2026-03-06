@@ -59,6 +59,7 @@ async function fetchRssFeed(url: string): Promise<RssItem[]> {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function generateSocialPost(article: RssItem, platforms: string[]): Promise<string> {
   const msg = await anthropic.messages.create({
     model: 'claude-haiku-4-5-20251001',

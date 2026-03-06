@@ -57,24 +57,6 @@ function extractProfileId(toolResults: string[]): string | null {
   return null;
 }
 
-function extractToneInfo(toolResults: string[]): { tone: string; topics: string[] } {
-  for (const r of toolResults) {
-    if (r.includes("set_tone_config")) {
-      const colonIdx = r.indexOf("]: ");
-      const raw = colonIdx > -1 ? r.slice(colonIdx + 3) : r;
-      try {
-        const parsed = JSON.parse(raw) as ParsedToolResult;
-        return {
-          tone: parsed.tone ?? "professional",
-          topics: parsed.topics ?? [],
-        };
-      } catch {
-        // ignore
-      }
-    }
-  }
-  return { tone: "professional", topics: [] };
-}
 
 function checkSetupComplete(allToolResults: string[]): {
   complete: boolean;
@@ -289,7 +271,7 @@ export default function SetupAgentPage() {
     },
   ]);
   const [toolResultsMap, setToolResultsMap] = useState<Record<number, string[]>>({});
-  const [allToolResults, setAllToolResults] = useState<string[]>([]);
+  const [allToolResults, setAllToolResults] = useState<string[]>([]); // eslint-disable-line @typescript-eslint/no-unused-vars -- read inside functional updater
   const [input, setInput] = useState("");
   const [isPending, startTransition] = useTransition();
   const [setupComplete, setSetupComplete] = useState(false);

@@ -67,7 +67,7 @@ export default async function DashboardPage() {
 
   const profileIds = (profiles ?? []).map((p) => p.id);
 
-  const [postsResult, postResultsResult, tokensResult] = await Promise.all([
+  const [postsResult, , tokensResult] = await Promise.all([
     profileIds.length
       ? supabase
           .from("posts")

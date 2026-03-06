@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
 import { MessageSquare, Loader2, Sparkles, Send, RefreshCw } from 'lucide-react'
-import { PLATFORM_LABELS, SUPPORTED_PLATFORMS, type Platform } from '@/lib/types'
+import { PLATFORM_LABELS, type Platform } from '@/lib/types'
 
 interface InboxItem {
   id: string

@@ -1,6 +1,5 @@
 import { chromium } from '@playwright/test'
 import { getSessionDir, isSessionValid } from '@/lib/playwright-sessions'
-import { generateTotpCode } from '@/lib/oauth-registration/totp'
 
 export interface RedditAppResult {
   clientId: string

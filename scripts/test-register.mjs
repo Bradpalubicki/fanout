@@ -25,7 +25,6 @@ import { chromium } from '@playwright/test'
 import path from 'path'
 import fs from 'fs'
 import os from 'os'
-import { createServer } from 'http'
 
 const SESSIONS_BASE = path.join(os.homedir(), '.fanout-sessions')
 

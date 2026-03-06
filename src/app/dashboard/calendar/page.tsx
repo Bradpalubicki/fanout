@@ -139,13 +139,13 @@ export default function CalendarPage() {
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => {
             const d = new Date(currentDate)
-            view === 'month' ? d.setMonth(d.getMonth() - 1) : d.setDate(d.getDate() - 7)
+            if (view === 'month') { d.setMonth(d.getMonth() - 1) } else { d.setDate(d.getDate() - 7) }
             setCurrentDate(d)
           }}><ChevronLeft className="w-4 h-4" /></Button>
           <h2 className="text-lg font-bold text-black min-w-[180px] text-center">{monthName}</h2>
           <Button variant="outline" size="sm" onClick={() => {
             const d = new Date(currentDate)
-            view === 'month' ? d.setMonth(d.getMonth() + 1) : d.setDate(d.getDate() + 7)
+            if (view === 'month') { d.setMonth(d.getMonth() + 1) } else { d.setDate(d.getDate() + 7) }
             setCurrentDate(d)
           }}><ChevronRight className="w-4 h-4" /></Button>
           <Button variant="outline" size="sm" onClick={() => setCurrentDate(new Date())}>Today</Button>

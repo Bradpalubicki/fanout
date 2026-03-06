@@ -40,7 +40,7 @@ export class MastodonDistributor extends BaseDistributor {
     }
   }
 
-  async refreshToken(refreshToken: string): Promise<RefreshResult> {
+  async refreshToken(_refreshToken: string): Promise<RefreshResult> {
     // Mastodon OAuth tokens typically don't expire — stub
     throw new Error('Mastodon token refresh not implemented')
   }
