@@ -1,0 +1,12 @@
+{
+  "name": "Fanout — Social Media Platform",
+  "short_name": "Fanout",
+  "description": "Post to 9 social platforms with one API call",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

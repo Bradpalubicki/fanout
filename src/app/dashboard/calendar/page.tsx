@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ChevronLeft, ChevronRight, Plus, X, Calendar, List } from 'lucide-react'
-import { PLATFORM_LABELS, PLATFORM_COLORS, type Platform, SUPPORTED_PLATFORMS } from '@/lib/types'
+import { PLATFORM_LABELS, type Platform, SUPPORTED_PLATFORMS } from '@/lib/types'
 
 interface Post {
   id: string
@@ -63,7 +63,11 @@ export default function CalendarPage() {
     setLoading(false)
   }, [])
 
-  useEffect(() => { fetchData() }, [fetchData])
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    void fetchData()
+  }, [fetchData])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Calendar grid helpers
   const year = currentDate.getFullYear()

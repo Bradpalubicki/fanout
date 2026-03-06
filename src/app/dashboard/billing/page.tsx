@@ -52,8 +52,9 @@ export default async function BillingPage() {
   const sub = await getOrCreateOrgSubscription(orgId)
   const trialExpired = isTrialExpired(sub)
 
-  const trialDaysLeft = sub.status === 'trialing'
-    ? Math.max(0, Math.ceil((new Date(sub.trial_expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+  const trialExpiresMs = sub.status === 'trialing' ? new Date(sub.trial_expires_at).getTime() : 0
+  const trialDaysLeft = trialExpiresMs > 0
+    ? Math.max(0, Math.ceil((trialExpiresMs - new Date().getTime()) / (1000 * 60 * 60 * 24)))
     : 0
 
   const planLabel: Record<string, string> = {

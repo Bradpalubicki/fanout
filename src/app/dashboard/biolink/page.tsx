@@ -63,7 +63,6 @@ export default function BiolinkPage() {
       if (bData.pages?.length) loadPage(bData.pages[0])
       if (pData.profiles?.length) setSelectedProfile(pData.profiles[0].id)
     }).finally(() => setLoading(false))
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   function loadPage(page: BiolinkPage) {

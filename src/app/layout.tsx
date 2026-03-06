@@ -153,6 +153,10 @@ export default function RootLayout({
             crossOrigin="anonymous"
           />
           <link rel="preconnect" href="https://us.i.posthog.com" />
+          <link rel="manifest" href="/manifest.json" />
+          <meta name="apple-mobile-web-app-capable" content="yes" />
+          <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+          <meta name="apple-mobile-web-app-title" content="Fanout" />
         </head>
         <body className={`${geistSans.variable} antialiased`}>
           <JsonLd data={organizationJsonLd} />

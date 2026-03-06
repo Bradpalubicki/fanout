@@ -940,8 +940,13 @@ export default function HomeClient() {
             <Link href="/blog" className="hover:text-black transition-colors">Blog</Link>
             <Link href="/docs" className="hover:text-black transition-colors">Docs</Link>
             <Link href="/pricing" className="hover:text-black transition-colors">Pricing</Link>
+            <Link href="/privacy" className="hover:text-black transition-colors">Privacy</Link>
+            <Link href="/terms" className="hover:text-black transition-colors">Terms</Link>
             <Link href="/sign-in" className="hover:text-black transition-colors">Sign in</Link>
           </div>
+        </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+          <p className="text-xs text-gray-300">© {new Date().getFullYear()} NuStack Digital Ventures LLC. All rights reserved.</p>
         </div>
       </footer>
     </div>
