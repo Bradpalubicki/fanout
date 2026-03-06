@@ -10,6 +10,8 @@ import { YouTubeDistributor } from '@/distributors/youtube'
 import { RedditDistributor } from '@/distributors/reddit'
 import { ThreadsDistributor } from '@/distributors/threads'
 import { GoogleBusinessProfileDistributor } from '@/distributors/google-business-profile'
+import { BlueskyDistributor } from '@/distributors/bluesky'
+import { MastodonDistributor } from '@/distributors/mastodon'
 import type { BaseDistributor } from '@/distributors/base'
 import type { Post, OAuthToken } from './types'
 
@@ -24,6 +26,8 @@ const DISTRIBUTORS: Record<string, BaseDistributor> = {
   reddit: new RedditDistributor(),
   threads: new ThreadsDistributor(),
   google_business_profile: new GoogleBusinessProfileDistributor(),
+  bluesky: new BlueskyDistributor(),
+  mastodon: new MastodonDistributor(),
 }
 
 export { DISTRIBUTORS }
