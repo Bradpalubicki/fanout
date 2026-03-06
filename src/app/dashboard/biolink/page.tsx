@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from 'sonner'
-import { Plus, X, ExternalLink, GripVertical, Link2, Loader2, QrCode } from 'lucide-react'
+import { Plus, X, ExternalLink, GripVertical, Link2, Loader2, QrCode, BarChart3 } from 'lucide-react'
+import Link from 'next/link'
 
 interface BiolinkPage {
   id: string
@@ -176,6 +177,11 @@ export default function BiolinkPage() {
             <>
               <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={downloadQr}>
                 <QrCode className="w-3.5 h-3.5" /> QR Code
+              </Button>
+              <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" asChild>
+                <Link href="/dashboard/biolink/analytics">
+                  <BarChart3 className="w-3.5 h-3.5" /> Analytics
+                </Link>
               </Button>
               <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" asChild>
                 <a href={`/${activePage.handle}`} target="_blank" rel="noopener noreferrer">

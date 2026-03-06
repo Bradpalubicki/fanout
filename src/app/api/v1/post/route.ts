@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { verifyApiKey } from '@/lib/auth'
 import { inngest } from '@/lib/inngest'
 import { checkRateLimit } from '@/lib/rate-limit'
+import { getOrCreateOrgSubscription, isSubscriptionActive, isTrialExpired } from '@/lib/subscriptions'
 
 const PostSchema = z.object({
   post: z.string().min(1).max(5000),
@@ -48,6 +49,15 @@ export async function POST(req: NextRequest) {
   }
 
   const { post, platforms, mediaUrls, profileId } = parsed.data
+
+  // Check subscription
+  const sub = await getOrCreateOrgSubscription(auth.profile.org_id)
+  if (!isSubscriptionActive(sub) || isTrialExpired(sub)) {
+    return NextResponse.json(
+      { error: 'Subscription required. Visit fanout.digital/dashboard/billing to upgrade.' },
+      { status: 402 }
+    )
+  }
 
   // Verify profileId belongs to this API key's org
   if (auth.profile.slug !== profileId && auth.profile.id !== profileId) {
