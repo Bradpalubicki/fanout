@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import { BarChart3, TrendingUp, CheckCircle2, XCircle, Download, FileText } from 'lucide-react'
 import { PLATFORM_LABELS, type Platform } from '@/lib/types'
 
@@ -195,7 +195,7 @@ export default function AnalyticsV2Page() {
                   </div>
                 ))}
               </div>
-              {DAYS.map((day, dayIdx) => (
+              {DAYS.map((day) => (
                 <div key={day} className="flex gap-1 mt-1">
                   <div className="w-8 text-[10px] text-gray-400 flex items-center">{day}</div>
                   {HOURS.map((hour) => {

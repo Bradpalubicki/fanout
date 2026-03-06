@@ -40,6 +40,7 @@ export default function BiolinkPage() {
   const [activePage, setActivePage] = useState<BiolinkPage | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [linkClicks, setLinkClicks] = useState<Record<number, number>>({})
 
   // Form state
   const [handle, setHandle] = useState('')
@@ -73,6 +74,13 @@ export default function BiolinkPage() {
     setButtonStyle(page.button_style ?? 'rounded')
     setLinks(page.links ?? [])
     setIsPublished(page.is_published)
+    // Fetch per-link click counts
+    fetch(`/api/dashboard/biolink?clicksFor=${page.id}`)
+      .then((r) => r.json())
+      .then((d: { linkClicks?: Record<number, number> }) => {
+        if (d.linkClicks) setLinkClicks(d.linkClicks)
+      })
+      .catch(() => undefined)
   }
 
   function addLink() {
@@ -319,6 +327,11 @@ export default function BiolinkPage() {
                       placeholder="https://..."
                       className="flex-1 border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none"
                     />
+                    {linkClicks[i] !== undefined && (
+                      <span className="text-[10px] text-gray-400 shrink-0 whitespace-nowrap">
+                        {linkClicks[i]} clicks
+                      </span>
+                    )}
                     <button onClick={() => removeLink(i)} className="text-gray-400 hover:text-red-500">
                       <X className="w-4 h-4" />
                     </button>

@@ -21,7 +21,7 @@ const pageSchema = z.object({
   profile_id: z.string(),
 })
 
-export async function GET(_req: NextRequest) {
+export async function GET(req: NextRequest) {
   const { userId, orgId } = await auth()
   if (!userId || !orgId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -34,6 +34,22 @@ export async function GET(_req: NextRequest) {
     .select('*')
     .in('profile_id', profileIds)
     .order('created_at', { ascending: false })
+
+  // If a specific page is requested, return per-link click counts
+  const pageId = req.nextUrl.searchParams.get('clicksFor')
+  if (pageId) {
+    const { data: clicks } = await supabase
+      .from('biolink_clicks')
+      .select('link_index')
+      .eq('page_id', pageId)
+
+    const linkClicks: Record<number, number> = {}
+    for (const c of clicks ?? []) {
+      const idx = c.link_index as number
+      linkClicks[idx] = (linkClicks[idx] ?? 0) + 1
+    }
+    return NextResponse.json({ pages: pages ?? [], linkClicks })
+  }
 
   return NextResponse.json({ pages: pages ?? [] })
 }

@@ -150,3 +150,54 @@ export const rssAutoPost = inngest.createFunction(
     return { processed: results.length, results }
   }
 )
+
+// Event-triggered: check a single feed on demand
+export const rssCheckFeed = inngest.createFunction(
+  { id: 'rss-check-feed', retries: 1 },
+  { event: 'rss/check-feed' },
+  async ({ event, step }) => {
+    const { feedId } = event.data as { feedId: string }
+
+    const feed = await step.run('fetch-feed', async () => {
+      const { data } = await supabase
+        .from('rss_feeds')
+        .select('*, profiles(org_id, oauth_tokens(platform))')
+        .eq('id', feedId)
+        .single()
+      return data as RssFeed | null
+    })
+
+    if (!feed) return { error: 'Feed not found' }
+
+    const items = await step.run('fetch-items', () => fetchRssFeed(feed.url))
+    if (!items.length) return { newItems: 0 }
+
+    const newItems = feed.last_item_guid
+      ? items.filter((item) => item.guid !== feed.last_item_guid).slice(0, 3)
+      : items.slice(0, 1)
+
+    if (!newItems.length) return { newItems: 0 }
+
+    const platforms = (feed.profiles.oauth_tokens ?? []).map((t) => t.platform)
+    if (!platforms.length) return { newItems: 0 }
+
+    await step.run('create-posts', async () => {
+      for (const item of newItems) {
+        const content = await generateSocialPost(item, platforms)
+        await supabase.from('posts').insert({
+          profile_id: feed.profile_id,
+          content,
+          platforms,
+          status: feed.auto_post ? 'pending' : 'pending_approval',
+          source: 'ai_generated',
+        })
+      }
+      await supabase
+        .from('rss_feeds')
+        .update({ last_item_guid: items[0].guid, last_checked_at: new Date().toISOString() })
+        .eq('id', feedId)
+    })
+
+    return { newItems: newItems.length }
+  }
+)

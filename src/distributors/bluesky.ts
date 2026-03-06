@@ -27,6 +27,38 @@ export class BlueskyDistributor extends BaseDistributor {
     return { accessJwt: data.accessJwt, did: data.did }
   }
 
+  private async uploadBlob(
+    session: BlueskySession,
+    imageUrl: string
+  ): Promise<{ $type: string; ref: { $link: string }; mimeType: string; size: number } | null> {
+    try {
+      const imgRes = await fetch(imageUrl)
+      if (!imgRes.ok) return null
+      const buffer = await imgRes.arrayBuffer()
+      const mimeType = imgRes.headers.get('content-type') ?? 'image/jpeg'
+
+      const uploadRes = await fetch('https://bsky.social/xrpc/com.atproto.repo.uploadBlob', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${session.accessJwt}`,
+          'Content-Type': mimeType,
+        },
+        body: buffer,
+      })
+      if (!uploadRes.ok) return null
+      const uploadData = await uploadRes.json() as { blob?: { ref?: { $link: string }; mimeType?: string; size?: number } }
+      if (!uploadData.blob?.ref) return null
+      return {
+        $type: 'blob',
+        ref: uploadData.blob.ref,
+        mimeType: uploadData.blob.mimeType ?? mimeType,
+        size: uploadData.blob.size ?? buffer.byteLength,
+      }
+    } catch {
+      return null
+    }
+  }
+
   async post(payload: PostPayload, accessToken: string, _pageId?: string): Promise<PostResult> {
     // access_token is JSON: { identifier, password }
     let identifier: string
@@ -46,15 +78,33 @@ export class BlueskyDistributor extends BaseDistributor {
 
     const text = payload.content.slice(0, 300)
 
+    // Upload images if present
+    const imageUrls = (payload.mediaUrls ?? []).filter((u) =>
+      /\.(jpg|jpeg|png|gif|webp)(\?|$)/i.test(u)
+    ).slice(0, 4)
+
+    const uploadedBlobs = (
+      await Promise.all(imageUrls.map((url) => this.uploadBlob(session, url)))
+    ).filter(Boolean)
+
+    const record: Record<string, unknown> = {
+      $type: 'app.bsky.feed.post',
+      text,
+      createdAt: new Date().toISOString(),
+      langs: ['en'],
+    }
+
+    if (uploadedBlobs.length > 0) {
+      record.embed = {
+        $type: 'app.bsky.embed.images',
+        images: uploadedBlobs.map((blob) => ({ image: blob, alt: text.slice(0, 100) })),
+      }
+    }
+
     const postBody: Record<string, unknown> = {
       repo: session.did,
       collection: 'app.bsky.feed.post',
-      record: {
-        $type: 'app.bsky.feed.post',
-        text,
-        createdAt: new Date().toISOString(),
-        langs: ['en'],
-      },
+      record,
     }
 
     const { ok, data } = await this.fetchJson<{ uri?: string; cid?: string; error?: string }>(

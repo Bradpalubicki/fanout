@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useUser } from "@clerk/nextjs";
-import { Copy, RefreshCw, AlertTriangle, ExternalLink } from "lucide-react";
+import { Copy, RefreshCw, AlertTriangle, ExternalLink, Rss, Trash2, Plus, Loader2 } from "lucide-react";
 
 interface Profile {
   id: string;
@@ -19,6 +19,14 @@ interface Profile {
   webhook_url: string | null;
   timezone: string;
   created_at: string;
+}
+
+interface RssFeed {
+  id: string;
+  url: string;
+  auto_post: boolean;
+  last_checked_at: string | null;
+  profile_id: string;
 }
 
 const TIMEZONES = [
@@ -35,6 +43,12 @@ export default function SettingsPage() {
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
   const [defaultTimezone, setDefaultTimezone] = useState("UTC");
   const [savingTimezone, setSavingTimezone] = useState(false);
+  const [rssFeeds, setRssFeeds] = useState<RssFeed[]>([]);
+  const [newFeedUrl, setNewFeedUrl] = useState('');
+  const [newFeedProfileId, setNewFeedProfileId] = useState('');
+  const [newFeedAutoPost, setNewFeedAutoPost] = useState(false);
+  const [addingFeed, setAddingFeed] = useState(false);
+  const [checkingFeed, setCheckingFeed] = useState<string | null>(null);
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -52,6 +66,11 @@ export default function SettingsPage() {
       .then((d: { defaultTimezone?: string }) => {
         if (d.defaultTimezone) setDefaultTimezone(d.defaultTimezone);
       })
+      .catch(() => undefined);
+
+    fetch("/api/dashboard/rss-feeds")
+      .then((r) => r.json())
+      .then((d: { feeds: RssFeed[] }) => setRssFeeds(d.feeds ?? []))
       .catch(() => undefined);
   }, []);
 
@@ -111,6 +130,42 @@ export default function SettingsPage() {
     }
   }
 
+  async function addRssFeed() {
+    if (!newFeedUrl.trim() || !newFeedProfileId) { toast.error('Enter a feed URL and select a profile'); return; }
+    setAddingFeed(true);
+    try {
+      const res = await fetch('/api/dashboard/rss-feeds', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: newFeedUrl, profileId: newFeedProfileId, autoPost: newFeedAutoPost }),
+      });
+      const data = await res.json() as { feed?: RssFeed; error?: string };
+      if (!res.ok) { toast.error(data.error ?? 'Failed to add feed'); return; }
+      setRssFeeds((prev) => [...prev, data.feed!]);
+      setNewFeedUrl('');
+      toast.success('RSS feed added!');
+    } finally {
+      setAddingFeed(false);
+    }
+  }
+
+  async function deleteRssFeed(id: string) {
+    await fetch(`/api/dashboard/rss-feeds?id=${id}`, { method: 'DELETE' });
+    setRssFeeds((prev) => prev.filter((f) => f.id !== id));
+    toast.success('Feed removed');
+  }
+
+  async function checkNow(id: string) {
+    setCheckingFeed(id);
+    try {
+      const res = await fetch(`/api/dashboard/rss-feeds/trigger?feedId=${id}`, { method: 'POST' });
+      if (res.ok) { toast.success('Feed check triggered — posts will generate shortly'); }
+      else { toast.error('Failed to trigger check'); }
+    } finally {
+      setCheckingFeed(null);
+    }
+  }
+
   async function saveWebhook(profileId: string) {
     setSavingWebhook(profileId);
     const res = await fetch(`/api/dashboard/profiles/${profileId}/webhook`, {
@@ -135,6 +190,7 @@ export default function SettingsPage() {
           <TabsTrigger value="account">Account</TabsTrigger>
           <TabsTrigger value="keys">API Keys</TabsTrigger>
           <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
+          <TabsTrigger value="rss">RSS Feeds</TabsTrigger>
           <TabsTrigger value="billing">Billing</TabsTrigger>
         </TabsList>
 
@@ -265,6 +321,92 @@ export default function SettingsPage() {
                   </div>
                 </Card>
               ))
+            )}
+          </div>
+        </TabsContent>
+
+        {/* RSS Feeds */}
+        <TabsContent value="rss">
+          <div className="space-y-4">
+            <p className="text-sm text-gray-500">Auto-post from RSS/Atom feeds. New articles generate AI-written social posts.</p>
+            <Card className="p-5 border-gray-100 space-y-3">
+              <h2 className="font-semibold text-black text-sm">Add RSS feed</h2>
+              <input
+                type="url"
+                value={newFeedUrl}
+                onChange={(e) => setNewFeedUrl(e.target.value)}
+                placeholder="https://yourblog.com/feed.xml"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+              />
+              <div className="flex items-center gap-3">
+                <select
+                  value={newFeedProfileId}
+                  onChange={(e) => setNewFeedProfileId(e.target.value)}
+                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm flex-1"
+                >
+                  <option value="">Select profile…</option>
+                  {profiles.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
+                <label className="flex items-center gap-2 text-xs text-gray-600 whitespace-nowrap">
+                  <input
+                    type="checkbox"
+                    checked={newFeedAutoPost}
+                    onChange={(e) => setNewFeedAutoPost(e.target.checked)}
+                    className="rounded"
+                  />
+                  Auto-post
+                </label>
+                <Button
+                  size="sm"
+                  className="bg-black text-white hover:bg-gray-800 shrink-0"
+                  onClick={addRssFeed}
+                  disabled={addingFeed}
+                >
+                  {addingFeed ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Plus className="w-4 h-4 mr-1" /> Add</>}
+                </Button>
+              </div>
+            </Card>
+
+            {rssFeeds.length === 0 ? (
+              <Card className="p-8 border-dashed border-gray-200 text-center">
+                <Rss className="w-8 h-8 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-400 text-sm">No RSS feeds added yet</p>
+              </Card>
+            ) : (
+              <div className="space-y-2">
+                {rssFeeds.map((feed) => (
+                  <Card key={feed.id} className="p-4 border-gray-100">
+                    <div className="flex items-center gap-3">
+                      <Rss className="w-4 h-4 text-gray-400 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-gray-800 truncate">{feed.url}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {feed.auto_post ? 'Auto-post enabled' : 'Requires approval'} ·{' '}
+                          {feed.last_checked_at
+                            ? `Checked ${new Date(feed.last_checked_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`
+                            : 'Not checked yet'}
+                        </p>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-xs gap-1.5 shrink-0"
+                        onClick={() => checkNow(feed.id)}
+                        disabled={checkingFeed === feed.id}
+                      >
+                        {checkingFeed === feed.id ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <><RefreshCw className="w-3 h-3" /> Check now</>
+                        )}
+                      </Button>
+                      <button onClick={() => deleteRssFeed(feed.id)} className="text-gray-300 hover:text-red-500 shrink-0">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
             )}
           </div>
         </TabsContent>
