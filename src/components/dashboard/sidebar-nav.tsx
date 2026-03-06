@@ -2,18 +2,23 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, PenSquare, CalendarClock, BarChart3, Sparkles, Settings, Puzzle, Wand2, CreditCard } from "lucide-react";
+import { LayoutDashboard, Users, PenSquare, CalendarClock, BarChart3, Sparkles, Settings, Puzzle, Wand2, CreditCard, CalendarDays, MessageSquare, Link2, Rss, Zap } from "lucide-react";
 
 const NAV = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-  { href: "/dashboard/setup", label: "Setup Agent", icon: Wand2 },
+  { href: "/dashboard/setup/zero-presence", label: "Quick Setup", icon: Zap },
   { href: "/dashboard/profiles", label: "Profiles", icon: Users },
   { href: "/dashboard/compose", label: "Compose", icon: PenSquare },
+  { href: "/dashboard/calendar", label: "Calendar", icon: CalendarDays },
   { href: "/dashboard/schedule", label: "Schedule", icon: CalendarClock },
+  { href: "/dashboard/inbox", label: "Inbox", icon: MessageSquare },
   { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/dashboard/ai", label: "AI Drafts", icon: Sparkles },
+  { href: "/dashboard/biolink", label: "Link in Bio", icon: Link2 },
+  { href: "/dashboard/links", label: "Link Shortener", icon: Rss },
   { href: "/dashboard/billing", label: "Billing", icon: CreditCard },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
+  { href: "/dashboard/setup", label: "Setup Agent", icon: Wand2 },
   { href: "/dashboard/settings/developer-apps", label: "Developer Apps", icon: Puzzle },
 ];
 
