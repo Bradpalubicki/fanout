@@ -87,4 +87,34 @@ export const OAUTH_CONFIGS: Record<string, OAuthConfig> = {
     clientSecretEnv: 'THREADS_APP_SECRET',
     callbackEnv: 'FACEBOOK_CALLBACK_URL',
   },
+  google_business_profile: {
+    authUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
+    tokenUrl: 'https://oauth2.googleapis.com/token',
+    scopes: [
+      'https://www.googleapis.com/auth/business.manage',
+      'https://www.googleapis.com/auth/userinfo.email',
+      'https://www.googleapis.com/auth/userinfo.profile',
+    ],
+    clientIdEnv: 'GBP_CLIENT_ID',
+    clientSecretEnv: 'GBP_CLIENT_SECRET',
+    callbackEnv: 'GBP_CALLBACK_URL',
+  },
+  bluesky: {
+    // Bluesky uses app passwords (not OAuth2) — stub config for UI display
+    authUrl: '',
+    tokenUrl: '',
+    scopes: [],
+    clientIdEnv: '',
+    clientSecretEnv: '',
+    callbackEnv: '',
+  },
+  mastodon: {
+    // Mastodon uses per-instance OAuth2 — stub config for UI display
+    authUrl: '',
+    tokenUrl: '',
+    scopes: ['write:statuses', 'read:accounts'],
+    clientIdEnv: '',
+    clientSecretEnv: '',
+    callbackEnv: '',
+  },
 }

@@ -87,6 +87,9 @@ export type Platform =
   | 'youtube'
   | 'reddit'
   | 'threads'
+  | 'google_business_profile'
+  | 'bluesky'
+  | 'mastodon'
 
 export const SUPPORTED_PLATFORMS: Platform[] = [
   'twitter',
@@ -98,6 +101,9 @@ export const SUPPORTED_PLATFORMS: Platform[] = [
   'youtube',
   'reddit',
   'threads',
+  'google_business_profile',
+  'bluesky',
+  'mastodon',
 ]
 
 export const PLATFORM_LABELS: Record<Platform, string> = {
@@ -110,6 +116,9 @@ export const PLATFORM_LABELS: Record<Platform, string> = {
   youtube: 'YouTube',
   reddit: 'Reddit',
   threads: 'Threads',
+  google_business_profile: 'Google Business',
+  bluesky: 'Bluesky',
+  mastodon: 'Mastodon',
 }
 
 export const PLATFORM_COLORS: Record<Platform, string> = {
@@ -122,4 +131,7 @@ export const PLATFORM_COLORS: Record<Platform, string> = {
   youtube: '#FF0000',
   reddit: '#FF4500',
   threads: '#000000',
+  google_business_profile: '#4285F4',
+  bluesky: '#0085FF',
+  mastodon: '#563ACC',
 }

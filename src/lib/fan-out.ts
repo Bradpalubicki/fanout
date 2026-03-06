@@ -9,6 +9,7 @@ import { PinterestDistributor } from '@/distributors/pinterest'
 import { YouTubeDistributor } from '@/distributors/youtube'
 import { RedditDistributor } from '@/distributors/reddit'
 import { ThreadsDistributor } from '@/distributors/threads'
+import { GoogleBusinessProfileDistributor } from '@/distributors/google-business-profile'
 import type { BaseDistributor } from '@/distributors/base'
 import type { Post, OAuthToken } from './types'
 
@@ -22,6 +23,7 @@ const DISTRIBUTORS: Record<string, BaseDistributor> = {
   youtube: new YouTubeDistributor(),
   reddit: new RedditDistributor(),
   threads: new ThreadsDistributor(),
+  google_business_profile: new GoogleBusinessProfileDistributor(),
 }
 
 export { DISTRIBUTORS }
