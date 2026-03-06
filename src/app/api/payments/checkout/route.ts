@@ -9,6 +9,20 @@ const Schema = z.object({
 })
 
 export async function POST(req: NextRequest) {
+  // Graceful degradation — Square not yet configured
+  const squareToken = process.env.SQUARE_ACCESS_TOKEN
+  const squareLocation = process.env.SQUARE_LOCATION_ID
+  if (!squareToken || squareToken === 'placeholder' || !squareLocation || squareLocation === 'placeholder') {
+    return NextResponse.json(
+      {
+        error: 'Payments not configured',
+        message: 'Square payment processing is not yet active. Contact brad@nustack.digital to upgrade.',
+        contact: 'brad@nustack.digital',
+      },
+      { status: 503 },
+    )
+  }
+
   const { userId, orgId } = await auth()
   if (!userId || !orgId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
