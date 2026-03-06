@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { CheckCircle2, Sparkles, Clock, Plus, Image as ImageIcon, X, Loader2 } from "lucide-react";
+import { CheckCircle2, Sparkles, Clock, Plus, Image as ImageIcon, X, Loader2, Wand2 } from "lucide-react";
 import Link from "next/link";
 import { SUPPORTED_PLATFORMS, PLATFORM_LABELS, type Platform } from "@/lib/types";
 
@@ -47,6 +47,9 @@ export default function ComposePage() {
   const [loading, setLoading] = useState(true);
   const [media, setMedia] = useState<UploadedMedia[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [imgGenPrompt, setImgGenPrompt] = useState("");
+  const [imgGenLoading, setImgGenLoading] = useState(false);
+  const [showImgGen, setShowImgGen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -112,6 +115,31 @@ export default function ComposePage() {
 
   function removeMedia(url: string) {
     setMedia((prev) => prev.filter((m) => m.url !== url));
+  }
+
+  async function generateImage() {
+    const prompt = imgGenPrompt.trim() || content.trim();
+    if (!prompt) { toast.error("Enter an image prompt or write post content first"); return; }
+    if (media.length >= 4) { toast.error("Max 4 media files"); return; }
+    setImgGenLoading(true);
+    try {
+      const platform = selectedPlatforms[0] ?? 'default';
+      const res = await fetch("/api/ai/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt, platform }),
+      });
+      const data = await res.json() as { url?: string; error?: string };
+      if (!res.ok) { toast.error(data.error ?? "Generation failed"); return; }
+      setMedia((prev) => [...prev, { url: data.url!, name: "ai-generated.webp", type: "image/webp" }]);
+      setShowImgGen(false);
+      setImgGenPrompt("");
+      toast.success("Image generated!");
+    } catch {
+      toast.error("Image generation failed");
+    } finally {
+      setImgGenLoading(false);
+    }
   }
 
   async function generateAiDrafts() {
@@ -293,20 +321,61 @@ export default function ComposePage() {
             className="hidden"
             onChange={handleFileChange}
           />
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="gap-2 text-xs"
-            disabled={uploading || media.length >= 4}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            {uploading ? (
-              <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Uploading…</>
-            ) : (
-              <><ImageIcon className="w-3.5 h-3.5" aria-hidden="true" /> Add media</>
-            )}
-          </Button>
+          <div className="flex gap-2 flex-wrap">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-2 text-xs"
+              disabled={uploading || media.length >= 4}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {uploading ? (
+                <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Uploading…</>
+              ) : (
+                <><ImageIcon className="w-3.5 h-3.5" aria-hidden="true" /> Add media</>
+              )}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-2 text-xs border-purple-200 text-purple-700 hover:bg-purple-50"
+              disabled={media.length >= 4}
+              onClick={() => setShowImgGen(!showImgGen)}
+            >
+              <Wand2 className="w-3.5 h-3.5" /> Generate image
+            </Button>
+          </div>
+
+          {showImgGen && (
+            <div className="mt-3 p-3 border border-purple-100 rounded-xl bg-purple-50/40 space-y-2">
+              <p className="text-xs font-medium text-purple-800">AI Image Generator · Flux Schnell</p>
+              <input
+                type="text"
+                value={imgGenPrompt}
+                onChange={(e) => setImgGenPrompt(e.target.value)}
+                placeholder={content.trim() ? "Leave blank to use post content as prompt" : "Describe the image you want…"}
+                className="w-full border border-purple-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-purple-300 bg-white"
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); generateImage(); } }}
+              />
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  className="bg-purple-600 hover:bg-purple-700 text-white text-xs h-8"
+                  onClick={generateImage}
+                  disabled={imgGenLoading}
+                >
+                  {imgGenLoading ? <><Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> Generating…</> : "Generate"}
+                </Button>
+                <span className="text-xs text-purple-600">
+                  Sized for {selectedPlatforms[0] ?? 'all'} · ~5 seconds
+                </span>
+              </div>
+            </div>
+          )}
+
           <p className="text-xs text-gray-400 mt-1.5">Up to 4 files · JPG, PNG, GIF, WebP, MP4 · Max 50MB each</p>
         </div>
 
