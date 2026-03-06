@@ -286,12 +286,15 @@ function MaskedInput({
     <div className="relative">
       <Input
         id={id}
-        type={visible ? "text" : "password"}
+        type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="pr-10 text-sm font-mono"
+        className={`pr-10 text-sm font-mono transition-all${!visible && value ? " text-transparent [text-shadow:0_0_0_#374151]" : ""}`}
         autoComplete="off"
+        data-lpignore="true"
+        data-form-type="other"
+        spellCheck={false}
       />
       <button
         type="button"
@@ -497,6 +500,12 @@ export default function DeveloperAppsPage() {
           Connect each platform by creating a developer app and pasting the credentials below.
           Fanout handles all OAuth, token storage, and refresh automatically.
         </p>
+        <div className="mt-4 flex items-start gap-2 text-xs text-blue-700 bg-blue-50 border border-blue-100 rounded-lg px-4 py-3">
+          <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+          <span>
+            <strong>Admin configuration panel.</strong> These fields store your own OAuth app credentials (Client ID / Client Secret) from developer portals like Twitter, LinkedIn, and Meta. This page does not collect user login passwords.
+          </span>
+        </div>
       </div>
 
       {/* Legend */}
