@@ -17,6 +17,7 @@ import {
   Plug,
   ArrowRight,
   AlertTriangle,
+  ClipboardCheck,
 } from "lucide-react";
 
 export const metadata = { title: "Overview — Fanout" };
@@ -107,6 +108,15 @@ export default async function DashboardPage() {
 
   const tokens = tokensResult.data ?? [];
 
+  // Pending approvals count
+  const { count: pendingApprovalCount } = profileIds.length
+    ? await supabase
+        .from('posts')
+        .select('*', { count: 'exact', head: true })
+        .in('profile_id', profileIds)
+        .eq('status', 'pending_approval')
+    : { count: 0 }
+
   // Token health checks for all profiles
   const tokenHealthResults = await Promise.all(
     profileIds.map((pid) => checkTokenHealth(pid))
@@ -172,6 +182,40 @@ export default async function DashboardPage() {
           )}
         </div>
       )}
+      {/* Zero-presence CTA — shown when no platforms connected */}
+      {totalPlatformConnections === 0 && (
+        <div className="mb-4 flex items-start gap-4 bg-gradient-to-r from-black to-gray-800 rounded-xl p-5 text-white">
+          <Plug className="w-6 h-6 shrink-0 mt-0.5 text-gray-300" />
+          <div className="flex-1">
+            <p className="font-semibold text-white">No platforms connected yet</p>
+            <p className="text-gray-300 text-sm mt-0.5">
+              Use Quick Setup to create and connect all your social accounts in minutes.
+            </p>
+          </div>
+          <Button size="sm" className="bg-white text-black hover:bg-gray-100 shrink-0" asChild>
+            <Link href="/dashboard/setup/zero-presence">
+              <Zap className="w-3.5 h-3.5 mr-1.5" /> Get started <ArrowRight className="w-3.5 h-3.5 ml-1" />
+            </Link>
+          </Button>
+        </div>
+      )}
+
+      {/* Pending approvals banner */}
+      {(pendingApprovalCount ?? 0) > 0 && (
+        <div className="mb-4 flex items-center gap-3 bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+          <ClipboardCheck className="w-5 h-5 text-yellow-600 shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-yellow-800">
+              {pendingApprovalCount} post{(pendingApprovalCount ?? 0) !== 1 ? 's' : ''} waiting for your approval
+            </p>
+            <p className="text-xs text-yellow-700 mt-0.5">AI-generated content ready to review and publish</p>
+          </div>
+          <Button size="sm" variant="outline" className="text-xs border-yellow-300 text-yellow-700 hover:bg-yellow-100 shrink-0" asChild>
+            <Link href="/dashboard/approvals">Review →</Link>
+          </Button>
+        </div>
+      )}
+
       {expiringTokens.length > 0 && expiredTokens.length === 0 && (
         <div className="mb-4 flex items-start gap-3 bg-yellow-50 border border-yellow-200 rounded-xl p-4">
           <AlertTriangle className="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" />

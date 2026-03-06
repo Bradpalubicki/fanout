@@ -97,6 +97,10 @@ async function registerReddit() {
     }
     console.log('  ✓ Logged into Reddit')
 
+    // Debug: log all buttons on the page
+    const allButtons = await page.locator('button, input[type="submit"]').allTextContents().catch(() => [])
+    console.log('  Buttons found on page:', allButtons.slice(0, 20))
+
     // Check if app already exists
     const existingApps = await page.locator('.developed-app .app-name, .app-list-item .title').allTextContents().catch(() => [])
     const appName = 'Fanout'
@@ -121,39 +125,71 @@ async function registerReddit() {
       return { clientId, clientSecret, appName }
     }
 
-    // Create new app
+    // Create new app — semi-manual: we fill the form, you solve CAPTCHA + submit
     console.log('  Creating new Reddit app...')
-    const createBtn = page.locator('button:has-text("create another app"), button:has-text("create app"), input[value="create app"]')
-    await createBtn.first().click({ timeout: 10000 })
-    await page.waitForTimeout(1000)
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
+    await page.waitForTimeout(1500)
 
-    await page.fill('input[name="name"]', appName)
-    await page.check('input[value="web"]').catch(() => page.check('input[name="type"][value="web"]'))
-    await page.fill('input[name="redirect_uri"]', `${CALLBACK_BASE}/api/oauth/reddit/callback`)
+    // Click "create app" button via JS (bypasses visibility)
+    await page.evaluate(() => {
+      const btns = Array.from(document.querySelectorAll('button, input[type="submit"]'))
+      const btn = btns.find(b => b.textContent?.toLowerCase().includes('create') || b.value?.toLowerCase().includes('create'))
+      if (btn) btn.click()
+    })
+    await page.waitForTimeout(1500)
 
-    await page.click('button[type="submit"]:has-text("create app")')
-    await page.waitForTimeout(2000)
+    // Fill the form fields
+    await page.fill('input[name="name"]', appName).catch(() => {})
+    await page.waitForTimeout(300)
+    await page.check('input[value="web"]').catch(() =>
+      page.check('input[name="type"][value="web"]').catch(() => {})
+    )
+    await page.waitForTimeout(300)
+    await page.fill('input[name="redirect_uri"]', `${CALLBACK_BASE}/api/oauth/reddit/callback`).catch(() => {})
+    await page.waitForTimeout(300)
 
-    // Extract from new app
-    const newApp = page.locator('.developed-app').filter({ hasText: appName }).first()
-    await newApp.waitFor({ timeout: 8000 })
+    console.log('\n  ⚡ Form filled! Reddit requires a CAPTCHA.')
+    console.log('  Please:')
+    console.log('    1. Click the CAPTCHA checkbox in the browser')
+    console.log('    2. Click the "create app" submit button')
+    console.log('    3. Wait for the app to appear on the page')
+    console.log('  Waiting up to 2 minutes for you to complete this...\n')
+
+    // Wait for the new app to appear after manual CAPTCHA + submit
+    // Poll for .developed-app or any app container with "Fanout"
+    let newApp = null
+    const deadline = Date.now() + 120000
+    while (Date.now() < deadline) {
+      const found = await page.locator('.developed-app, [class*="app-"]').filter({ hasText: appName }).count().catch(() => 0)
+      if (found > 0) {
+        newApp = page.locator('.developed-app, [class*="app-"]').filter({ hasText: appName }).first()
+        console.log('  ✓ App found on page!')
+        break
+      }
+      await page.waitForTimeout(2000)
+      process.stdout.write('.')
+    }
+    if (!newApp) {
+      console.log('\n  Timed out waiting for app. Checking full page for credentials...')
+    }
 
     // Reddit shows client ID as small text under the app name in the left column
-    // The structure is: .app-clientID contains the ID, .secret contains the secret
     let clientId = ''
     let clientSecret = ''
+
+    const appContainer = newApp || page.locator('body')
 
     // Try multiple selector patterns Reddit has used
     const idSelectors = ['.app-clientID', 'td:has-text("personal use script") + td', 'code', '.app-list-item .edit-app']
     for (const sel of idSelectors) {
-      const text = await newApp.locator(sel).first().textContent().catch(() => '')
+      const text = await appContainer.locator(sel).first().textContent().catch(() => '')
       if (text && text.trim().length > 5 && !text.includes(' ')) {
         clientId = text.trim()
         break
       }
     }
 
-    clientSecret = (await newApp.locator('.secret span, [id*="secret"]').first().textContent() ?? '').trim()
+    clientSecret = (await appContainer.locator('.secret span, [id*="secret"]').first().textContent().catch(() => '') ?? '').trim()
 
     if (!clientId || !clientSecret) {
       console.log('\n  ⚠️  Could not auto-extract credentials from new app.')
