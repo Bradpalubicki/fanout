@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { supabase } from '@/lib/supabase'
 
+const schema = z.object({
+  pageId: z.string().uuid(),
+  linkIndex: z.number().int().min(0),
+})
+
 export async function POST(req: NextRequest) {
-  const { pageId, linkIndex } = await req.json() as { pageId: string; linkIndex: number }
-  if (!pageId) return NextResponse.json({ ok: false })
+  const parsed = schema.safeParse(await req.json())
+  if (!parsed.success) return NextResponse.json({ ok: false }, { status: 400 })
+  const { pageId, linkIndex } = parsed.data
 
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0] ?? 'unknown'
   // Hash IP for privacy

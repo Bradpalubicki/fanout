@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
@@ -45,15 +46,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const payload = await req.json() as {
-    from: string
-    to: string
-    subject: string
-    text?: string
-    html?: string
-  }
+  const emailSchema = z.object({
+    from: z.string(),
+    to: z.string().optional(),
+    subject: z.string(),
+    text: z.string().optional(),
+    html: z.string().optional(),
+  })
+  const parsed = emailSchema.safeParse(await req.json())
+  if (!parsed.success) return NextResponse.json({ ok: true }) // silently accept malformed
 
-  const { from, subject, text = '', html = '' } = payload
+  const { from, subject, text = '', html = '' } = parsed.data
   const bodyText = text || html.replace(/<[^>]+>/g, ' ')
 
   const platform = detectPlatformFromEmail(from)

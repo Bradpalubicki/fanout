@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { auth } from '@clerk/nextjs/server'
 import { supabase } from '@/lib/supabase'
+
+const retrySchema = z.object({ logId: z.string().uuid() })
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { userId, orgId } = await auth()
@@ -39,17 +42,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   const { id } = await params
 
-  let body: unknown
-  try {
-    body = await req.json()
-  } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+  const parsed = retrySchema.safeParse(await req.json().catch(() => null))
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'logId (UUID) required' }, { status: 400 })
   }
-
-  const { logId } = body as { logId?: string }
-  if (!logId) {
-    return NextResponse.json({ error: 'logId required' }, { status: 400 })
-  }
+  const { logId } = parsed.data
 
   const { data: profile } = await supabase
     .from('profiles')

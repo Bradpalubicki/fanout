@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { auth } from '@clerk/nextjs/server'
 import { supabase } from '@/lib/supabase'
 import PDFDocument from 'pdfkit'
 import Anthropic from '@anthropic-ai/sdk'
 import { PLATFORM_LABELS, type Platform } from '@/lib/types'
+
+const schema = z.object({
+  days: z.number().int().min(1).max(365).optional().default(30),
+  profileId: z.string().uuid().optional(),
+})
 
 const anthropic = new Anthropic()
 
@@ -11,7 +17,9 @@ export async function POST(req: NextRequest) {
   const { userId, orgId } = await auth()
   if (!userId || !orgId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { days = 30, profileId } = await req.json() as { days?: number; profileId?: string }
+  const parsed = schema.safeParse(await req.json())
+  if (!parsed.success) return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
+  const { days, profileId } = parsed.data
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString()
 
   // Fetch data
