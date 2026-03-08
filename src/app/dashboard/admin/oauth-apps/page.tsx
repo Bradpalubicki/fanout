@@ -71,7 +71,7 @@ export default function OAuthAppsAdminPage() {
     const loadCredentials = async () => {
       setLoading(true)
       const res = await fetch('/api/admin/oauth-apps-list', {
-        headers: { 'x-admin-key': process.env.NEXT_PUBLIC_FANOUT_ADMIN_KEY ?? '' },
+        headers: {},
       })
       if (res.ok) {
         const data = await res.json() as OAuthAppCredential[]
@@ -84,9 +84,7 @@ export default function OAuthAppsAdminPage() {
 
   const fetchCredentials = async () => {
     setLoading(true)
-    const res = await fetch('/api/admin/oauth-apps-list', {
-      headers: { 'x-admin-key': process.env.NEXT_PUBLIC_FANOUT_ADMIN_KEY ?? '' },
-    })
+    const res = await fetch('/api/admin/oauth-apps-list')
     if (res.ok) {
       const data = await res.json() as OAuthAppCredential[]
       setCredentials(data)
@@ -98,10 +96,7 @@ export default function OAuthAppsAdminPage() {
     setRegistering(platform)
     const res = await fetch('/api/admin/register-oauth-app', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-admin-key': process.env.NEXT_PUBLIC_FANOUT_ADMIN_KEY ?? '',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         platform,
         appName: 'Fanout',
@@ -121,10 +116,7 @@ export default function OAuthAppsAdminPage() {
     setSaving(true)
     await fetch('/api/admin/register-oauth-app', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-admin-key': process.env.NEXT_PUBLIC_FANOUT_ADMIN_KEY ?? '',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         platform: manualPlatform,
         appName: 'Fanout',

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { auth, clerkClient } from '@clerk/nextjs/server'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
@@ -6,9 +7,19 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+async function isNuStackAdmin(req: NextRequest): Promise<boolean> {
+  // Accept server-to-server admin key
+  if (req.headers.get('x-admin-key') === process.env.FANOUT_ADMIN_KEY) return true
+  // Accept Clerk session from @nustack.digital users
+  const { userId } = await auth()
+  if (!userId) return false
+  const clerk = await clerkClient()
+  const user = await clerk.users.getUser(userId)
+  return user.primaryEmailAddress?.emailAddress?.endsWith('@nustack.digital') ?? false
+}
+
 export async function GET(req: NextRequest) {
-  const adminKey = req.headers.get('x-admin-key')
-  if (adminKey !== process.env.FANOUT_ADMIN_KEY) {
+  if (!(await isNuStackAdmin(req))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

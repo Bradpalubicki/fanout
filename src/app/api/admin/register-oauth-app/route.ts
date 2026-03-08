@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { auth, clerkClient } from '@clerk/nextjs/server'
 import { createClient } from '@supabase/supabase-js'
 import { z } from 'zod'
 import { PLATFORM_AUTOMATION, type PlatformKey } from '@/lib/oauth-registration/automation-support'
@@ -20,9 +21,17 @@ const RegisterSchema = z.object({
   clientSecret: z.string().optional(),
 })
 
+async function isNuStackAdmin(req: NextRequest): Promise<boolean> {
+  if (req.headers.get('x-admin-key') === process.env.FANOUT_ADMIN_KEY) return true
+  const { userId } = await auth()
+  if (!userId) return false
+  const clerk = await clerkClient()
+  const user = await clerk.users.getUser(userId)
+  return user.primaryEmailAddress?.emailAddress?.endsWith('@nustack.digital') ?? false
+}
+
 export async function POST(req: NextRequest) {
-  const adminKey = req.headers.get('x-admin-key')
-  if (adminKey !== process.env.FANOUT_ADMIN_KEY) {
+  if (!(await isNuStackAdmin(req))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
