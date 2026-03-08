@@ -48,10 +48,11 @@ export async function POST(request: Request) {
     ]);
 
     // Platform health — check if OAuth tokens exist per platform
-    const { data: tokenData } = await supabase
-      .from('oauth_tokens')
-      .select('platform')
-      .eq('is_valid', true);
+    const cronHealthThreshold = new Date(now.getTime() - 15 * 60 * 1000);
+    const [{ data: tokenData }, { data: lastProcessed }] = await Promise.all([
+      supabase.from('oauth_tokens').select('platform').eq('is_valid', true),
+      supabase.from('post_results').select('created_at').order('created_at', { ascending: false }).limit(1),
+    ]);
 
     const platformsConnected = [...new Set((tokenData ?? []).map(t => t.platform))];
     const platformHealth: Record<string, { status: 'ok' | 'error' | 'unknown' }> = {};
@@ -83,9 +84,11 @@ export async function POST(request: Request) {
       platforms_connected: platformsConnected,
       platform_health: platformHealth,
 
-      // Cron / system health (Fanout uses Inngest — assume healthy if site is up)
-      cron_healthy: true,
-      last_cron_run: null,
+      // Cron / system health — computed from last post_result activity
+      cron_healthy: lastProcessed?.[0]?.created_at
+        ? new Date(lastProcessed[0].created_at) > cronHealthThreshold
+        : false,
+      last_cron_run: lastProcessed?.[0]?.created_at ?? null,
 
       // Meta for agency dashboard display
       engine_type: 'fanout',

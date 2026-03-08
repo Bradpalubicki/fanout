@@ -25,6 +25,8 @@ export async function GET(request: Request) {
     const monthStart = new Date(now);
     monthStart.setDate(now.getDate() - 30);
 
+    const cronHealthThreshold = new Date(now.getTime() - 15 * 60 * 1000); // 15 min ago
+
     const [
       totalOrgsResult,
       newOrgs30dResult,
@@ -34,6 +36,7 @@ export async function GET(request: Request) {
       postsFailedToday,
       activeSubscriptions,
       tokenData,
+      lastProcessedResult,
     ] = await Promise.all([
       supabase.from('organizations').select('id', { count: 'exact', head: true }),
       supabase.from('organizations').select('id', { count: 'exact', head: true }).gte('created_at', monthStart.toISOString()),
@@ -45,6 +48,7 @@ export async function GET(request: Request) {
         .gte('created_at', todayStart.toISOString()),
       supabase.from('subscriptions').select('id', { count: 'exact', head: true }).eq('status', 'active'),
       supabase.from('oauth_tokens').select('platform').eq('is_valid', true),
+      supabase.from('post_results').select('created_at').order('created_at', { ascending: false }).limit(1),
     ]);
 
     const platformsConnected = [...new Set((tokenData.data ?? []).map((t: { platform: string }) => t.platform))];
@@ -105,9 +109,11 @@ export async function GET(request: Request) {
       integrations,
 
       health: {
-        dbOk: true,
-        lastCronRun: null,
-        cronHealthy: true,
+        dbOk: !totalOrgsResult.error,
+        lastCronRun: lastProcessedResult.data?.[0]?.created_at ?? null,
+        cronHealthy: lastProcessedResult.data?.[0]?.created_at
+          ? new Date(lastProcessedResult.data[0].created_at) > cronHealthThreshold
+          : false,
       },
     };
 
