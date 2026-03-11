@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect, useTransition } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,9 +16,11 @@ import {
   Wrench,
   ArrowRight,
   Plug,
+  Building2,
 } from "lucide-react";
 import Link from "next/link";
 import { PlatformConnectWizard } from "@/components/dashboard/platform-connect-wizard";
+import { markOnboardingComplete } from "@/app/actions/onboarding";
 
 interface Message {
   role: "user" | "assistant";
@@ -255,6 +259,7 @@ function SetupCompleteScreen({ profileId, ranTools }: SetupCompleteScreenProps) 
           <PlatformConnectWizard
             profileId={profileId}
             initialConnected={[]}
+            onComplete={() => void markOnboardingComplete(profileId)}
           />
         </div>
       </div>
@@ -262,13 +267,31 @@ function SetupCompleteScreen({ profileId, ranTools }: SetupCompleteScreenProps) 
   );
 }
 
-export default function SetupAgentPage() {
+function SetupAgentContent() {
+  const searchParams = useSearchParams();
+  const prefillRaw = searchParams.get("prefill");
+  type PrefillData = { business_name?: string; website?: string; industry?: string };
+  let prefillData: PrefillData | null = null;
+  if (prefillRaw) {
+    try {
+      prefillData = JSON.parse(decodeURIComponent(prefillRaw)) as PrefillData;
+    } catch {
+      // ignore
+    }
+  }
+
+  const prefillHint = prefillData
+    ? [prefillData.business_name, prefillData.industry, prefillData.website]
+        .filter(Boolean)
+        .join(", ")
+    : null;
+
+  const initialGreeting = prefillHint
+    ? `Hi! I'm your Fanout Setup Agent.\n\nI can see you're setting up for ${prefillHint}. Tell me more about your social media goals — platforms, posting frequency, tone — and I'll configure everything automatically.`
+    : "Hi! I'm your Fanout Setup Agent.\n\nTell me about your business and what you want from social media — platforms, posting frequency, tone, content topics — and I'll set everything up for you automatically.\n\nYou can be as specific or as casual as you like. Just describe it in plain language.";
+
   const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "assistant",
-      content:
-        "Hi! I'm your Fanout Setup Agent.\n\nTell me about your business and what you want from social media — platforms, posting frequency, tone, content topics — and I'll set everything up for you automatically.\n\nYou can be as specific or as casual as you like. Just describe it in plain language.",
-    },
+    { role: "assistant", content: initialGreeting },
   ]);
   const [toolResultsMap, setToolResultsMap] = useState<Record<number, string[]>>({});
   const [allToolResults, setAllToolResults] = useState<string[]>([]); // eslint-disable-line @typescript-eslint/no-unused-vars -- read inside functional updater
@@ -343,6 +366,8 @@ export default function SetupAgentPage() {
                 setCompletedProfileId(profileId);
                 setRanTools(ran);
                 setSetupComplete(true);
+                // Mark onboarding complete in DB
+                void markOnboardingComplete(profileId);
               }
             }
             return updated;
@@ -357,6 +382,7 @@ export default function SetupAgentPage() {
   }
 
   const showStarters = messages.length === 1;
+  void prefillData; // prefillData used in greeting only
 
   if (setupComplete && completedProfileId) {
     return (
@@ -400,17 +426,26 @@ export default function SetupAgentPage() {
         </div>
         <div className="flex gap-2">
           <Button size="sm" variant="outline" asChild className="text-xs gap-1.5">
+            <Link href="/dashboard/setup/connect">
+              <Plug className="w-3 h-3" /> Already have accounts?
+            </Link>
+          </Button>
+          <Button size="sm" variant="outline" asChild className="text-xs gap-1.5">
             <Link href="/dashboard/profiles">
               View Profiles <ArrowRight className="w-3 h-3" />
             </Link>
           </Button>
-          <Button size="sm" variant="outline" asChild className="text-xs gap-1.5">
-            <Link href="/dashboard/ai">
-              View Drafts <ArrowRight className="w-3 h-3" />
-            </Link>
-          </Button>
         </div>
       </div>
+      {/* Pre-fill banner */}
+      {prefillHint && (
+        <div className="bg-indigo-50 border-b border-indigo-100 px-6 py-2.5 flex items-center gap-2">
+          <Building2 className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+          <p className="text-xs text-indigo-800">
+            <span className="font-semibold">Pre-filled from agency:</span> {prefillHint}
+          </p>
+        </div>
+      )}
 
       {/* Chat */}
       <div className="flex-1 overflow-y-auto px-6 py-6 space-y-5 bg-gray-50/50">
@@ -473,5 +508,13 @@ export default function SetupAgentPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function SetupAgentPage() {
+  return (
+    <Suspense fallback={<div className="flex flex-col h-full max-h-screen bg-gray-50/50" />}>
+      <SetupAgentContent />
+    </Suspense>
   );
 }
