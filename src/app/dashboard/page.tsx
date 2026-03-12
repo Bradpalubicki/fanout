@@ -247,28 +247,51 @@ export default async function DashboardPage() {
 
       {/* Platform connections banner */}
       {totalPlatformConnections === 0 ? (
-        <Card className="p-6 border-dashed border-gray-300 mb-6 bg-gray-50/50">
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shrink-0">
-                <Plug className="w-5 h-5 text-white" />
+        <div className="mb-6 space-y-3">
+          <Card className="p-6 border-dashed border-gray-300 bg-gray-50/50">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shrink-0">
+                  <Plug className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-black mb-0.5">Connect your platforms to start posting</h3>
+                  <p className="text-sm text-gray-500">
+                    0/9 platforms connected — Fanout needs OAuth access to post on your behalf
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-bold text-black mb-0.5">Connect your platforms to start posting</h3>
-                <p className="text-sm text-gray-500">
-                  0/9 platforms connected — Fanout needs OAuth access to post on your behalf
-                </p>
-              </div>
+              {firstProfile && (
+                <Button className="bg-black text-white hover:bg-gray-800 shrink-0" asChild>
+                  <Link href={`/dashboard/profiles/${firstProfile.id}`}>
+                    Connect Platforms <ArrowRight className="w-4 h-4 ml-1.5" />
+                  </Link>
+                </Button>
+              )}
             </div>
-            {firstProfile && (
-              <Button className="bg-black text-white hover:bg-gray-800 shrink-0" asChild>
-                <Link href={`/dashboard/profiles/${firstProfile.id}`}>
-                  Connect Platforms <ArrowRight className="w-4 h-4 ml-1.5" />
+          </Card>
+          <Card className="p-4 border-blue-100 bg-blue-50/40">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex items-start gap-2.5">
+                <div className="w-7 h-7 bg-blue-100 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
+                  <Plug className="w-3.5 h-3.5 text-blue-700" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-blue-900">Step 1: Add platform API credentials</p>
+                  <p className="text-xs text-blue-700 mt-0.5">
+                    Twitter/X, LinkedIn, Reddit, Pinterest, and YouTube are ready to connect — add your developer keys first.
+                    Facebook/Instagram/Threads are pending Meta business verification.
+                  </p>
+                </div>
+              </div>
+              <Button size="sm" variant="outline" className="border-blue-300 text-blue-800 hover:bg-blue-100 shrink-0 text-xs" asChild>
+                <Link href="/dashboard/settings/developer-apps">
+                  Add credentials →
                 </Link>
               </Button>
-            )}
-          </div>
-        </Card>
+            </div>
+          </Card>
+        </div>
       ) : (
         <Card className="p-5 border-gray-100 mb-6">
           <div className="flex items-center justify-between gap-4 flex-wrap">
