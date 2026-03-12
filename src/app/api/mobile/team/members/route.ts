@@ -80,7 +80,7 @@ export async function GET(req: NextRequest) {
     const uid = m.publicUserData?.userId ?? ''
     const firstName = m.publicUserData?.firstName ?? ''
     const lastName = m.publicUserData?.lastName ?? ''
-    const name = [firstName, lastName].filter(Boolean).join(' ') || m.publicUserData?.identifier ?? uid
+    const name = ([firstName, lastName].filter(Boolean).join(' ') || m.publicUserData?.identifier) ?? uid
     return {
       userId: uid,
       name,

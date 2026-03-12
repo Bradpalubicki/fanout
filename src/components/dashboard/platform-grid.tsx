@@ -1,13 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { Loader2, X } from "lucide-react";
+import { Loader2, X, Clock } from "lucide-react";
 import { SUPPORTED_PLATFORMS, PLATFORM_LABELS, type Platform } from "@/lib/types";
+
+// Platforms pending Meta business verification
+const META_PENDING_PLATFORMS = ['facebook', 'instagram', 'threads'] as const;
+// Platforms pending app review
+const REVIEW_PENDING_PLATFORMS = ['tiktok'] as const;
+// All platforms with placeholder credentials (not yet live)
+const PENDING_PLATFORMS = [...META_PENDING_PLATFORMS, ...REVIEW_PENDING_PLATFORMS] as const;
+type PendingPlatform = typeof PENDING_PLATFORMS[number];
 
 interface Token {
   platform: string;
@@ -147,8 +154,45 @@ function MastodonDialog({ profileId, onClose, onSuccess }: { profileId: string; 
 export function PlatformGrid({ profileId, tokens }: { profileId: string; tokens: Token[] }) {
   const router = useRouter();
   const [disconnecting, setDisconnecting] = useState<string | null>(null);
+  const [connecting, setConnecting] = useState<string | null>(null);
   const [credentialDialog, setCredentialDialog] = useState<CredentialPlatform | null>(null);
   const connected = tokens.map((t) => t.platform);
+
+  const isPending = (p: string): p is PendingPlatform =>
+    PENDING_PLATFORMS.includes(p as PendingPlatform);
+
+  async function handleOAuthConnect(platform: string) {
+    setConnecting(platform);
+    try {
+      const res = await fetch(`/api/oauth/${platform}/authorize?profileId=${profileId}`, {
+        redirect: 'manual',
+      });
+      if (res.status === 0 || res.type === 'opaqueredirect') {
+        // Normal OAuth redirect — follow it
+        window.location.href = `/api/oauth/${platform}/authorize?profileId=${profileId}`;
+        return;
+      }
+      if (res.status === 503) {
+        const data = await res.json() as { message?: string; status?: string };
+        if (data.status === 'coming_soon') {
+          const msg = META_PENDING_PLATFORMS.includes(platform as typeof META_PENDING_PLATFORMS[number])
+            ? `${PLATFORM_LABELS[platform as Platform]} is pending Meta business verification. We'll notify you when it's ready.`
+            : REVIEW_PENDING_PLATFORMS.includes(platform as typeof REVIEW_PENDING_PLATFORMS[number])
+            ? `${PLATFORM_LABELS[platform as Platform]} is pending app review. Check back soon.`
+            : data.message ?? 'This platform is not yet configured.';
+          toast.error(msg, { duration: 6000 });
+          return;
+        }
+      }
+      // For successful redirects (2xx or 3xx in non-manual mode), just follow the URL
+      window.location.href = `/api/oauth/${platform}/authorize?profileId=${profileId}`;
+    } catch {
+      // Likely a CORS/redirect — just follow it
+      window.location.href = `/api/oauth/${platform}/authorize?profileId=${profileId}`;
+    } finally {
+      setConnecting(null);
+    }
+  }
 
   async function disconnect(platform: string) {
     if (!confirm(`Disconnect ${platform}? This will stop posting to this platform.`)) return;
@@ -200,11 +244,12 @@ export function PlatformGrid({ profileId, tokens }: { profileId: string; tokens:
         {SUPPORTED_PLATFORMS.map((platform) => {
           const token = tokens.find((t) => t.platform === platform);
           const isConnected = connected.includes(platform);
+          const pending = !isConnected && isPending(platform);
           return (
             <div
               key={platform}
               className={`border rounded-xl p-4 ${
-                isConnected ? "border-green-100 bg-green-50/30" : "border-gray-100"
+                isConnected ? "border-green-100 bg-green-50/30" : pending ? "border-amber-100 bg-amber-50/20" : "border-gray-100"
               }`}
             >
               <div className="flex items-center justify-between mb-2">
@@ -213,12 +258,23 @@ export function PlatformGrid({ profileId, tokens }: { profileId: string; tokens:
                 </span>
                 {isConnected ? (
                   <Badge className="text-xs bg-green-100 text-green-700 border-green-200">Connected</Badge>
+                ) : pending ? (
+                  <Badge className="text-xs bg-amber-100 text-amber-700 border-amber-200 gap-1 flex items-center">
+                    <Clock className="w-2.5 h-2.5" /> Pending
+                  </Badge>
                 ) : (
                   <Badge variant="outline" className="text-xs text-gray-400">Not connected</Badge>
                 )}
               </div>
               {isConnected && token?.platform_username && (
                 <p className="text-xs text-gray-500 mb-3">@{token.platform_username}</p>
+              )}
+              {pending && !isConnected && (
+                <p className="text-xs text-amber-600 mb-3">
+                  {META_PENDING_PLATFORMS.includes(platform as typeof META_PENDING_PLATFORMS[number])
+                    ? "Awaiting Meta business verification"
+                    : "Awaiting platform app review"}
+                </p>
               )}
               {isConnected ? (
                 <Button
@@ -240,10 +296,16 @@ export function PlatformGrid({ profileId, tokens }: { profileId: string; tokens:
                   Connect
                 </Button>
               ) : (
-                <Button size="sm" variant="outline" className="w-full text-xs" asChild>
-                  <Link href={`/api/oauth/${platform}/authorize?profileId=${profileId}`}>
-                    Connect
-                  </Link>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full text-xs"
+                  onClick={() => handleOAuthConnect(platform)}
+                  disabled={connecting === platform}
+                >
+                  {connecting === platform ? (
+                    <><Loader2 className="w-3 h-3 mr-1 animate-spin" /> Connecting…</>
+                  ) : pending ? "Check status" : "Connect"}
                 </Button>
               )}
             </div>
