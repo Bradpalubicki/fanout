@@ -54,6 +54,12 @@ export function isTrialExpired(sub: OrgSubscription): boolean {
   return new Date(sub.trial_expires_at) < new Date()
 }
 
+export function getTrialDaysLeft(sub: OrgSubscription): number {
+  if (sub.status !== 'trialing') return 0
+  const ms = new Date(sub.trial_expires_at).getTime() - Date.now()
+  return Math.max(0, Math.ceil(ms / (1000 * 60 * 60 * 24)))
+}
+
 export function isSubscriptionActive(sub: OrgSubscription): boolean {
   if (sub.status === 'trialing') return !isTrialExpired(sub)
   if (sub.status === 'active') {

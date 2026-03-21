@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { checkTokenHealth } from "@/app/actions/check-token-health";
+import { getOrgSubscription, isTrialExpired, getTrialDaysLeft } from "@/lib/subscriptions";
 import {
   PenSquare,
   Plus,
@@ -53,6 +54,14 @@ export default async function DashboardPage() {
       </div>
     );
   }
+
+  // Trial gate
+  const sub = await getOrgSubscription(orgId)
+  if (sub && isTrialExpired(sub)) {
+    redirect("/dashboard/billing")
+  }
+  const trialDaysLeft = sub ? getTrialDaysLeft(sub) : 0
+  const showTrialBanner = !!sub && sub.status === 'trialing' && trialDaysLeft <= 4 && trialDaysLeft > 0
 
   const { data: profiles } = await supabase
     .from("profiles")
@@ -162,6 +171,24 @@ export default async function DashboardPage() {
           </Link>
         </Button>
       </div>
+
+      {/* Trial expiry banner */}
+      {showTrialBanner && (
+        <div className="mb-4 flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-amber-800">
+              {trialDaysLeft} day{trialDaysLeft !== 1 ? 's' : ''} left in your free trial
+            </p>
+            <p className="text-xs text-amber-700 mt-0.5">
+              Upgrade now to keep posting after your trial ends.
+            </p>
+          </div>
+          <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white shrink-0 text-xs" asChild>
+            <Link href="/dashboard/billing">Upgrade →</Link>
+          </Button>
+        </div>
+      )}
 
       {/* Token health warnings */}
       {expiredTokens.length > 0 && (
