@@ -90,6 +90,24 @@ export const fanOutPost = inngest.createFunction(
       })
     }
 
+    // Set activated_at on first successful post if not already set
+    const anySuccess = results.some((r) => r.success)
+    if (anySuccess) {
+      await step.run('set-activated-at', async () => {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('org_id')
+          .eq('id', profileId)
+          .single()
+        if (!profile) return
+        await supabase
+          .from('org_subscriptions')
+          .update({ activated_at: new Date().toISOString() })
+          .eq('org_id', profile.org_id)
+          .is('activated_at', null)
+      })
+    }
+
     return { postId, results }
   }
 )

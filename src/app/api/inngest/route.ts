@@ -7,6 +7,8 @@ import { refreshExpiringTokens, refreshSingleToken } from '@/inngest/functions/r
 import { collectAnalytics } from '@/inngest/functions/collect-analytics'
 import { rssAutoPost, rssCheckFeed } from '@/inngest/functions/rss-auto-post'
 import { collectInbox } from '@/inngest/functions/collect-inbox'
+import { trialExpiryNudge } from '@/inngest/functions/trial-expiry-nudge'
+import { activationNudge } from '@/inngest/functions/activation-nudge'
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
@@ -20,5 +22,7 @@ export const { GET, POST, PUT } = serve({
     rssAutoPost,
     rssCheckFeed,
     collectInbox,
+    trialExpiryNudge,
+    activationNudge,
   ],
 })
