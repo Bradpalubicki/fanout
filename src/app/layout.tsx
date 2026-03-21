@@ -4,6 +4,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "@/components/ui/sonner";
 import Script from "next/script";
 import JsonLd from "@/components/seo/JsonLd";
+import { PostHogProvider } from "@/components/providers/posthog-provider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -162,6 +163,7 @@ export default function RootLayout({
           <meta name="apple-mobile-web-app-title" content="Fanout" />
         </head>
         <body className={`${geistSans.variable} antialiased`}>
+          <PostHogProvider>
           <JsonLd data={organizationJsonLd} />
           {children}
           <Toaster />
@@ -181,6 +183,7 @@ export default function RootLayout({
               </Script>
             </>
           )}
+          </PostHogProvider>
         </body>
       </html>
     </ClerkProvider>
