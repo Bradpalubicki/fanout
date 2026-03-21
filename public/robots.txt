@@ -5,4 +5,4 @@ Disallow: /api/
 Disallow: /sign-in
 Disallow: /sign-up
 
-Sitemap: https://fanout.digital/sitemap.xml
+Sitemap: https://www.fanout.digital/sitemap.xml

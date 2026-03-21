@@ -9,7 +9,7 @@ const BLOG_POSTS = [
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const base = "https://fanout.digital";
+  const base = "https://www.fanout.digital";
   const now = new Date();
 
   const blogPosts: MetadataRoute.Sitemap = BLOG_POSTS.map((post) => ({
