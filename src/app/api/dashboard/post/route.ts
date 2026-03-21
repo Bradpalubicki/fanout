@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { supabase } from '@/lib/supabase'
 import { inngest } from '@/lib/inngest'
 import { getOrCreateOrgSubscription, isSubscriptionActive, isTrialExpired } from '@/lib/subscriptions'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 const PostSchema = z.object({
   post: z.string().min(1).max(5000),
@@ -37,6 +38,18 @@ export async function POST(req: NextRequest) {
 
   const { post, platforms, profileId, mediaUrls } = parsed.data
   const scheduledFor = isScheduled ? (parsed.data as z.infer<typeof ScheduleSchema>).scheduledFor : null
+
+  // Rate limit check
+  const rateLimit = await checkRateLimit(profileId)
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { error: 'Rate limit exceeded. Try again shortly.' },
+      {
+        status: 429,
+        headers: { 'Retry-After': Math.ceil((rateLimit.resetAt.getTime() - Date.now()) / 1000).toString() },
+      }
+    )
+  }
 
   // Check subscription is active before posting
   const sub = await getOrCreateOrgSubscription(orgId)
