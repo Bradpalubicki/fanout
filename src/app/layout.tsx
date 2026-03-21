@@ -71,7 +71,9 @@ export const metadata: Metadata = {
     canonical: "https://fanout.digital",
   },
   verification: {
-    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+    ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+      ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }
+      : {}),
     other: {
       "msvalidate.01": "F5BE8B522A66B1E13B5E59322FB38C2F",
     },
