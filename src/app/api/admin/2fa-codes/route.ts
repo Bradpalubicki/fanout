@@ -1,11 +1,15 @@
+export const dynamic = 'force-dynamic'
+
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { generateTotpCode } from '@/lib/oauth-registration/totp'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
 // GET /api/admin/2fa-codes?platform=twitter&channel=sms
 // Polled by Playwright scripts to get the latest valid code
@@ -15,6 +19,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const supabase = getSupabase()
   const { searchParams } = new URL(req.url)
   const platform = searchParams.get('platform')
   const channel = searchParams.get('channel') ?? 'sms'

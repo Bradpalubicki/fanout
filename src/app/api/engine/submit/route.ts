@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 /**
  * /api/engine/submit
  * Called by NuStack client engines (Little Roots, AK Dental, etc.)

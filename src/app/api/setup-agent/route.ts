@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { NextRequest, NextResponse } from 'next/server'
 import { auth, currentUser } from '@clerk/nextjs/server'
 import { z } from 'zod'
@@ -336,10 +338,10 @@ Return ONLY valid JSON (no markdown):
       const normalized = url.startsWith('http') ? url : `https://${url}`
 
       try {
-        const result = await getFirecrawl().scrape(normalized, {
+        const result = (await getFirecrawl().scrapeUrl(normalized, {
           formats: ['markdown'],
           onlyMainContent: true,
-        })
+        }) as unknown as Record<string, string>)
 
         if (!result.markdown) {
           return JSON.stringify({ error: 'Could not scrape the website. It may be blocking crawlers.' })
