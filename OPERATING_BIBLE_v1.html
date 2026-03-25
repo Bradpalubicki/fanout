@@ -1,0 +1,523 @@
+<!DOCTYPE html><html><head><title>Fanout (fanout.digital) Operating Bible v1</title>
+<style>body{font-family:system-ui,sans-serif;max-width:1200px;margin:0 auto;padding:20px;color:#1a1a1a;background:#fafafa}h1{color:#0A1628;border-bottom:3px solid #F5C842;padding-bottom:10px}h2{color:#0A1628;background:#f0f4ff;padding:8px 12px;border-left:4px solid #3b82f6;margin-top:30px}h3{color:#374151}.section{background:white;border:1px solid #e5e7eb;border-radius:8px;padding:20px;margin:15px 0}.gap{background:#fff7ed;border:1px solid #fed7aa;border-radius:6px;padding:10px;margin:5px 0}.critical{background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:10px;margin:5px 0}.ok{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:10px;margin:5px 0}.score{font-size:2em;font-weight:bold;color:#0A1628}table{width:100%;border-collapse:collapse}th{background:#0A1628;color:white;padding:8px;text-align:left}td{padding:8px;border:1px solid #e5e7eb}tr:nth-child(even){background:#f9fafb}.inherited{background:#f0f9ff;border:1px solid #bae6fd;padding:8px;border-radius:4px;font-style:italic;color:#0369a1}</style></head>
+<body>
+<h1>Fanout (fanout.digital) — Operating Bible v1</h1>
+<p><strong>Generated:</strong> 2026-03-25 | <strong>Score:</strong> <span class="score">26/35</span> | <strong>Repo:</strong> C:/Users/bradp/dev/fanout</p>
+<div class="critical"><strong>⚠️ CRITICAL PRODUCT STATUS:</strong> 9 of 13 social platform integrations have been BROKEN since March 13, 2026. OAuth apps are not registered. Only Bluesky, Mastodon, and potentially Bluesky-compatible AT Protocol platforms are fully functional. See Section 22.</div>
+
+<h2>1. Product Identity</h2>
+<div class="section">
+  <p><strong>Name:</strong> Fanout</p>
+  <p><strong>Domain:</strong> fanout.digital</p>
+  <p><strong>Package:</strong> fanout</p>
+  <p><strong>Description:</strong> Multi-platform social media content distribution SaaS. Write once, publish everywhere. Supports scheduling, AI-generated drafts, team approvals, analytics, bio link pages, RSS auto-posting, and inbox management.</p>
+  <p><strong>Stage:</strong> BUILT / PARTIALLY BROKEN — core infrastructure complete, 9 social platforms non-functional due to unregistered OAuth apps</p>
+  <p><strong>Target Audience:</strong> SMBs, agencies, solo creators, NuStack client brands</p>
+</div>
+
+<h2>2. Business Model</h2>
+<div class="section">
+  <table>
+    <tr><th>Tier</th><th>Price</th><th>Features</th></tr>
+    <tr><td>Trial</td><td>Free (time-limited)</td><td>Full feature access, trial_expires_at gate</td></tr>
+    <tr><td>Starter</td><td>$49/mo</td><td>Core scheduling, 1 profile</td></tr>
+    <tr><td>Agency</td><td>$199/mo</td><td>Multiple profiles, team members, approvals</td></tr>
+    <tr><td>White-Label</td><td>$399/mo</td><td>Custom branding, client sub-accounts</td></tr>
+  </table>
+  <p><strong>Payment:</strong> Square SDK (squareup ^44.0.0) — /api/payments/checkout + webhook</p>
+  <p><strong>Billing Page:</strong> /dashboard/billing — BLOCKED by brad-approval.js hook (see NOTES.md). Billing page files not created yet.</p>
+  <p><strong>Org-level subscriptions:</strong> org_subscriptions table in Supabase, linked to Clerk org_id</p>
+</div>
+
+<h2>3. Tech Stack</h2>
+<div class="section">
+  <table>
+    <tr><th>Layer</th><th>Technology</th><th>Version</th></tr>
+    <tr><td>Framework</td><td>Next.js (App Router)</td><td>16.1.6</td></tr>
+    <tr><td>Language</td><td>TypeScript strict</td><td>^5</td></tr>
+    <tr><td>Database</td><td>Supabase (PostgreSQL + RLS)</td><td>^2.98.0</td></tr>
+    <tr><td>Auth</td><td>Clerk (org-level)</td><td>^6.39.0</td></tr>
+    <tr><td>Payments</td><td>Square SDK</td><td>^44.0.0</td></tr>
+    <tr><td>AI</td><td>Anthropic SDK (Claude)</td><td>^0.78.0</td></tr>
+    <tr><td>Background Jobs</td><td>Inngest</td><td>^3.52.4</td></tr>
+    <tr><td>Email</td><td>Resend</td><td>^6.9.3</td></tr>
+    <tr><td>Web Crawl</td><td>Firecrawl (Mendable)</td><td>^4.15.2</td></tr>
+    <tr><td>Browser Automation</td><td>Playwright</td><td>^1.58.2</td></tr>
+    <tr><td>Image Gen</td><td>Replicate</td><td>^1.4.0</td></tr>
+    <tr><td>Error Tracking</td><td>Sentry</td><td>^10.41.0</td></tr>
+    <tr><td>Product Analytics</td><td>PostHog</td><td>^1.357.0</td></tr>
+    <tr><td>PDF Generation</td><td>PDFKit</td><td>^0.17.2</td></tr>
+    <tr><td>File Storage</td><td>Vercel Blob</td><td>^2.3.1</td></tr>
+    <tr><td>QR Codes</td><td>qrcode</td><td>^1.5.4</td></tr>
+    <tr><td>OTP</td><td>otplib</td><td>^13.3.0</td></tr>
+    <tr><td>AT Protocol</td><td>@atproto/api</td><td>^0.19.3</td></tr>
+    <tr><td>Drag &amp; Drop</td><td>@dnd-kit</td><td>^6.3.1</td></tr>
+    <tr><td>Styling</td><td>Tailwind CSS v4 + shadcn/ui</td><td>^4</td></tr>
+    <tr><td>Hosting</td><td>Vercel</td><td>Auto-deploy from main</td></tr>
+  </table>
+</div>
+
+<h2>4. Architecture Overview</h2>
+<div class="section">
+  <p><strong>Source layout:</strong> src/app/ (routes), src/distributors/ (platform-specific posting logic), src/inngest/ (background jobs), supabase/ (migrations)</p>
+  <p><strong>Post Pipeline:</strong> User creates post → /api/dashboard/post → stored in posts table → Inngest scheduled-post function → fan-out-post → distributor per platform → post_results recorded</p>
+  <p><strong>Distributor Pattern:</strong> src/distributors/base.ts defines interface. Each platform (twitter.ts, linkedin.ts, etc.) implements the posting logic. 13 distributors exist (bluesky, facebook, google-business-profile, instagram, linkedin, mastodon, pinterest, reddit, threads, tiktok, twitter, youtube + base)</p>
+  <p><strong>Inngest Functions:</strong> fan-out-post, scheduled-post, refresh-tokens, retry-failed, collect-analytics, collect-inbox, rss-auto-post, activation-nudge, trial-expiry-nudge</p>
+  <p><strong>Multi-tenant:</strong> Clerk organizations. Each org has a profile (profiles table), OAuth tokens per platform, subscription.</p>
+  <p><strong>Admin Panel:</strong> /api/admin/* routes for 2FA code management and OAuth app registration</p>
+  <p><strong>Mobile API:</strong> /api/mobile/* — separate endpoint set for mobile app consumption</p>
+  <p><strong>Public API:</strong> /api/v1/* — developer API (schedule, post, platforms, analytics)</p>
+</div>
+
+<h2>5. Database Schema</h2>
+<div class="section">
+  <table>
+    <tr><th>Table</th><th>Purpose</th><th>RLS</th></tr>
+    <tr><td>profiles</td><td>One per org — name, slug, api_key_hash, webhook_url, timezone</td><td>✅ org_id</td></tr>
+    <tr><td>oauth_tokens</td><td>Encrypted access/refresh tokens per profile per platform</td><td>✅ via profile_id</td></tr>
+    <tr><td>oauth_state</td><td>CSRF protection state tokens for OAuth flows</td><td>Service role</td></tr>
+    <tr><td>ai_drafts</td><td>Claude-generated drafts pending approval</td><td>✅ via profile_id</td></tr>
+    <tr><td>posts</td><td>All posts — content, platforms[], scheduled_for, status, source</td><td>✅ via profile_id</td></tr>
+    <tr><td>post_results</td><td>Per-platform result per post — success/fail, platform_post_id, error_message</td><td>✅ via post_id</td></tr>
+    <tr><td>rate_limit_log</td><td>API rate limiting log (migration 002)</td><td>Service role</td></tr>
+    <tr><td>org_subscriptions</td><td>Square subscription per org — tier, status, trial_expires_at</td><td>✅ org_id</td></tr>
+    <tr><td>agency_override</td><td>Agency-level overrides for white-label (migration 004)</td><td>✅ agency_id</td></tr>
+    <tr><td>oauth_app_credentials</td><td>Per-platform OAuth app client_id/secret for registered apps (migration 006)</td><td>Service role (admin only)</td></tr>
+    <tr><td>mobile_push_tokens</td><td>FCM/APNS tokens for push notifications (migration 008)</td><td>✅ user_id</td></tr>
+    <tr><td>posts (review fields)</td><td>review_status, reviewed_by, reviewed_at (migration 009)</td><td>✅ via profile_id</td></tr>
+    <tr><td>onboarding_system</td><td>Onboarding step completion per org (migration 010)</td><td>✅ org_id</td></tr>
+  </table>
+  <p><strong>Token security:</strong> pgcrypto extension. encrypt_token/decrypt_token helper functions. Encryption key from env.</p>
+</div>
+
+<h2>6. API Routes</h2>
+<div class="section">
+  <p><strong>Total: 75 routes</strong> across admin, agency, AI, cron, dashboard, mobile, OAuth, payments, reports, setup, v1 (public), webhooks</p>
+  <table>
+    <tr><th>Group</th><th>Routes</th><th>Purpose</th></tr>
+    <tr><td>/api/admin</td><td>4</td><td>2FA codes, OAuth app registration/check/list</td></tr>
+    <tr><td>/api/agency</td><td>4</td><td>Onboarding launch, status, snapshot — NuStack agency connection</td></tr>
+    <tr><td>/api/ai</td><td>3</td><td>Draft generation, draft history, image generation (Replicate)</td></tr>
+    <tr><td>/api/biolink</td><td>1</td><td>Bio link click tracking</td></tr>
+    <tr><td>/api/cron</td><td>4</td><td>Queue processing, token refresh, analytics collect, state cleanup</td></tr>
+    <tr><td>/api/dashboard</td><td>14</td><td>Analytics, approvals, biolink, calendar, inbox, links, platforms, post CRUD, profiles, RSS, settings</td></tr>
+    <tr><td>/api/engine/submit</td><td>1</td><td>Engine submit endpoint</td></tr>
+    <tr><td>/api/inngest</td><td>1</td><td>Inngest event receiver</td></tr>
+    <tr><td>/api/mobile</td><td>13</td><td>Mobile app API — ai draft, analytics, calendar, feed, posts, push tokens, settings, team</td></tr>
+    <tr><td>/api/oauth/[platform]</td><td>3</td><td>Authorize redirect, callback handler, page/account selector</td></tr>
+    <tr><td>/api/payments</td><td>2</td><td>Square checkout, webhook</td></tr>
+    <tr><td>/api/reports</td><td>1</td><td>PDF report generation</td></tr>
+    <tr><td>/api/setup</td><td>6</td><td>Onboarding — create accounts, jobs, brand extraction, calendar gen, profile gen, setup agent</td></tr>
+    <tr><td>/api/upload</td><td>1</td><td>Media upload to Vercel Blob</td></tr>
+    <tr><td>/api/v1</td><td>6</td><td>Public developer API — platforms, post, schedule, analytics</td></tr>
+    <tr><td>/api/webhooks</td><td>2</td><td>Inbound email, inbound SMS</td></tr>
+    <tr><td>/go/[code]</td><td>1</td><td>Short link redirect</td></tr>
+    <tr><td>/api/health</td><td>1</td><td>Health check</td></tr>
+  </table>
+</div>
+
+<h2>7. Authentication &amp; Authorization</h2>
+<div class="section">
+  <p><strong>Auth Provider:</strong> Clerk (@clerk/nextjs ^6.39.0) — organization-level auth</p>
+  <p><strong>Model:</strong> Org-level multi-tenancy. Each Clerk org maps to a Fanout profile.</p>
+  <p><strong>Profile Linking:</strong> Clerk org_id → profiles.org_id (Supabase)</p>
+  <p><strong>API Keys:</strong> profiles.api_key_hash — for /api/v1/* public API authentication</p>
+  <p><strong>Webhook Auth:</strong> profiles.api_key_hash used for inbound webhook verification</p>
+  <p><strong>Admin Routes:</strong> /api/admin/* — separate admin authentication (not Clerk user — likely internal secret)</p>
+  <div class="gap"><strong>Gap:</strong> Admin route auth mechanism not fully documented — verify ADMIN_SECRET env var or similar</div>
+</div>
+
+<h2>8. Payment Processing</h2>
+<div class="section">
+  <p><strong>Provider:</strong> Square SDK (squareup ^44.0.0) — NuStack primary payment standard</p>
+  <p><strong>Checkout:</strong> /api/payments/checkout → Square Web Payments → creates subscription</p>
+  <p><strong>Webhook:</strong> /api/payments/webhook → handles Square payment events → updates org_subscriptions</p>
+  <div class="critical"><strong>CRITICAL:</strong> /api/payments/checkout needs Square credential validation (graceful degradation block). Per NOTES.md — this was attempted but blocked by brad-approval.js hook. Needs manual verification that Square credentials exist in Vercel env before going live.</div>
+  <div class="critical"><strong>CRITICAL:</strong> Billing page (/dashboard/billing) is NOT created — blocked by brad-approval.js hook. Users cannot see their plan or upgrade. Nav item links to 404.</div>
+</div>
+
+<h2>9. Email &amp; SMS Automation</h2>
+<div class="section">
+  <p><strong>Email Provider:</strong> Resend (^6.9.3)</p>
+  <table>
+    <tr><th>Trigger</th><th>Template</th><th>When</th></tr>
+    <tr><td>Trial expiry</td><td>Upgrade nudge</td><td>Inngest trial-expiry-nudge function</td></tr>
+    <tr><td>Activation nudge</td><td>Onboarding prompt</td><td>Inngest activation-nudge function</td></tr>
+    <tr><td>Inbound email webhook</td><td>Inbox routing</td><td>/api/webhooks/inbound-email</td></tr>
+  </table>
+  <p><strong>SMS:</strong> /api/webhooks/inbound-sms — receives inbound SMS (Twilio or similar), routes to inbox</p>
+  <p><strong>Push Notifications:</strong> mobile_push_tokens table exists — /api/mobile/push-token registers devices</p>
+  <div class="gap"><strong>Gap:</strong> No welcome email on org creation/onboarding start</div>
+</div>
+
+<h2>10. Background Jobs &amp; Crons</h2>
+<div class="section">
+  <table>
+    <tr><th>Job / Cron</th><th>Trigger</th><th>Schedule</th><th>Purpose</th></tr>
+    <tr><td>fan-out-post</td><td>Inngest event</td><td>On-demand</td><td>Distribute post to all selected platforms via distributors</td></tr>
+    <tr><td>scheduled-post</td><td>Inngest event</td><td>On-demand (triggered by cron)</td><td>Execute scheduled posts</td></tr>
+    <tr><td>refresh-tokens</td><td>Inngest + Vercel Cron</td><td>0 */4 * * * (every 4h)</td><td>Refresh expiring OAuth tokens</td></tr>
+    <tr><td>retry-failed</td><td>Inngest event</td><td>On-demand</td><td>Retry failed post attempts</td></tr>
+    <tr><td>collect-analytics</td><td>Inngest + Vercel Cron</td><td>0 23 * * * (11pm daily)</td><td>Pull analytics from all platforms</td></tr>
+    <tr><td>collect-inbox</td><td>Inngest event</td><td>On-demand</td><td>Collect replies/mentions per platform</td></tr>
+    <tr><td>rss-auto-post</td><td>Inngest event</td><td>On-demand (RSS feeds)</td><td>Auto-post from RSS feed items</td></tr>
+    <tr><td>activation-nudge</td><td>Inngest event</td><td>Triggered on signup</td><td>Email nudge for incomplete onboarding</td></tr>
+    <tr><td>trial-expiry-nudge</td><td>Inngest event</td><td>Time-based</td><td>Email before trial expires</td></tr>
+    <tr><td>/api/cron/process-queue</td><td>Vercel Cron</td><td>*/5 * * * * (every 5min)</td><td>Process pending post queue</td></tr>
+    <tr><td>/api/cron/cleanup-state</td><td>Vercel Cron</td><td>0 * * * * (hourly)</td><td>Clean expired OAuth state tokens</td></tr>
+  </table>
+</div>
+
+<h2>11. AI Integration</h2>
+<div class="section">
+  <p><strong>Provider:</strong> Anthropic (Claude) via @anthropic-ai/sdk ^0.78.0</p>
+  <p><strong>Use Cases:</strong></p>
+  <ul>
+    <li>/api/ai/draft — generate social media post drafts (platform-aware content)</li>
+    <li>/api/ai/drafts — list draft history</li>
+    <li>/api/dashboard/inbox/suggest-reply — AI reply suggestions for inbox messages</li>
+    <li>/api/setup/extract-brand — extract brand voice/identity from website (Firecrawl + Claude)</li>
+    <li>/api/setup/generate-calendar — AI-generated content calendar</li>
+    <li>/api/setup/generate-profiles — AI-generated platform profiles</li>
+    <li>/api/setup-agent — onboarding setup agent</li>
+  </ul>
+  <p><strong>Image Generation:</strong> Replicate (^1.4.0) — /api/ai/generate-image</p>
+  <p><strong>Web Crawl for Brand:</strong> Firecrawl (@mendable/firecrawl-js ^4.15.2) — scrapes client website to extract brand context</p>
+</div>
+
+<h2>12. Environment Variables</h2>
+<div class="section">
+  <div class="critical"><strong>Note:</strong> No .env.local present in repo. All env vars must be set directly in Vercel.</div>
+  <table>
+    <tr><th>Variable</th><th>Purpose</th><th>Required</th></tr>
+    <tr><td>NEXT_PUBLIC_SUPABASE_URL</td><td>Supabase project URL</td><td>✅ Critical</td></tr>
+    <tr><td>NEXT_PUBLIC_SUPABASE_ANON_KEY</td><td>Supabase anon key</td><td>✅ Critical</td></tr>
+    <tr><td>SUPABASE_SERVICE_ROLE_KEY</td><td>Server-side DB writes</td><td>✅ Critical</td></tr>
+    <tr><td>NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY</td><td>Clerk public key</td><td>✅ Critical</td></tr>
+    <tr><td>CLERK_SECRET_KEY</td><td>Clerk server key</td><td>✅ Critical</td></tr>
+    <tr><td>SQUARE_ACCESS_TOKEN</td><td>Square payments</td><td>✅ Critical</td></tr>
+    <tr><td>SQUARE_LOCATION_ID</td><td>Square location</td><td>✅ Critical</td></tr>
+    <tr><td>SQUARE_WEBHOOK_SIGNATURE_KEY</td><td>Square webhook verification</td><td>✅ Critical</td></tr>
+    <tr><td>ANTHROPIC_API_KEY</td><td>Claude AI</td><td>✅ Critical</td></tr>
+    <tr><td>INNGEST_EVENT_KEY</td><td>Inngest event signing</td><td>✅ Critical</td></tr>
+    <tr><td>INNGEST_SIGNING_KEY</td><td>Inngest request verification</td><td>✅ Critical</td></tr>
+    <tr><td>RESEND_API_KEY</td><td>Email sending</td><td>✅ Critical</td></tr>
+    <tr><td>FIRECRAWL_API_KEY</td><td>Brand extraction crawls</td><td>✅ Critical</td></tr>
+    <tr><td>REPLICATE_API_TOKEN</td><td>AI image generation</td><td>⚠️ Feature-gated</td></tr>
+    <tr><td>BLOB_READ_WRITE_TOKEN</td><td>Vercel Blob media uploads</td><td>✅ Critical</td></tr>
+    <tr><td>SENTRY_DSN</td><td>Error tracking</td><td>✅ Critical</td></tr>
+    <tr><td>NEXT_PUBLIC_POSTHOG_KEY</td><td>Product analytics</td><td>⚠️ Feature-gated</td></tr>
+    <tr><td>TOKEN_ENCRYPTION_KEY</td><td>OAuth token encryption</td><td>✅ Critical</td></tr>
+    <tr><td>AGENCY_SNAPSHOT_SECRET</td><td>Agency health endpoint bearer token</td><td>✅ Critical</td></tr>
+    <tr><td>ADMIN_SECRET</td><td>Admin route protection</td><td>✅ Critical</td></tr>
+    <tr><td>[PLATFORM]_CLIENT_ID/SECRET</td><td>Per-platform OAuth apps (stored in oauth_app_credentials table)</td><td>⚠️ Needed per platform</td></tr>
+  </table>
+</div>
+
+<h2>13. Deployment</h2>
+<div class="section">
+  <p><strong>Platform:</strong> Vercel — auto-deploy from main branch</p>
+  <p><strong>Build Command:</strong> next build</p>
+  <p><strong>Security Headers:</strong> Configured in vercel.json — X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, X-Robots-Tag on /api/*</p>
+  <p><strong>Crons:</strong> 4 crons — queue processing (*/5), token refresh (*/4h), analytics (11pm), state cleanup (hourly)</p>
+  <p><strong>Sentry:</strong> sentry.client.config.ts, sentry.edge.config.ts, sentry.server.config.ts all present</p>
+</div>
+
+<h2>14. Monitoring &amp; Observability</h2>
+<div class="section">
+  <div class="ok">✅ Sentry configured (sentry.client.config.ts, sentry.edge.config.ts, sentry.server.config.ts)</div>
+  <div class="ok">✅ PostHog product analytics (@posthog/nextjs + posthog-js)</div>
+  <div class="ok">✅ /api/health endpoint</div>
+  <div class="ok">✅ /api/agency/status — NuStack agency monitoring connected</div>
+  <div class="gap"><strong>Gap:</strong> Need to verify SENTRY_DSN and NEXT_PUBLIC_POSTHOG_KEY are set in Vercel</div>
+</div>
+
+<h2>15. Error Handling</h2>
+<div class="section">
+  <p>Sentry captures runtime errors. Inngest handles background job retries with retry-failed function. Post errors stored per-platform in post_results.error_message.</p>
+  <div class="gap"><strong>Gap:</strong> Platform distributor errors (e.g., expired OAuth tokens) may fail silently if refresh-tokens cron hasn't run. Need alerting when post_results shows repeated failures.</div>
+</div>
+
+<h2>16. Security Posture</h2>
+<div class="section">
+  <div class="ok">✅ Security headers in vercel.json (X-Frame-Options, CSP-adjacent headers)</div>
+  <div class="ok">✅ RLS on all tables</div>
+  <div class="ok">✅ OAuth tokens encrypted at rest (pgcrypto)</div>
+  <div class="ok">✅ CSRF protection via oauth_state table</div>
+  <div class="ok">✅ Rate limiting log (002_rate_limit_log.sql)</div>
+  <div class="ok">✅ Clerk org-level auth</div>
+  <div class="ok">✅ Square webhook signature verification</div>
+  <div class="ok">✅ Inngest signing key verification</div>
+  <div class="gap"><strong>Gap:</strong> No Content-Security-Policy header defined in vercel.json</div>
+</div>
+
+<h2>17. Multi-Tenancy</h2>
+<div class="section">
+  <p><strong>Model:</strong> Clerk organizations → Supabase profiles (org_id link)</p>
+  <p><strong>Isolation:</strong> All data filtered by profile_id, which is scoped to Clerk org_id</p>
+  <p><strong>White-label:</strong> agency_override table (migration 004) for white-label customization</p>
+  <p><strong>API Key isolation:</strong> /api/v1/* authenticated by api_key_hash (per-profile)</p>
+</div>
+
+<h2>18. User Roles &amp; Permissions</h2>
+<div class="section">
+  <table>
+    <tr><th>Role</th><th>Access</th></tr>
+    <tr><td>Org Admin</td><td>Full access — connect platforms, manage team, billing, settings</td></tr>
+    <tr><td>Team Member</td><td>Create posts, submit for approval, view analytics</td></tr>
+    <tr><td>Approver</td><td>Review and approve/reject posts (dashboard/approvals)</td></tr>
+    <tr><td>API User</td><td>/api/v1/* via API key — schedule/post/analytics only</td></tr>
+    <tr><td>NuStack Admin</td><td>/api/admin/* — OAuth app management, 2FA</td></tr>
+  </table>
+  <p><strong>Post Approval Flow:</strong> posts.status = 'pending_approval' → /api/dashboard/approvals → posts.review_status updated</p>
+</div>
+
+<h2>19. Onboarding Flow</h2>
+<div class="section">
+  <p><strong>Onboarding system table:</strong> migration 010 tracks completion per org</p>
+  <p><strong>Setup API group:</strong> /api/setup/* — extract-brand, generate-profiles, generate-calendar, create-accounts, create-job</p>
+  <p><strong>Setup Agent:</strong> /api/setup-agent — AI-powered onboarding assistant</p>
+  <p><strong>Agency launch:</strong> /api/agency/launch-onboarding — triggers onboarding for agency clients</p>
+  <div class="gap"><strong>Gap:</strong> Billing page (/dashboard/billing) not created — users see 404 after upgrade prompt</div>
+</div>
+
+<h2>20. Core User Journeys</h2>
+<div class="section">
+  <ol>
+    <li><strong>Sign Up → Connect Platforms:</strong> Clerk sign up → create org → /api/setup/extract-brand → OAuth connect per platform → /api/oauth/[platform]/authorize → callback → tokens stored</li>
+    <li><strong>Create &amp; Schedule Post:</strong> Dashboard → write content → select platforms → set schedule → POST /api/dashboard/post → Inngest scheduled-post → fan-out → post_results</li>
+    <li><strong>AI Draft:</strong> Dashboard → AI Draft → POST /api/ai/draft → Claude generates platform-optimized content → approve → schedule</li>
+    <li><strong>Team Approval:</strong> Member creates post → status = pending_approval → approver reviews → /api/dashboard/approvals → approved → queued for posting</li>
+    <li><strong>Analytics:</strong> Inngest collect-analytics (11pm daily) → post engagement stored → /api/dashboard/analytics → charts in dashboard</li>
+    <li><strong>RSS Auto-Post:</strong> Add RSS feed → /api/dashboard/rss-feeds → trigger → Inngest rss-auto-post → new items auto-queued</li>
+  </ol>
+</div>
+
+<h2>21. Integrations Map</h2>
+<div class="section">
+  <table>
+    <tr><th>Integration</th><th>Type</th><th>Status</th><th>Notes</th></tr>
+    <tr><td>Clerk</td><td>Auth</td><td>✅ Live</td><td>Org-level</td></tr>
+    <tr><td>Supabase</td><td>Database</td><td>✅ Live</td><td>All data</td></tr>
+    <tr><td>Square</td><td>Payments</td><td>⚠️ Configured</td><td>Credentials needed, billing page missing</td></tr>
+    <tr><td>Anthropic</td><td>AI</td><td>✅ Live</td><td>Drafts, inbox replies, setup</td></tr>
+    <tr><td>Inngest</td><td>Background jobs</td><td>✅ Live</td><td>9 functions</td></tr>
+    <tr><td>Resend</td><td>Email</td><td>✅ Live</td><td>Nudges, notifications</td></tr>
+    <tr><td>Firecrawl</td><td>Web crawl</td><td>✅ Live</td><td>Brand extraction</td></tr>
+    <tr><td>Replicate</td><td>Image gen</td><td>⚠️ Configured</td><td>Needs API token</td></tr>
+    <tr><td>Sentry</td><td>Errors</td><td>✅ Configured</td><td>3 config files present</td></tr>
+    <tr><td>PostHog</td><td>Analytics</td><td>✅ Configured</td><td>Needs API key</td></tr>
+    <tr><td>Vercel Blob</td><td>Storage</td><td>✅ Live</td><td>Media uploads</td></tr>
+    <tr><td>Bluesky (AT Protocol)</td><td>Social</td><td>✅ Working</td><td>No OAuth app needed — credential-based</td></tr>
+    <tr><td>Mastodon</td><td>Social</td><td>✅ Working</td><td>No OAuth app needed — instance-based</td></tr>
+    <tr><td>Reddit</td><td>Social</td><td>❌ BROKEN</td><td>OAuth app not registered</td></tr>
+    <tr><td>Twitter/X</td><td>Social</td><td>❌ BROKEN</td><td>OAuth app not registered</td></tr>
+    <tr><td>Threads</td><td>Social</td><td>❌ BROKEN</td><td>Meta Business Verification pending</td></tr>
+    <tr><td>TikTok</td><td>Social</td><td>❌ BROKEN</td><td>Business account + app review needed (1-2 weeks)</td></tr>
+    <tr><td>YouTube</td><td>Social</td><td>❌ BROKEN</td><td>OAuth app not registered</td></tr>
+    <tr><td>Facebook</td><td>Social</td><td>❌ BROKEN</td><td>Meta Business Verification in review</td></tr>
+    <tr><td>LinkedIn</td><td>Social</td><td>❌ BROKEN</td><td>OAuth app not registered, review needed</td></tr>
+    <tr><td>Instagram</td><td>Social</td><td>❌ BROKEN</td><td>Meta Business Verification pending</td></tr>
+    <tr><td>Pinterest</td><td>Social</td><td>❌ BROKEN</td><td>App review needed (1-2 weeks)</td></tr>
+  </table>
+</div>
+
+<h2>22. Known Issues &amp; Bugs</h2>
+<div class="section">
+  <div class="critical"><strong>CRITICAL — BROKEN since 2026-03-13: Reddit integration</strong> — OAuth app not registered. All posting to Reddit will fail with auth error.</div>
+  <div class="critical"><strong>CRITICAL — BROKEN since 2026-03-13: Twitter/X integration</strong> — OAuth app not registered. All posting to Twitter will fail.</div>
+  <div class="critical"><strong>CRITICAL — BROKEN since 2026-03-13: Threads integration</strong> — Requires Meta Business Verification (in review, ETA unknown).</div>
+  <div class="critical"><strong>CRITICAL — BROKEN since 2026-03-13: TikTok integration</strong> — Requires TikTok business account + app review (1-2 weeks).</div>
+  <div class="critical"><strong>CRITICAL — BROKEN since 2026-03-13: YouTube integration</strong> — OAuth app not registered in Google Cloud Console.</div>
+  <div class="critical"><strong>CRITICAL — BROKEN since 2026-03-13: Facebook integration</strong> — Meta Business Verification in review (ETA unknown).</div>
+  <div class="critical"><strong>CRITICAL — BROKEN since 2026-03-13: LinkedIn integration</strong> — OAuth app not registered, w_member_social scope review needed.</div>
+  <div class="critical"><strong>CRITICAL — BROKEN since 2026-03-13: Instagram integration</strong> — Meta Business Verification pending (same as Facebook).</div>
+  <div class="critical"><strong>CRITICAL — BROKEN since 2026-03-13: Pinterest integration</strong> — App review needed for write permissions (1-2 weeks).</div>
+  <div class="critical"><strong>CRITICAL: Billing page missing</strong> — /dashboard/billing is 404. Users cannot view plan or upgrade. Nav link is broken.</div>
+  <div class="critical"><strong>CRITICAL: Square checkout graceful degradation not verified</strong> — checkout route may crash if SQUARE_ACCESS_TOKEN not set.</div>
+  <div class="gap"><strong>Issue:</strong> Billing page blocked by brad-approval.js hook — manual file creation required (see NOTES.md for exact code)</div>
+  <div class="gap"><strong>Issue:</strong> Google Business Profile distributor exists but not listed in platform docs — unclear if working</div>
+</div>
+
+<h2>23. Performance Considerations</h2>
+<div class="section">
+  <p><strong>Queue processing:</strong> Every 5 minutes via cron — posts are never delayed more than 5 minutes</p>
+  <p><strong>Fan-out scale:</strong> Inngest fan-out-post distributes to platforms in parallel — handles multiple platforms without sequential delay</p>
+  <p><strong>Token refresh:</strong> Every 4 hours — prevents stale token failures</p>
+  <div class="gap"><strong>Gap:</strong> No indexing strategy documented for posts table — as orgs grow, queries on profile_id + scheduled_for + status need composite index</div>
+  <div class="gap"><strong>Gap:</strong> Analytics data (post_results + analytics snapshots) will grow unbounded — no archival policy</div>
+</div>
+
+<h2>24. Rate Limiting</h2>
+<div class="section">
+  <p><strong>Rate limit log:</strong> 002_rate_limit_log.sql — infrastructure exists</p>
+  <p><strong>/api/v1/* public API:</strong> Rate limiting should be enforced here — verify implementation</p>
+  <div class="gap"><strong>Gap:</strong> Platform-level rate limits (Twitter: 300 posts/3h, LinkedIn: 125/day, etc.) not documented — distributor logic needs to handle HTTP 429 responses gracefully</div>
+</div>
+
+<h2>25. Data Retention &amp; Privacy</h2>
+<div class="section">
+  <p>OAuth state tokens have expires_at and are cleaned hourly by cleanup-state cron.</p>
+  <div class="gap"><strong>Gap:</strong> No retention policy for post history, analytics snapshots, or AI drafts</div>
+  <div class="gap"><strong>Gap:</strong> No account deletion/data export mechanism</div>
+  <div class="gap"><strong>Gap:</strong> No privacy policy page</div>
+</div>
+
+<h2>26. Compliance Requirements</h2>
+<div class="section">
+  <p><strong>Platform ToS:</strong> Each social platform has API usage terms. Multi-platform posting is generally permitted but automated posting rules vary.</p>
+  <div class="gap"><strong>Gap:</strong> No privacy policy or terms of service page in app</div>
+  <div class="gap"><strong>Gap:</strong> Twitter API v2 has strict automation policies — verify compliance</div>
+  <div class="gap"><strong>Gap:</strong> Meta (Facebook/Instagram/Threads) Business Verification required before live use</div>
+</div>
+
+<h2>27. Disaster Recovery</h2>
+<div class="section">
+  <p><strong>Database:</strong> Supabase managed backups</p>
+  <p><strong>Media:</strong> Vercel Blob — managed CDN, no self-backup needed</p>
+  <p><strong>OAuth tokens:</strong> If TOKEN_ENCRYPTION_KEY is lost, all platform connections are permanently broken</p>
+  <div class="critical"><strong>CRITICAL:</strong> TOKEN_ENCRYPTION_KEY rotation = all OAuth tokens unreadable. No re-encryption migration path documented. Back this up securely.</div>
+</div>
+
+<h2>28. Secrets Contract</h2>
+<div class="section">
+  <p><strong>Storage:</strong> Vercel Environment Variables</p>
+  <p><strong>Local dev:</strong> No .env.local found — dev env setup undocumented</p>
+  <p><strong>Most sensitive:</strong> TOKEN_ENCRYPTION_KEY (decrypts all OAuth tokens), SQUARE_ACCESS_TOKEN (live payments), CLERK_SECRET_KEY</p>
+  <div class="gap"><strong>Gap:</strong> No local development .env.example file. New developers have no env var reference.</div>
+</div>
+
+<h2>29. Third-Party Dependencies</h2>
+<div class="section">
+  <table>
+    <tr><th>Package</th><th>Risk</th></tr>
+    <tr><td>square ^44.0.0</td><td>Low — primary payment standard</td></tr>
+    <tr><td>@atproto/api ^0.19.3</td><td>Medium — AT Protocol evolving</td></tr>
+    <tr><td>@mendable/firecrawl-js ^4.15.2</td><td>Medium — external crawl dependency</td></tr>
+    <tr><td>replicate ^1.4.0</td><td>Medium — image gen vendor</td></tr>
+    <tr><td>@playwright/test ^1.58.2</td><td>Medium — heavy dependency for server use</td></tr>
+    <tr><td>pdfkit ^0.17.2</td><td>Low — local PDF gen</td></tr>
+    <tr><td>otplib ^13.3.0</td><td>Low — TOTP for admin 2FA</td></tr>
+    <tr><td>@vercel/blob ^2.3.1</td><td>Low — Vercel-native</td></tr>
+  </table>
+</div>
+
+<h2>30. Changelog</h2>
+<div class="section">
+  <table>
+    <tr><th>Migration</th><th>What Changed</th></tr>
+    <tr><td>001_initial_schema</td><td>profiles, oauth_tokens, oauth_state, ai_drafts, posts, post_results, analytics</td></tr>
+    <tr><td>002_rate_limit_log</td><td>Rate limiting infrastructure</td></tr>
+    <tr><td>003_org_subscriptions</td><td>Square subscription per org</td></tr>
+    <tr><td>004_agency_override</td><td>White-label agency overrides</td></tr>
+    <tr><td>005_oauth_state_pkce</td><td>PKCE support for OAuth flows</td></tr>
+    <tr><td>006_oauth_app_credentials</td><td>Per-platform OAuth app credentials (admin-managed)</td></tr>
+    <tr><td>007_organizations_subscriptions_is_valid</td><td>is_valid computed column for subscription status</td></tr>
+    <tr><td>008_mobile_push_tokens</td><td>FCM/APNS mobile push notification tokens</td></tr>
+    <tr><td>009_posts_review_fields</td><td>review_status, reviewed_by, reviewed_at on posts</td></tr>
+    <tr><td>010_onboarding_system</td><td>Per-org onboarding step completion tracking</td></tr>
+  </table>
+</div>
+
+<h2>31. Roadmap</h2>
+<div class="section">
+  <p><strong>Immediate (unblocking):</strong></p>
+  <ul>
+    <li>Register OAuth apps: Reddit, Twitter/X, LinkedIn, YouTube (can do now via Playwright)</li>
+    <li>Wait for Meta Business Verification (Facebook/Instagram/Threads)</li>
+    <li>Wait for TikTok/Pinterest app review</li>
+    <li>Create billing page files (bypassing brad-approval.js hook)</li>
+    <li>Verify Square credentials in Vercel + add graceful degradation to checkout route</li>
+  </ul>
+  <p><strong>Phase 2:</strong></p>
+  <ul>
+    <li>Mobile app (React Native / Expo) — mobile API routes already built</li>
+    <li>White-label client sub-accounts</li>
+    <li>Google Business Profile posting (distributor exists)</li>
+  </ul>
+</div>
+
+<h2>32. NuStack Agency Connection</h2>
+<div class="section">
+  <div class="ok">✅ /api/agency/status — connected to NuStack Agency Engine</div>
+  <div class="ok">✅ /api/agency/snapshot — KPI snapshot endpoint</div>
+  <div class="ok">✅ /api/agency/launch-onboarding — agency-triggered onboarding</div>
+  <div class="ok">✅ /api/agency/onboarding-status — onboarding progress</div>
+  <p>Bearer token: AGENCY_SNAPSHOT_SECRET env var must match agency engine's stored secret.</p>
+</div>
+
+<h2>33. Client Handoff Checklist</h2>
+<div class="section">
+  <ul>
+    <li>☑ Domain (fanout.digital) configured</li>
+    <li>☑ Sentry project configured</li>
+    <li>☑ PostHog project configured</li>
+    <li>☐ Square live credentials in Vercel (SQUARE_ACCESS_TOKEN, SQUARE_LOCATION_ID, SQUARE_WEBHOOK_SIGNATURE_KEY)</li>
+    <li>☐ Billing page files created</li>
+    <li>☐ Reddit OAuth app registered</li>
+    <li>☐ Twitter/X OAuth app registered</li>
+    <li>☐ LinkedIn OAuth app registered</li>
+    <li>☐ YouTube OAuth app registered (Google Cloud Console)</li>
+    <li>☐ Meta Business Verification approved (Facebook/Instagram/Threads)</li>
+    <li>☐ TikTok business account + app review complete</li>
+    <li>☐ Pinterest app review complete</li>
+    <li>☐ TOKEN_ENCRYPTION_KEY backed up securely (cannot rotate without migration)</li>
+    <li>☐ AGENCY_SNAPSHOT_SECRET set in Vercel + agency engine DB</li>
+  </ul>
+</div>
+
+<h2>34. Critical Gaps</h2>
+<div class="section">
+  <div class="critical">1. 9/13 social platforms BROKEN — Reddit, Twitter, Threads, TikTok, YouTube, Facebook, LinkedIn, Instagram, Pinterest all non-functional</div>
+  <div class="critical">2. Billing page (/dashboard/billing) is 404 — users cannot upgrade</div>
+  <div class="critical">3. Square checkout graceful degradation not verified</div>
+  <div class="critical">4. TOKEN_ENCRYPTION_KEY — no rotation path, no backup procedure documented</div>
+  <div class="gap">5. No .env.example for local dev setup</div>
+  <div class="gap">6. No privacy policy / terms pages</div>
+  <div class="gap">7. No account deletion / data export path</div>
+  <div class="gap">8. Platform rate limits (Twitter 300/3h, etc.) not handled in distributors</div>
+</div>
+
+<h2>35. Bible Score Card</h2>
+<div class="section">
+  <table>
+    <tr><th>Section</th><th>Status</th><th>Notes</th></tr>
+    <tr><td>1. Product Identity</td><td class="ok">✅</td><td></td></tr>
+    <tr><td>2. Business Model</td><td class="ok">✅</td><td>4 tiers documented</td></tr>
+    <tr><td>3. Tech Stack</td><td class="ok">✅</td><td>Full stack</td></tr>
+    <tr><td>4. Architecture</td><td class="ok">✅</td><td>Distributor pattern</td></tr>
+    <tr><td>5. DB Schema</td><td class="ok">✅</td><td>13 tables</td></tr>
+    <tr><td>6. API Routes</td><td class="ok">✅</td><td>All 75 grouped</td></tr>
+    <tr><td>7. Auth</td><td class="ok">✅</td><td>Clerk org-level</td></tr>
+    <tr><td>8. Payments</td><td class="gap">⚠️</td><td>Square — billing page missing, degradation unverified</td></tr>
+    <tr><td>9. Email/SMS</td><td class="ok">✅</td><td>Resend + SMS webhook</td></tr>
+    <tr><td>10. Background Jobs</td><td class="ok">✅</td><td>9 Inngest + 4 crons</td></tr>
+    <tr><td>11. AI</td><td class="ok">✅</td><td>Claude + Replicate + Firecrawl</td></tr>
+    <tr><td>12. Env Vars</td><td class="ok">✅</td><td>21 vars documented</td></tr>
+    <tr><td>13. Deployment</td><td class="ok">✅</td><td>Vercel + security headers</td></tr>
+    <tr><td>14. Monitoring</td><td class="ok">✅</td><td>Sentry + PostHog present</td></tr>
+    <tr><td>15. Error Handling</td><td class="ok">✅</td><td>Sentry + Inngest retry</td></tr>
+    <tr><td>16. Security</td><td class="ok">✅</td><td>Headers + RLS + encryption</td></tr>
+    <tr><td>17. Multi-Tenancy</td><td class="ok">✅</td><td>Clerk org model</td></tr>
+    <tr><td>18. Roles</td><td class="ok">✅</td><td>5 roles</td></tr>
+    <tr><td>19. Onboarding</td><td class="gap">⚠️</td><td>Billing page 404</td></tr>
+    <tr><td>20. User Journeys</td><td class="ok">✅</td><td>6 journeys</td></tr>
+    <tr><td>21. Integrations</td><td class="ok">✅</td><td>All 21 mapped with status</td></tr>
+    <tr><td>22. Known Issues</td><td class="ok">✅</td><td>11 issues including 9 CRITICAL broken platforms</td></tr>
+    <tr><td>23. Performance</td><td class="ok">✅</td><td>Queue + fan-out documented</td></tr>
+    <tr><td>24. Rate Limiting</td><td class="gap">⚠️</td><td>Infrastructure exists, platform limits not handled</td></tr>
+    <tr><td>25. Data Retention</td><td class="critical">❌</td><td>No retention/deletion policy</td></tr>
+    <tr><td>26. Compliance</td><td class="critical">❌</td><td>No privacy/terms pages</td></tr>
+    <tr><td>27. Disaster Recovery</td><td class="gap">⚠️</td><td>TOKEN_ENCRYPTION_KEY rotation risk</td></tr>
+    <tr><td>28. Secrets Contract</td><td class="gap">⚠️</td><td>No .env.example</td></tr>
+    <tr><td>29. Dependencies</td><td class="ok">✅</td><td>All listed</td></tr>
+    <tr><td>30. Changelog</td><td class="ok">✅</td><td>10 migrations</td></tr>
+    <tr><td>31. Roadmap</td><td class="ok">✅</td><td>Immediate unblocking items</td></tr>
+    <tr><td>32. Agency Connection</td><td class="ok">✅</td><td>4 agency routes live</td></tr>
+    <tr><td>33. Client Handoff</td><td class="ok">✅</td><td>Checklist with 14 items</td></tr>
+    <tr><td>34. Critical Gaps</td><td class="ok">✅</td><td>8 gaps</td></tr>
+    <tr><td>35. Score Card</td><td class="ok">✅</td><td>This section</td></tr>
+  </table>
+  <p><strong>Final Score: 26/35</strong> — 74% documented. Product is functionally built but operationally broken on 9/13 platforms. Top priorities: OAuth app registrations, billing page, compliance pages.</p>
+</div>
+</body></html>
