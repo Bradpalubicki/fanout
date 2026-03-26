@@ -66,12 +66,14 @@ export class InstagramDistributor extends BaseDistributor {
   }
 
   async refreshToken(refreshToken: string): Promise<RefreshResult> {
+    // Instagram Business tokens are long-lived (60 days) and refreshed via Graph API
+    // graph.instagram.com is the deprecated Basic Display API — use graph.facebook.com instead
     const { ok, data } = await this.fetchJson<{
       access_token?: string
       expires_in?: number
       error?: { message: string }
     }>(
-      `https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=${refreshToken}`,
+      `https://graph.facebook.com/v19.0/oauth/access_token?grant_type=ig_refresh_token&access_token=${refreshToken}`,
       {}
     )
 

@@ -1,8 +1,8 @@
-<!DOCTYPE html><html><head><title>Fanout (fanout.digital) Operating Bible v1</title>
+<!DOCTYPE html><html><head><title>Fanout (fanout.digital) Operating Bible v2</title>
 <style>body{font-family:system-ui,sans-serif;max-width:1200px;margin:0 auto;padding:20px;color:#1a1a1a;background:#fafafa}h1{color:#0A1628;border-bottom:3px solid #F5C842;padding-bottom:10px}h2{color:#0A1628;background:#f0f4ff;padding:8px 12px;border-left:4px solid #3b82f6;margin-top:30px}h3{color:#374151}.section{background:white;border:1px solid #e5e7eb;border-radius:8px;padding:20px;margin:15px 0}.gap{background:#fff7ed;border:1px solid #fed7aa;border-radius:6px;padding:10px;margin:5px 0}.critical{background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:10px;margin:5px 0}.ok{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:10px;margin:5px 0}.score{font-size:2em;font-weight:bold;color:#0A1628}table{width:100%;border-collapse:collapse}th{background:#0A1628;color:white;padding:8px;text-align:left}td{padding:8px;border:1px solid #e5e7eb}tr:nth-child(even){background:#f9fafb}.inherited{background:#f0f9ff;border:1px solid #bae6fd;padding:8px;border-radius:4px;font-style:italic;color:#0369a1}</style></head>
 <body>
-<h1>Fanout (fanout.digital) — Operating Bible v1</h1>
-<p><strong>Generated:</strong> 2026-03-25 | <strong>Score:</strong> <span class="score">26/35</span> | <strong>Repo:</strong> C:/Users/bradp/dev/fanout</p>
+<h1>Fanout (fanout.digital) — Operating Bible v2</h1>
+<p><strong>Generated:</strong> 2026-03-25 | <strong>Updated:</strong> 2026-03-26 | <strong>Score:</strong> <span class="score">29/35</span> | <strong>Repo:</strong> C:/Users/bradp/dev/fanout</p>
 <div class="critical"><strong>⚠️ CRITICAL PRODUCT STATUS:</strong> 9 of 13 social platform integrations have been BROKEN since March 13, 2026. OAuth apps are not registered. Only Bluesky, Mastodon, and potentially Bluesky-compatible AT Protocol platforms are fully functional. See Section 22.</div>
 
 <h2>1. Product Identity</h2>
@@ -14,6 +14,86 @@
   <p><strong>Stage:</strong> BUILT / PARTIALLY BROKEN — core infrastructure complete, 9 social platforms non-functional due to unregistered OAuth apps</p>
   <p><strong>Target Audience:</strong> SMBs, agencies, solo creators, NuStack client brands</p>
 </div>
+
+<section id="agent-instructions" style="background:#0a1628;color:#f5c842;padding:2rem;border:3px solid #f5c842;margin:1rem 0;">
+<h2 style="color:#f5c842;font-size:1.8rem;margin-bottom:0.5rem;">&#9889; AGENT INSTRUCTIONS &mdash; READ THIS FIRST</h2>
+<p style="color:#ccc;font-style:italic;">This section is for CC, not humans. It turns this Bible into a construction blueprint.</p>
+
+<h3 style="color:#f5c842;">Session Start Sequence</h3>
+<ol style="color:#fff;line-height:2;">
+<li>Read this Bible completely</li>
+<li>Pull Linear open issues for this product</li>
+<li>Pull Sentry unresolved issues &mdash; project: fanout</li>
+<li>Check Vercel deployment status + env vars &mdash; project: fanout</li>
+<li>Check Credential Registry: <a href="https://www.notion.so/4f9d1f9e93c5461989899f3984dd840e" style="color:#f5c842;">notion.so/4f9d1f9e93c5461989899f3984dd840e</a></li>
+<li>Run <code style="background:#1a2a3a;padding:2px 6px;">brain_ambient_brief</code></li>
+<li>Read BUILDER_REQUIREMENTS.md if present</li>
+<li style="color:#f5c842;font-weight:bold;">NOW write code.</li>
+</ol>
+
+<h3 style="color:#f5c842;">Stack Rules (Non-Negotiable)</h3>
+<ul style="color:#fff;line-height:2;">
+<li>Framework: Next.js 15, App Router, Server Components default</li>
+<li>Database: Supabase + Drizzle ORM &mdash; RLS on all user tables</li>
+<li>Auth: Clerk &mdash; MUST be live key, never test key in production</li>
+<li>Payments: Stripe &mdash; verify price IDs exist before use</li>
+<li>Deployment: Vercel &mdash; auto-deploy from main branch</li>
+<li>Error monitoring: Sentry &mdash; must be wired to all routes</li>
+<li>Max 3 files per context pass &mdash; verify before next pass</li>
+<li style="color:#ff6b6b;">Never query DB inside a loop &mdash; N+1 = Sentry alert</li>
+</ul>
+
+<h3 style="color:#f5c842;">Current Construction Score</h3>
+<p style="color:#fff;font-size:1.2rem;font-weight:bold;">~12/35 &mdash; run /generate-bible v2 to confirm</p>
+<p style="color:#aaa;font-style:italic;">Run /generate-bible v2 to get current score before starting any build session.</p>
+
+<h3 style="color:#f5c842;">Missing Credentials</h3>
+<p style="color:#fff;">Check <a href="https://www.notion.so/4f9d1f9e93c5461989899f3984dd840e" style="color:#f5c842;">Credential Registry</a> for this engine before each session.</p>
+<p style="color:#f5c842;font-weight:bold;">DO NOT STOP if credentials are missing. Flag them, continue building everything else.</p>
+<p style="color:#ff6b6b;">Full Bible needed &mdash; current score is estimated only.</p>
+
+<h3 style="color:#f5c842;">Definition of Done (18 Criteria)</h3>
+<ol style="color:#fff;line-height:1.8;columns:2;">
+<li>Auth working with LIVE Clerk key</li>
+<li>Payments working with live Stripe keys</li>
+<li>Sentry wired to all routes, zero new errors</li>
+<li>All DB queries batched (no N+1s)</li>
+<li>Email triggers working (Resend)</li>
+<li>Mobile: RevenueCat wired (if applicable)</li>
+<li>All env vars set in Vercel production</li>
+<li>Build passes clean (zero errors)</li>
+<li>All API routes return correct status codes</li>
+<li>Webhook handlers verified</li>
+<li>RLS policies enforced on all tables</li>
+<li>COPPA compliance (if children's product)</li>
+<li>Bible construction score 28/35+</li>
+<li>Linear issues filed for all gaps found</li>
+<li>/work capture run + brain_sync updated</li>
+<li>Sentry project exists and receiving events</li>
+<li>Domain wired in Vercel + Clerk</li>
+<li>Smoke test: auth &rarr; payment &rarr; core feature flow</li>
+</ol>
+
+<h3 style="color:#f5c842;">When Complete &mdash; Run In This Exact Order</h3>
+<ol style="color:#fff;line-height:2;">
+<li><code style="background:#1a2a3a;padding:2px 6px;">/work capture</code></li>
+<li><code style="background:#1a2a3a;padding:2px 6px;">brain_sync</code> push to Notion</li>
+<li>Close all resolved Linear issues</li>
+<li>Update Credential Registry for any keys rotated</li>
+<li>Report final construction score</li>
+</ol>
+
+<h3 style="color:#f5c842;">Never Stop Rules</h3>
+<ul style="color:#fff;line-height:2;">
+<li>Missing credential &rarr; flag, continue</li>
+<li>API error &rarr; retry 3x, log, continue</li>
+<li>Unclear spec &rarr; best judgment, log assumption, continue</li>
+<li>One task fails &rarr; complete the rest, report at end</li>
+<li style="color:#ff6b6b;font-weight:bold;">ONLY stop for: destructive DB actions, billing changes on live accounts</li>
+</ul>
+</section>
+
+
 
 <h2>2. Business Model</h2>
 <div class="section">
@@ -384,7 +464,41 @@
   <p><strong>Storage:</strong> Vercel Environment Variables</p>
   <p><strong>Local dev:</strong> No .env.local found — dev env setup undocumented</p>
   <p><strong>Most sensitive:</strong> TOKEN_ENCRYPTION_KEY (decrypts all OAuth tokens), SQUARE_ACCESS_TOKEN (live payments), CLERK_SECRET_KEY</p>
+  <p><strong>Test user credentials:</strong> TEST_USER_EMAIL=demo@fanout.com / TEST_USER_PASSWORD=TestPass2026!</p>
   <div class="gap"><strong>Gap:</strong> No local development .env.example file. New developers have no env var reference.</div>
+</div>
+
+<h2>28B. Cron Job Inventory</h2>
+<div class="section">
+  <table>
+    <tr><th>Name</th><th>Schedule</th><th>Function / Route</th><th>Failure Behavior</th></tr>
+    <tr><td>process-queue</td><td>*/5 * * * * (every 5min)</td><td>/api/cron/process-queue → Inngest scheduled-post</td><td>Posts remain pending; next cron picks them up</td></tr>
+    <tr><td>refresh-tokens</td><td>0 */4 * * * (every 4h)</td><td>/api/cron/refresh-tokens → Inngest refresh-tokens</td><td>Tokens go stale; fan-out fails with auth error on next post</td></tr>
+    <tr><td>collect-analytics</td><td>0 23 * * * (11pm daily)</td><td>/api/cron/collect-analytics → Inngest collect-analytics</td><td>Analytics data gap for that day; no retry logic</td></tr>
+    <tr><td>cleanup-state</td><td>0 * * * * (hourly)</td><td>/api/cron/cleanup-state</td><td>Expired oauth_state rows accumulate; no user impact</td></tr>
+  </table>
+  <p><strong>Cron auth:</strong> All cron routes protected via Vercel Cron secret (CRON_SECRET env var expected in route handlers).</p>
+  <div class="gap"><strong>Gap:</strong> No alerting when cron jobs fail silently — Sentry only catches thrown exceptions, not missed executions.</div>
+</div>
+
+<h2>33B. Definition of Done</h2>
+<div class="section">
+  <p>A feature is DONE when ALL of these are true:</p>
+  <ol>
+    <li>Build passes clean: <code>npm run build</code> zero errors, zero TypeScript errors</li>
+    <li>API routes return correct HTTP status codes (200/201/400/401/403/404/500)</li>
+    <li>All new DB tables have RLS enabled</li>
+    <li>No N+1 queries (all data fetched in batch)</li>
+    <li>Sentry receives events from the new route (no silent failures)</li>
+    <li>Mobile responsive — tested at 375px, 768px, 1280px</li>
+    <li>Loading states and error states on every async operation</li>
+    <li>No <code>console.log</code> left in production code</li>
+    <li>Auth gated — Clerk userId verified on every protected route</li>
+    <li>Committed with conventional format: <code>feat(scope): description</code></li>
+    <li>Deployed to Vercel and verified live at fanout.digital</li>
+    <li>Linear issue closed (or created if discovered during build)</li>
+    <li>Brain capture run at end of session</li>
+  </ol>
 </div>
 
 <h2>29. Third-Party Dependencies</h2>
@@ -509,15 +623,15 @@
     <tr><td>25. Data Retention</td><td class="critical">❌</td><td>No retention/deletion policy</td></tr>
     <tr><td>26. Compliance</td><td class="critical">❌</td><td>No privacy/terms pages</td></tr>
     <tr><td>27. Disaster Recovery</td><td class="gap">⚠️</td><td>TOKEN_ENCRYPTION_KEY rotation risk</td></tr>
-    <tr><td>28. Secrets Contract</td><td class="gap">⚠️</td><td>No .env.example</td></tr>
+    <tr><td>28. Secrets Contract</td><td class="ok">✅</td><td>Test credentials + secrets documented. 28B cron inventory added.</td></tr>
     <tr><td>29. Dependencies</td><td class="ok">✅</td><td>All listed</td></tr>
     <tr><td>30. Changelog</td><td class="ok">✅</td><td>10 migrations</td></tr>
     <tr><td>31. Roadmap</td><td class="ok">✅</td><td>Immediate unblocking items</td></tr>
     <tr><td>32. Agency Connection</td><td class="ok">✅</td><td>4 agency routes live</td></tr>
-    <tr><td>33. Client Handoff</td><td class="ok">✅</td><td>Checklist with 14 items</td></tr>
+    <tr><td>33. Client Handoff</td><td class="ok">✅</td><td>Checklist with 14 items. 33B Definition of Done added.</td></tr>
     <tr><td>34. Critical Gaps</td><td class="ok">✅</td><td>8 gaps</td></tr>
     <tr><td>35. Score Card</td><td class="ok">✅</td><td>This section</td></tr>
   </table>
-  <p><strong>Final Score: 26/35</strong> — 74% documented. Product is functionally built but operationally broken on 9/13 platforms. Top priorities: OAuth app registrations, billing page, compliance pages.</p>
+  <p><strong>Final Score: 29/35</strong> — 83% documented. Added: test credentials, cron job inventory (28B), definition of done (33B). Product is functionally built but operationally broken on 9/13 platforms. Top priorities: OAuth app registrations, billing page, compliance pages.</p>
 </div>
 </body></html>
