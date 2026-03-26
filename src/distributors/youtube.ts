@@ -5,40 +5,13 @@ export class YouTubeDistributor extends BaseDistributor {
   platform = 'youtube'
 
   async post(payload: PostPayload, accessToken: string, _pageId?: string): Promise<PostResult> {
-    // YouTube requires video content — for text-only posts, create a community post
-    // Community posts require YouTube Partner Program — this posts as a community update
-    const body = {
-      snippet: {
-        title: payload.content.slice(0, 100),
-        description: payload.content,
-        tags: [],
-        categoryId: '22',
-      },
-      status: {
-        privacyStatus: 'public',
-        selfDeclaredMadeForKids: false,
-      },
-    }
-
-    // For text community posts (no video upload)
+    // YouTube community posts use the Google YouTube Data API v3 posts endpoint
+    // Requires the channel to have community posts enabled (1000+ subscribers or YPP)
     const { ok, data } = await this.fetchJson<{
       id?: string
-      error?: { message: string }
+      error?: { message: string; code?: number }
     }>(
-      'https://www.googleapis.com/youtube/v3/watermarks?part=snippet,status',
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      }
-    )
-
-    // YouTube community posts use a different API endpoint
-    await fetch(
-      'https://www.googleapis.com/youtube/v3/channelSections?part=snippet',
+      'https://www.googleapis.com/youtube/v3/posts?part=id,snippet',
       {
         method: 'POST',
         headers: {
@@ -46,27 +19,24 @@ export class YouTubeDistributor extends BaseDistributor {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          kind: 'youtube#channelSection',
           snippet: {
-            type: 'singlePlaylist',
-            title: payload.content.slice(0, 100),
+            text: payload.content.slice(0, 5000),
           },
         }),
       }
     )
 
-    // Simplified: post as a playlist description update (community posts need separate approval)
-    if (!ok) {
+    if (!ok || !data.id) {
       return {
         success: false,
-        error: data.error?.message ?? 'YouTube requires video content or Partner Program for community posts',
+        error: data.error?.message ?? 'YouTube community post failed — channel may require 1000+ subscribers',
       }
     }
 
     return {
       success: true,
       platformPostId: data.id,
-      platformPostUrl: `https://www.youtube.com/watch?v=${data.id}`,
+      platformPostUrl: `https://www.youtube.com/post/${data.id}`,
     }
   }
 

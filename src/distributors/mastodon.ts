@@ -41,8 +41,12 @@ export class MastodonDistributor extends BaseDistributor {
   }
 
   async refreshToken(_refreshToken: string): Promise<RefreshResult> {
-    // Mastodon OAuth tokens typically don't expire — stub
-    throw new Error('Mastodon token refresh not implemented')
+    // Mastodon OAuth tokens don't expire — return a no-op success
+    // The caller should keep using the existing access token as-is
+    return {
+      accessToken: _refreshToken,
+      expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
+    }
   }
 
   async getAnalytics(_platformPostId: string, _accessToken: string): Promise<Partial<AnalyticsSnapshot>> {

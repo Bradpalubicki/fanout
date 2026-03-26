@@ -7,8 +7,10 @@ export class RedditDistributor extends BaseDistributor {
   async post(
     payload: PostPayload,
     accessToken: string,
-    subreddit = 'test'
+    subreddit?: string
   ): Promise<PostResult> {
+    const configSubreddit = payload.platformConfig?.subreddit as string | undefined
+    const targetSubreddit = (subreddit && subreddit.trim()) ? subreddit.trim() : (configSubreddit ?? 'test')
     const { ok, data } = await this.fetchJson<{
       json?: {
         data?: { url?: string; id?: string; name?: string }
@@ -23,7 +25,7 @@ export class RedditDistributor extends BaseDistributor {
       },
       body: new URLSearchParams({
         kind: 'self',
-        sr: subreddit,
+        sr: targetSubreddit,
         title: payload.content.slice(0, 300),
         text: payload.content,
         nsfw: 'false',
