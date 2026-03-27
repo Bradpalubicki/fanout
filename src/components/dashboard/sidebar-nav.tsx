@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, PenSquare, CalendarClock, BarChart3, Sparkles, Settings, Puzzle, Wand2, CreditCard, CalendarDays, MessageSquare, Link2, Rss, Zap, ClipboardCheck } from "lucide-react";
+import { LayoutDashboard, Users, PenSquare, CalendarClock, BarChart3, Sparkles, Settings, Puzzle, Wand2, CreditCard, CalendarDays, MessageSquare, Link2, Rss, Zap, ClipboardCheck, Radio } from "lucide-react";
 
 const NAV = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
@@ -13,6 +13,7 @@ const NAV = [
   { href: "/dashboard/schedule", label: "Schedule", icon: CalendarClock },
   { href: "/dashboard/inbox", label: "Inbox", icon: MessageSquare },
   { href: "/dashboard/approvals", label: "Approvals", icon: ClipboardCheck },
+  { href: "/dashboard/social", label: "Social Agent", icon: Radio },
   { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/dashboard/ai", label: "AI Drafts", icon: Sparkles },
   { href: "/dashboard/biolink", label: "Link in Bio", icon: Link2 },
