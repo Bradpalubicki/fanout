@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
   if (!orgId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const InsertSchema = z.object({
-    product: z.enum(['certusaudit', 'pocketpals', 'sitegrade', 'wellness-engine']),
+    product: z.string().min(1).max(100),
     platform: z.string().min(1),
     content: z.string().min(1).max(40000),
     image_url: z.string().url().optional(),
