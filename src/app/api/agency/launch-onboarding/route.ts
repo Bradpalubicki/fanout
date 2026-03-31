@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
+import { z } from "zod";
 import { supabase } from "@/lib/supabase";
 
 // FANOUT_AGENCY_KEY — 32-char hex secret shared with NuStack Agency Engine.
@@ -8,17 +9,17 @@ import { supabase } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
 
-interface LaunchOnboardingBody {
-  email: string;
-  name?: string;
-  org_id?: string;
-  prefill?: {
-    business_name?: string;
-    website?: string;
-    industry?: string;
-    client_type?: "direct" | "api";
-  };
-}
+const LaunchOnboardingSchema = z.object({
+  email: z.string().email(),
+  name: z.string().min(1).max(200).optional(),
+  org_id: z.string().min(1).max(200).optional(),
+  prefill: z.object({
+    business_name: z.string().min(1).max(200).optional(),
+    website: z.string().url().optional(),
+    industry: z.string().min(1).max(100).optional(),
+    client_type: z.enum(["direct", "api"]).optional(),
+  }).optional(),
+});
 
 export async function POST(request: Request) {
   const agencyKey = process.env.FANOUT_AGENCY_KEY;
@@ -28,16 +29,22 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let body: LaunchOnboardingBody;
+  let rawBody: unknown;
   try {
-    body = (await request.json()) as LaunchOnboardingBody;
+    rawBody = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  if (!body.email || typeof body.email !== "string") {
-    return NextResponse.json({ error: "email is required" }, { status: 400 });
+  const parsed = LaunchOnboardingSchema.safeParse(rawBody);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Validation failed", details: parsed.error.flatten() },
+      { status: 400 }
+    );
   }
+
+  const body = parsed.data;
 
   const clerkSecretKey = process.env.CLERK_SECRET_KEY;
   if (!clerkSecretKey) {

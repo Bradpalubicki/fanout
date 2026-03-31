@@ -95,7 +95,7 @@ export async function GET(req: NextRequest) {
     const currentCount = platformPostCount[platform] ?? 0
     if (currentCount >= rateLimit) {
       const err = `Rate limit reached for ${platform} this window (max ${rateLimit}/6hr) — will retry next run`
-      console.log(`[social-post-agent] rate limit: ${err}`)
+      void err // rate limit logged in results
       await supabase
         .from('social_posts_queue')
         .update({ status: 'pending' })
@@ -145,7 +145,7 @@ export async function GET(req: NextRequest) {
             })
             .eq('product', product)
             .eq('platform', platform)
-          console.log(`[social-post-agent] refreshed token for ${product}/${platform}`)
+          // token refreshed successfully
         } catch (refreshErr) {
           const err = `Token expired and refresh failed: ${refreshErr instanceof Error ? refreshErr.message : String(refreshErr)}`
           console.error(`[social-post-agent] ${id}: ${err}`)
@@ -225,7 +225,7 @@ export async function GET(req: NextRequest) {
 
         results.push({ id, product, platform, result: 'posted' })
         platformPostCount[platform] = (platformPostCount[platform] ?? 0) + 1
-        console.log(`[social-post-agent] ✓ ${product}/${platform}: ${postResult.platformPostUrl}`)
+        // post succeeded
       } else {
         const err = postResult.error ?? 'Unknown error'
         console.error(`[social-post-agent] ✗ ${product}/${platform}: ${err}`)
