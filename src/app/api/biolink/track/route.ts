@@ -21,6 +21,17 @@ export async function POST(req: NextRequest) {
   const hashBuffer = await crypto.subtle.digest('SHA-256', data)
   const ipHash = Array.from(new Uint8Array(hashBuffer)).map((b) => b.toString(16).padStart(2, '0')).join('').slice(0, 16)
 
+  // Rate limit: max 20 clicks per minute per IP hash
+  const oneMinuteAgo = new Date(Date.now() - 60_000).toISOString()
+  const { count } = await supabase
+    .from('biolink_clicks')
+    .select('*', { count: 'exact', head: true })
+    .eq('ip_hash', ipHash)
+    .gte('clicked_at', oneMinuteAgo)
+  if ((count ?? 0) >= 20) {
+    return NextResponse.json({ ok: false, error: 'Rate limited' }, { status: 429 })
+  }
+
   await supabase.from('biolink_clicks').insert({
     page_id: pageId,
     link_index: linkIndex,

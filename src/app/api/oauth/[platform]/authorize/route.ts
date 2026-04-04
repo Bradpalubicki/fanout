@@ -15,8 +15,8 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ platform: string }> }
 ) {
-  const { userId } = await auth()
-  if (!userId) {
+  const { userId, orgId } = await auth()
+  if (!userId || !orgId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -30,6 +30,17 @@ export async function GET(
   const parsed = QuerySchema.safeParse({ profileId: searchParams.get('profileId') })
   if (!parsed.success) {
     return NextResponse.json({ error: 'profileId required' }, { status: 400 })
+  }
+
+  // Verify profile belongs to the caller's org
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('id', parsed.data.profileId)
+    .eq('org_id', orgId)
+    .single()
+  if (!profile) {
+    return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
   }
 
   const stateToken = generateStateToken()

@@ -4,8 +4,7 @@ import { z } from "zod";
 import { supabase } from "@/lib/supabase";
 
 // FANOUT_AGENCY_KEY — 32-char hex secret shared with NuStack Agency Engine.
-// Generated value: 398881e3307280b857f35c1d4d4d9599
-// Add to Vercel env vars: FANOUT_AGENCY_KEY=398881e3307280b857f35c1d4d4d9599
+// Set in Vercel env vars. NEVER commit the value to source code.
 
 export const dynamic = "force-dynamic";
 
