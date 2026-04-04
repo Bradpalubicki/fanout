@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 
 const VERCEL_TOKEN = process.env.VERCEL_TOKEN;
 const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID;
@@ -53,12 +53,33 @@ async function upsertVercelEnv(key: string, value: string): Promise<void> {
   }
 }
 
+const ALLOWED_KEY_PREFIXES = [
+  'TWITTER_', 'FACEBOOK_', 'LINKEDIN_', 'REDDIT_', 'YOUTUBE_',
+  'TIKTOK_', 'PINTEREST_', 'GBP_', 'BLUESKY_', 'MASTODON_',
+  'INSTAGRAM_', 'THREADS_',
+]
+
 export async function savePlatformCredentials(
   platform: string,
   credentials: Record<string, string>
 ): Promise<SaveResult> {
   const { userId } = await auth();
   if (!userId) return { success: false, error: "Unauthorized" };
+
+  // Only NuStack admins can write env vars
+  const user = await currentUser();
+  const email = user?.emailAddresses?.[0]?.emailAddress ?? '';
+  if (!email.endsWith('@nustack.digital')) {
+    return { success: false, error: "Only NuStack admins can modify platform credentials" };
+  }
+
+  // Only allow known platform env var keys
+  const disallowedKeys = Object.keys(credentials).filter(
+    (key) => !ALLOWED_KEY_PREFIXES.some((prefix) => key.startsWith(prefix))
+  );
+  if (disallowedKeys.length > 0) {
+    return { success: false, error: `Disallowed env var keys: ${disallowedKeys.join(', ')}` };
+  }
 
   if (!VERCEL_TOKEN || !VERCEL_PROJECT_ID) {
     return {

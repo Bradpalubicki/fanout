@@ -9,7 +9,6 @@ import { z } from 'zod'
 const schema = z.object({
   brandData: z.record(z.string(), z.unknown()).nullable(),
   platforms: z.array(z.string()),
-  orgId: z.string(),
   profileId: z.string(),
   businessInfo: z.object({
     name: z.string(),
@@ -24,8 +23,8 @@ const anthropic = new Anthropic()
 const POST_TIMES = ['09:00', '12:00', '17:00']
 
 export async function POST(req: NextRequest) {
-  const { userId } = await auth()
-  if (!userId) {
+  const { userId, orgId } = await auth()
+  if (!userId || !orgId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -35,7 +34,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
   }
 
-  const { brandData, platforms, orgId, profileId, businessInfo } = parsed.data
+  const { brandData, platforms, profileId, businessInfo } = parsed.data
 
   // Verify profile belongs to org
   const { data: profile } = await supabase
