@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { supabase } from '@/lib/supabase'
 import { z } from 'zod'
+import { encryptToken } from '@/lib/crypto'
 
 const schema = z.object({
   profileId: z.string(),
@@ -48,7 +49,7 @@ export async function POST(req: NextRequest) {
       {
         profile_id: profileId,
         platform: 'bluesky',
-        access_token: JSON.stringify({ identifier, password }),
+        access_token: await encryptToken(JSON.stringify({ identifier, password })),
         platform_page_id: sessionData.did ?? null,
         platform_username: sessionData.handle ?? identifier,
         expires_at: null, // app passwords don't expire

@@ -36,6 +36,8 @@ export interface Post {
   source: 'api' | 'dashboard' | 'ai_generated'
   ai_draft_id: string | null
   created_by: string | null
+  metadata: Record<string, unknown> | null
+  platform_config: Record<string, unknown> | null
   created_at: string
 }
 

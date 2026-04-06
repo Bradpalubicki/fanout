@@ -15,7 +15,7 @@ export default function TermsPage() {
           <Link href="/" className="text-sm text-gray-400 hover:text-black transition-colors">← Back to home</Link>
         </div>
         <h1 className="text-3xl font-black text-black mb-2">Terms of Service</h1>
-        <p className="text-sm text-gray-400 mb-10">Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+        <p className="text-sm text-gray-400 mb-10">Last updated: April 6, 2026</p>
 
         <div className="prose prose-gray max-w-none space-y-8 text-sm text-gray-700 leading-relaxed">
           <section>

@@ -22,6 +22,12 @@ function extractCode(body: string): string | null {
 }
 
 export async function POST(req: NextRequest) {
+  // Validate webhook secret to prevent unauthorized 2FA code injection
+  const secret = req.headers.get('x-webhook-secret')
+  if (!process.env.SMS_WEBHOOK_SECRET || secret !== process.env.SMS_WEBHOOK_SECRET) {
+    return new NextResponse('<?xml version="1.0"?><Response></Response>', { status: 401, headers: { 'Content-Type': 'text/xml' } })
+  }
+
   const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
   const formData = await req.formData()
   const from = formData.get('From') as string

@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { supabase } from '@/lib/supabase'
 import { z } from 'zod'
+import { encryptToken } from '@/lib/crypto'
 
 const schema = z.object({
   profileId: z.string(),
@@ -50,7 +51,7 @@ export async function POST(req: NextRequest) {
       {
         profile_id: profileId,
         platform: 'mastodon',
-        access_token: accessToken,
+        access_token: await encryptToken(accessToken),
         platform_page_id: instanceUrl, // mastodon distributor reads this as instance_url
         platform_username: accountData.acct ?? accountData.username ?? null,
         expires_at: null,

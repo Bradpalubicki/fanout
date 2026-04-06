@@ -1,9 +1,11 @@
 import { inngest } from '@/lib/inngest'
 import { supabase } from '@/lib/supabase'
+import { fanOut } from '@/lib/fan-out'
 
 export const retryFailedPosts = inngest.createFunction(
   {
     id: 'retry-failed-posts',
+    concurrency: { limit: 1 },
   },
   { cron: '*/30 * * * *' }, // Every 30 minutes
   async ({ step }) => {
@@ -20,19 +22,27 @@ export const retryFailedPosts = inngest.createFunction(
 
     if (!failedPosts.length) return { retried: 0 }
 
-    const events = failedPosts.map((r) => ({
-      name: 'social/post.retry' as const,
-      data: { postId: r.post_id, platform: r.platform },
-    }))
+    // Group by post_id to retry each post once with its failed platforms
+    const byPost = new Map<string, { profileId: string; platforms: string[] }>()
+    for (const r of failedPosts) {
+      const post = r.posts as unknown as { profile_id: string }
+      const existing = byPost.get(r.post_id)
+      if (existing) {
+        existing.platforms.push(r.platform)
+      } else {
+        byPost.set(r.post_id, { profileId: post.profile_id, platforms: [r.platform] })
+      }
+    }
 
-    await step.sendEvent('send-retry-events', events)
+    // Retry each post via fan-out (which handles posting + result recording)
+    let retried = 0
+    for (const [postId, { profileId, platforms }] of byPost) {
+      await step.run(`retry-${postId}`, async () => {
+        await fanOut(postId, platforms, profileId)
+      })
+      retried++
+    }
 
-    // Increment attempt counter
-    const resultIds = failedPosts.map((r) => r.post_id)
-    await step.run('increment-attempts', async () => {
-      await supabase.rpc('increment_post_attempts', { post_ids: resultIds })
-    })
-
-    return { retried: failedPosts.length }
+    return { retried }
   }
 )

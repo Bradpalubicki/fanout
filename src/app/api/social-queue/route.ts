@@ -21,12 +21,18 @@ export async function GET(req: NextRequest) {
   const { product, platform, status, limit } = parsed.data
   const supabase = getSupabase()
 
+  // Get org's profile slugs to scope queue results
+  const { data: profiles } = await supabase.from('profiles').select('slug').eq('org_id', orgId)
+  const orgSlugs = (profiles ?? []).map((p) => p.slug).filter(Boolean)
+
   let query = supabase
     .from('social_posts_queue')
     .select('*')
     .order('created_at', { ascending: false })
     .limit(limit)
 
+  // Scope to org's products (product field maps to profile slug in NuStack engine pattern)
+  if (orgSlugs.length > 0) query = query.in('product', orgSlugs)
   if (product) query = query.eq('product', product)
   if (platform) query = query.eq('platform', platform)
   if (status) query = query.eq('status', status)

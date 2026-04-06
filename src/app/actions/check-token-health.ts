@@ -1,5 +1,6 @@
 'use server'
 
+import { auth } from '@clerk/nextjs/server'
 import { supabase } from '@/lib/supabase'
 
 export interface TokenHealth {
@@ -10,6 +11,18 @@ export interface TokenHealth {
 }
 
 export async function checkTokenHealth(profileId: string): Promise<TokenHealth[]> {
+  const { userId, orgId } = await auth()
+  if (!userId || !orgId) return []
+
+  // Verify profile belongs to caller's org
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('id', profileId)
+    .eq('org_id', orgId)
+    .single()
+  if (!profile) return []
+
   const { data: tokens, error } = await supabase
     .from('oauth_tokens')
     .select('platform, expires_at')

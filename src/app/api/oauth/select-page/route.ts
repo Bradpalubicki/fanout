@@ -15,8 +15,8 @@ const BodySchema = z.object({
 
 // GET: fetch available pages/accounts for a Meta platform
 export async function GET(req: NextRequest) {
-  const { userId } = await auth()
-  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { userId, orgId } = await auth()
+  if (!userId || !orgId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { searchParams } = new URL(req.url)
   const profileId = searchParams.get('profileId')
@@ -24,6 +24,17 @@ export async function GET(req: NextRequest) {
 
   if (!profileId || !platform) {
     return NextResponse.json({ error: 'profileId and platform required' }, { status: 400 })
+  }
+
+  // Verify profile belongs to the caller's org
+  const { data: profileCheck } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('id', profileId)
+    .eq('org_id', orgId)
+    .single()
+  if (!profileCheck) {
+    return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
   }
 
   // Get the stored user token
@@ -99,8 +110,8 @@ export async function GET(req: NextRequest) {
 
 // POST: save selected page and swap to page access token
 export async function POST(req: NextRequest) {
-  const { userId } = await auth()
-  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { userId, orgId } = await auth()
+  if (!userId || !orgId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await req.json()
   const parsed = BodySchema.safeParse(body)
@@ -109,6 +120,17 @@ export async function POST(req: NextRequest) {
   }
 
   const { profileId, platform, pageId, pageName } = parsed.data
+
+  // Verify profile belongs to the caller's org
+  const { data: profileOwner } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('id', profileId)
+    .eq('org_id', orgId)
+    .single()
+  if (!profileOwner) {
+    return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+  }
 
   // Get the user token
   const { data: tokenRow } = await supabase

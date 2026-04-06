@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { RefreshCw, Sparkles, CheckCircle2, XCircle, Clock, AlertTriangle, Settings } from 'lucide-react'
 import Link from 'next/link'
 import type { IntegrationCheck } from '@/lib/integration-status'
+import { generateSocialContent } from '@/app/actions/generate-social-content'
 import { PRODUCT_CONFIGS, PLATFORM_RULES, type Product } from '@/lib/product-platforms'
 
 interface QueueRow {
@@ -106,26 +107,18 @@ export function SocialCommandCenter() {
     if (!genProduct || !genPlatform) return
     setGenerating(true)
     try {
-      const res = await fetch('/api/generate-social-content', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_INTERNAL_KEY ?? ''}`,
-        },
-        body: JSON.stringify({
-          product: genProduct,
-          platform: genPlatform,
-          topic: genTopic || undefined,
-          queue: true,
-        }),
+      const result = await generateSocialContent({
+        product: genProduct,
+        platform: genPlatform,
+        topic: genTopic || undefined,
+        queue: true,
       })
-      const data = await res.json() as { content?: string; queued?: boolean; error?: string }
-      if (res.ok && data.queued) {
+      if (result.queued) {
         toast.success('Content generated and queued!')
         fetchQueue()
         setGenTopic('')
       } else {
-        toast.error(data.error ?? 'Generation failed')
+        toast.error(result.error ?? 'Generation failed')
       }
     } catch (e) {
       toast.error(`Error: ${e instanceof Error ? e.message : String(e)}`)
