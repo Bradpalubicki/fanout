@@ -4,39 +4,14 @@ import type { AnalyticsSnapshot } from '@/lib/types'
 export class YouTubeDistributor extends BaseDistributor {
   platform = 'youtube'
 
-  async post(payload: PostPayload, accessToken: string, _pageId?: string): Promise<PostResult> {
-    // YouTube community posts use the Google YouTube Data API v3 posts endpoint
-    // Requires the channel to have community posts enabled (1000+ subscribers or YPP)
-    const { ok, data } = await this.fetchJson<{
-      id?: string
-      error?: { message: string; code?: number }
-    }>(
-      'https://www.googleapis.com/youtube/v3/posts?part=id,snippet',
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          snippet: {
-            text: payload.content.slice(0, 5000),
-          },
-        }),
-      }
-    )
-
-    if (!ok || !data.id) {
-      return {
-        success: false,
-        error: data.error?.message ?? 'YouTube community post failed — channel may require 1000+ subscribers',
-      }
-    }
-
+  async post(_payload: PostPayload, _accessToken: string, _pageId?: string): Promise<PostResult> {
+    // YouTube Data API v3 has no endpoint for community posts.
+    // The /youtube/v3/posts endpoint does not exist.
+    // Video uploads require a different flow (resumable upload API).
+    // Mark as unsupported until video upload support is added.
     return {
-      success: true,
-      platformPostId: data.id,
-      platformPostUrl: `https://www.youtube.com/post/${data.id}`,
+      success: false,
+      error: 'YouTube community posts are not available via API. Video upload support coming soon.',
     }
   }
 

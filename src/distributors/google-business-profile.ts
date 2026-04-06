@@ -30,49 +30,16 @@ export class GoogleBusinessProfileDistributor extends BaseDistributor {
     return { accountName, locationName: locData.locations[0].name }
   }
 
-  async post(payload: PostPayload, accessToken: string, _pageId?: string): Promise<PostResult> {
-    const loc = await this.getAccountLocation(accessToken)
-    if (!loc) {
-      return { success: false, error: 'No Google Business Profile location found' }
-    }
-
-    const { locationName } = loc
-
-    const localPost: Record<string, unknown> = {
-      languageCode: 'en-US',
-      summary: payload.content.slice(0, 1500),
-      topicType: 'STANDARD',
-    }
-
-    // Attach media if provided
-    if (payload.mediaUrls?.length) {
-      localPost.media = payload.mediaUrls.slice(0, 1).map((url) => ({
-        mediaFormat: 'PHOTO',
-        sourceUrl: url,
-      }))
-    }
-
-    const { ok, data } = await this.fetchJson<{ name?: string; error?: { message?: string } }>(
-      `https://mybusiness.googleapis.com/v4/${locationName}/localPosts`,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(localPost),
-      }
-    )
-
-    if (!ok || !data.name) {
-      const errMsg = (data as { error?: { message?: string } }).error?.message ?? 'GBP post failed'
-      return { success: false, error: errMsg }
-    }
-
+  async post(_payload: PostPayload, _accessToken: string, _pageId?: string): Promise<PostResult> {
+    // The mybusiness.googleapis.com/v4/localPosts API has been fully deprecated and removed.
+    // Google migrated to the Business Profile API v1, but the local posts endpoint
+    // has not been made available in the new API.
+    // See: https://developers.google.com/my-business/content/overview
+    // TODO: Re-implement when Google provides a v1 posts endpoint or use the
+    // Google Business Profile Performance API for posting.
     return {
-      success: true,
-      platformPostId: data.name,
-      platformPostUrl: `https://business.google.com/`,
+      success: false,
+      error: 'Google Business Profile posting is temporarily unavailable — API migration in progress.',
     }
   }
 

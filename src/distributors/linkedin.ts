@@ -5,10 +5,9 @@ export class LinkedInDistributor extends BaseDistributor {
   platform = 'linkedin'
 
   async post(payload: PostPayload, accessToken: string, _pageId?: string): Promise<PostResult> {
-    // Get user URN first
+    // Get user URN via userinfo endpoint (OIDC)
     const { ok: meOk, data: meData } = await this.fetchJson<{
       sub?: string
-      id?: string
     }>('https://api.linkedin.com/v2/userinfo', {
       headers: { Authorization: `Bearer ${accessToken}` },
     })
@@ -17,30 +16,28 @@ export class LinkedInDistributor extends BaseDistributor {
       return { success: false, error: 'Failed to get LinkedIn user ID' }
     }
 
-    const authorUrn = `urn:li:person:${meData.sub}`
-
-    const shareBody: Record<string, unknown> = {
-      author: authorUrn,
-      lifecycleState: 'PUBLISHED',
-      specificContent: {
-        'com.linkedin.ugc.ShareContent': {
-          shareCommentary: { text: payload.content },
-          shareMediaCategory: 'NONE',
-        },
+    // Community Management API (replaces deprecated UGC Posts API)
+    const postBody = {
+      author: `urn:li:person:${meData.sub}`,
+      commentary: payload.content,
+      visibility: 'PUBLIC',
+      distribution: {
+        feedDistribution: 'MAIN_FEED',
       },
-      visibility: { 'com.linkedin.ugc.MemberNetworkVisibility': 'PUBLIC' },
+      lifecycleState: 'PUBLISHED',
     }
 
     const { ok, data } = await this.fetchJson<{ id?: string; message?: string }>(
-      'https://api.linkedin.com/v2/ugcPosts',
+      'https://api.linkedin.com/rest/posts',
       {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
+          'LinkedIn-Version': '202401',
           'X-Restli-Protocol-Version': '2.0.0',
         },
-        body: JSON.stringify(shareBody),
+        body: JSON.stringify(postBody),
       }
     )
 

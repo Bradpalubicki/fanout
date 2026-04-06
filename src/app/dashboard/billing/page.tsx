@@ -19,7 +19,7 @@ const PLANS = [
     price: '$49',
     period: '/mo',
     profiles: 3,
-    platforms: 5,
+    platforms: 9,
     ai: false,
     highlight: false,
   },
