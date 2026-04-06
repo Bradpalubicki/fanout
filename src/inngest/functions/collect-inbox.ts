@@ -1,5 +1,6 @@
 import { inngest } from '@/lib/inngest'
 import { supabase } from '@/lib/supabase'
+import { decryptToken } from '@/lib/crypto'
 
 interface OAuthToken {
   profile_id: string
@@ -304,13 +305,19 @@ export const collectInbox = inngest.createFunction(
 
     for (const token of tokens) {
       await step.run(`poll-${token.platform}-${token.profile_id}`, async () => {
+        // Decrypt token before using in API calls
+        const decryptedToken: OAuthToken = {
+          ...token,
+          access_token: await decryptToken(token.access_token),
+        }
+
         let newItems: InboxInsert[] = []
 
-        if (token.platform === 'facebook') newItems = await fetchFacebookItems(token)
-        else if (token.platform === 'instagram') newItems = await fetchInstagramItems(token)
-        else if (token.platform === 'twitter') newItems = await fetchTwitterItems(token)
-        else if (token.platform === 'linkedin') newItems = await fetchLinkedInItems(token)
-        else if (token.platform === 'youtube') newItems = await fetchYouTubeItems(token)
+        if (token.platform === 'facebook') newItems = await fetchFacebookItems(decryptedToken)
+        else if (token.platform === 'instagram') newItems = await fetchInstagramItems(decryptedToken)
+        else if (token.platform === 'twitter') newItems = await fetchTwitterItems(decryptedToken)
+        else if (token.platform === 'linkedin') newItems = await fetchLinkedInItems(decryptedToken)
+        else if (token.platform === 'youtube') newItems = await fetchYouTubeItems(decryptedToken)
 
         if (!newItems.length) return
 

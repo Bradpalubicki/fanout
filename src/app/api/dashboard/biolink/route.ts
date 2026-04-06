@@ -83,13 +83,27 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ page: data })
 }
 
+const patchSchema = z.object({
+  id: z.string().uuid(),
+  handle: z.string().min(2).max(30).regex(/^[a-z0-9-_]+$/).optional(),
+  title: z.string().min(1).optional(),
+  bio: z.string().max(300).optional(),
+  avatar_url: z.string().url().optional().nullable(),
+  background_color: z.string().optional(),
+  button_style: z.enum(['rounded', 'pill', 'square']).optional(),
+  links: z.array(linkSchema).optional(),
+  is_published: z.boolean().optional(),
+})
+
 export async function PATCH(req: NextRequest) {
   const { userId, orgId } = await auth()
   if (!userId || !orgId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await req.json()
-  const { id, ...rest } = body as { id: string } & Record<string, unknown>
-  if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 })
+  const parsed = patchSchema.safeParse(body)
+  if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 })
+
+  const { id, ...fields } = parsed.data
 
   // Verify ownership
   const { data: page } = await supabase
@@ -101,7 +115,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
-  const { data, error } = await supabase.from('biolink_pages').update(rest).eq('id', id).select().single()
+  const { data, error } = await supabase.from('biolink_pages').update(fields).eq('id', id).select().single()
   if (error) return NextResponse.json({ error: 'Failed to update' }, { status: 500 })
   return NextResponse.json({ page: data })
 }

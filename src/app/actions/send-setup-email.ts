@@ -1,5 +1,6 @@
 "use server";
 
+import { auth } from "@clerk/nextjs/server";
 import { Resend } from "resend";
 
 export interface SendSetupEmailParams {
@@ -14,6 +15,9 @@ export interface SendSetupEmailParams {
 export async function sendSetupEmail(
   params: SendSetupEmailParams
 ): Promise<{ sent?: boolean; skipped?: boolean; error?: string }> {
+  const { userId } = await auth();
+  if (!userId) return { error: "Unauthorized" };
+
   const key = process.env.RESEND_API_KEY;
   if (!key || key === "placeholder" || key.includes("placeholder")) {
     return { skipped: true };

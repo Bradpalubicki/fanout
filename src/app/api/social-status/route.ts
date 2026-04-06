@@ -11,10 +11,14 @@ export async function GET() {
 
   const supabase = getSupabase()
 
-  // Get queue stats
-  const { data: queueStats } = await supabase
-    .from('social_posts_queue')
-    .select('status, platform, product')
+  // Get org's profile slugs to scope results
+  const { data: profiles } = await supabase.from('profiles').select('slug').eq('org_id', orgId)
+  const orgSlugs = (profiles ?? []).map((p) => p.slug).filter(Boolean)
+
+  // Get queue stats scoped to org
+  let queueQuery = supabase.from('social_posts_queue').select('status, platform, product')
+  if (orgSlugs.length > 0) queueQuery = queueQuery.in('product', orgSlugs)
+  const { data: queueStats } = await queueQuery
 
   const stats = {
     pending: 0,
@@ -32,10 +36,12 @@ export async function GET() {
     stats.byPlatform[row.platform] = (stats.byPlatform[row.platform] ?? 0) + 1
   }
 
-  // Get connected accounts
-  const { data: accounts } = await supabase
+  // Get connected accounts scoped to org
+  let accountsQuery = supabase
     .from('product_platform_accounts')
     .select('product, platform, account_handle, status, last_used_at')
+  if (orgSlugs.length > 0) accountsQuery = accountsQuery.in('product', orgSlugs)
+  const { data: accounts } = await accountsQuery
 
   return NextResponse.json({
     integrations: getIntegrationAudit(),

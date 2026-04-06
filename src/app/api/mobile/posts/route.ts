@@ -32,6 +32,13 @@ export async function POST(req: NextRequest) {
 
   const { profileId, content, platforms, mediaUrls, scheduledFor } = parsed.data
 
+  // Validate profileId format to prevent filter injection
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(profileId)
+  const isSlug = /^[a-z0-9][a-z0-9-_]{0,62}$/i.test(profileId)
+  if (!isUuid && !isSlug) {
+    return NextResponse.json({ error: 'Invalid profile identifier' }, { status: 400 })
+  }
+
   // Verify profile belongs to user's org
   const { data: profile } = await supabase
     .from('profiles')
