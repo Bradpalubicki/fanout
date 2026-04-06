@@ -93,10 +93,12 @@ export async function fanOut(
       try {
         const accessToken = await decryptToken(token.access_token)
         const platformPageId = (token as OAuthToken & { platform_page_id?: string }).platform_page_id ?? undefined
+        const postData = post as Post
         const result = await distributor.post(
           {
-            content: (post as Post).content,
-            mediaUrls: (post as Post).media_urls ?? undefined,
+            content: postData.content,
+            mediaUrls: postData.media_urls ?? undefined,
+            platformConfig: postData.platform_config ?? undefined,
           },
           accessToken,
           platformPageId
