@@ -13,6 +13,7 @@ import { GoogleBusinessProfileDistributor } from '@/distributors/google-business
 import { BlueskyDistributor } from '@/distributors/bluesky'
 import { MastodonDistributor } from '@/distributors/mastodon'
 import type { BaseDistributor } from '@/distributors/base'
+import { RateLimitError } from '@/distributors/base'
 import type { Post, OAuthToken } from './types'
 
 const DISTRIBUTORS: Record<string, BaseDistributor> = {
@@ -32,12 +33,14 @@ const DISTRIBUTORS: Record<string, BaseDistributor> = {
 
 export { DISTRIBUTORS }
 
-interface FanOutResult {
+export interface FanOutResult {
   platform: string
   success: boolean
   platformPostId?: string
   platformPostUrl?: string
   error?: string
+  rateLimited?: boolean
+  retryAfterSeconds?: number
 }
 
 export async function fanOut(
@@ -124,6 +127,21 @@ export async function fanOut(
 
         return { platform, ...result }
       } catch (err) {
+        if (err instanceof RateLimitError) {
+          await supabase.from('post_results').upsert({
+            post_id: postId,
+            platform,
+            status: 'failed',
+            error_message: err.message,
+          })
+          return {
+            platform,
+            success: false,
+            error: err.message,
+            rateLimited: true,
+            retryAfterSeconds: err.retryAfterSeconds,
+          }
+        }
         const error = err instanceof Error ? err.message : 'Unknown error'
         await supabase.from('post_results').upsert({
           post_id: postId,

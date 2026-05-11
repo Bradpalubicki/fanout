@@ -9,6 +9,7 @@ import { rssAutoPost, rssCheckFeed } from '@/inngest/functions/rss-auto-post'
 import { collectInbox } from '@/inngest/functions/collect-inbox'
 import { trialExpiryNudge } from '@/inngest/functions/trial-expiry-nudge'
 import { activationNudge } from '@/inngest/functions/activation-nudge'
+import { cleanupRateLimitLogs } from '@/inngest/functions/cleanup-rate-limit-logs'
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
@@ -24,5 +25,6 @@ export const { GET, POST, PUT } = serve({
     collectInbox,
     trialExpiryNudge,
     activationNudge,
+    cleanupRateLimitLogs,
   ],
 })

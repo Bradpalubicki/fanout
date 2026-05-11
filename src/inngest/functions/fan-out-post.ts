@@ -1,5 +1,5 @@
 import { inngest } from '@/lib/inngest'
-import { fanOut } from '@/lib/fan-out'
+import { fanOut, type FanOutResult } from '@/lib/fan-out'
 import { supabase } from '@/lib/supabase'
 
 export const fanOutPost = inngest.createFunction(
@@ -49,7 +49,17 @@ export const fanOutPost = inngest.createFunction(
 
     const results = await step.run('fan-out-to-platforms', async () => {
       return fanOut(postId, platforms, profileId)
-    })
+    }) as FanOutResult[]
+
+    // Handle rate-limited platforms: sleep then surface as retriable
+    const rateLimitedResults = results.filter((r) => r.rateLimited)
+    if (rateLimitedResults.length > 0) {
+      const maxRetryAfter = Math.max(...rateLimitedResults.map((r) => r.retryAfterSeconds ?? 60))
+      await step.sleep('rate-limit-backoff', `${maxRetryAfter}s`)
+      // Throw to trigger Inngest retry with the rate-limited platforms
+      const platforms = rateLimitedResults.map((r) => r.platform).join(', ')
+      throw new Error(`Rate limited by: ${platforms}. Retrying after ${maxRetryAfter}s backoff.`)
+    }
 
     // Send failure email if all platforms failed
     const allFailed = results.every((r) => !r.success)

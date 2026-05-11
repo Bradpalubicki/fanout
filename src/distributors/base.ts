@@ -1,5 +1,15 @@
 import type { AnalyticsSnapshot } from '@/lib/types'
 
+export class RateLimitError extends Error {
+  constructor(
+    public readonly retryAfterSeconds: number,
+    public readonly platform: string
+  ) {
+    super(`Rate limited by ${platform} — retry after ${retryAfterSeconds}s`)
+    this.name = 'RateLimitError'
+  }
+}
+
 export interface PostPayload {
   content: string
   mediaUrls?: string[]
@@ -36,6 +46,10 @@ export abstract class BaseDistributor {
     options: RequestInit
   ): Promise<{ ok: boolean; data: T; status: number }> {
     const res = await fetch(url, options)
+    if (res.status === 429) {
+      const retryAfter = parseInt(res.headers.get('retry-after') ?? '60', 10)
+      throw new RateLimitError(isNaN(retryAfter) ? 60 : retryAfter, this.platform)
+    }
     const data = await res.json().catch(() => ({}))
     return { ok: res.ok, data: data as T, status: res.status }
   }
