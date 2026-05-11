@@ -106,11 +106,10 @@ export function SocialCommandCenter() {
     if (!genProduct || !genPlatform) return
     setGenerating(true)
     try {
-      const res = await fetch('/api/generate-social-content', {
+      const res = await fetch('/api/dashboard/generate-content', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_INTERNAL_KEY ?? ''}`,
         },
         body: JSON.stringify({
           product: genProduct,

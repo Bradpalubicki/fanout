@@ -3,11 +3,15 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server';
 import { publishFanoutJob } from '@/lib/fanout/pipeline';
 import { getFanoutJob } from '@/lib/fanout/storage';
+import { verifyInternalKey } from '@/lib/auth';
 
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const authErr = verifyInternalKey(req.headers.get('authorization'));
+  if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
+
   try {
     const { id: jobId } = await params;
 

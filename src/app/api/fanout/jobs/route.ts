@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createFanoutJob, runFanoutPipeline } from '@/lib/fanout';
 import type { FanoutJobType, FanoutPlatform } from '@/lib/fanout';
+import { verifyInternalKey } from '@/lib/auth';
 
 const CreateJobSchema = z.object({
   type: z.enum([
@@ -37,6 +38,9 @@ const CreateJobSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const authErr = verifyInternalKey(req.headers.get('authorization'));
+  if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
+
   try {
     const body = await req.json();
     const parsed = CreateJobSchema.safeParse(body);
