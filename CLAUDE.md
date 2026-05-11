@@ -1,3 +1,5 @@
+# See Skill M v2.0 for pre-build gates: 35d663704e4081a78514c99bb6716c54
+
 ## REPO IDENTITY
 ENGINE_NAME=fanout
 DOPPLER_PROJECT=fanout
@@ -24,4 +26,3 @@ Color system for Accrefi/NuStack work:
 - Blue: #2563EB (usage-based tools)
 - Green: #16A34A (free/per-transaction tools)
 - Gold chips: NuStack-built tools
-
