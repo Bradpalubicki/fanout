@@ -3,6 +3,8 @@ import { z } from 'zod'
 import { verifyInternalKey } from '@/lib/auth'
 import { inngest } from '@/lib/inngest'
 
+export const dynamic = 'force-dynamic'
+
 const bodySchema = z.object({
   orgId: z.string().min(1),
   platform: z.enum(['bluesky', 'pinterest', 'twitter']),
