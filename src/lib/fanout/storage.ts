@@ -1,10 +1,23 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { FanoutJob, FanoutEvent } from './types';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _client: SupabaseClient<any> | null = null
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getClient(): SupabaseClient<any> {
+  if (!_client) {
+    _client = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+  }
+  return _client
+}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const supabase: SupabaseClient<any> = new Proxy({} as SupabaseClient<any>, {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  get(_t, prop: string) { return (getClient() as any)[prop] }
+})
 
 export async function saveFanoutJob(job: FanoutJob): Promise<void> {
   const { error } = await supabase.from('fanout_jobs').insert({

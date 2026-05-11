@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { NextRequest, NextResponse } from 'next/server';
 import { publishFanoutJob } from '@/lib/fanout/pipeline';
 import { getFanoutJob } from '@/lib/fanout/storage';
