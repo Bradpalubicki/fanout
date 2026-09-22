@@ -61,7 +61,11 @@ export const OAUTH_CONFIGS: Record<string, OAuthConfig> = {
     scopes: ['instagram_basic', 'instagram_content_publish', 'pages_show_list', 'pages_read_engagement'],
     clientIdEnv: 'INSTAGRAM_APP_ID',
     clientSecretEnv: 'INSTAGRAM_APP_SECRET',
-    callbackEnv: 'FACEBOOK_CALLBACK_URL',
+    // Must be its OWN callback path. The callback handler derives `platform` from the
+    // route segment and matches oauth_state on it, so sending Instagram to
+    // /api/oauth/facebook/callback looked up platform='facebook' against a state row
+    // written as 'instagram' — 0 rows, and the user saw a misleading ?error=invalid_state.
+    callbackEnv: 'INSTAGRAM_CALLBACK_URL',
   },
   tiktok: {
     authUrl: 'https://www.tiktok.com/v2/auth/authorize/',
@@ -85,7 +89,8 @@ export const OAUTH_CONFIGS: Record<string, OAuthConfig> = {
     scopes: ['threads_basic', 'threads_content_publish'],
     clientIdEnv: 'THREADS_APP_ID',
     clientSecretEnv: 'THREADS_APP_SECRET',
-    callbackEnv: 'FACEBOOK_CALLBACK_URL',
+    // Its own callback path — see the instagram entry above.
+    callbackEnv: 'THREADS_CALLBACK_URL',
   },
   google_business_profile: {
     authUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
