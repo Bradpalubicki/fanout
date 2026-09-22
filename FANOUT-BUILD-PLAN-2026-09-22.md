@@ -109,3 +109,37 @@ Business/Creator account linked to the FB Page.
           INSERTED a duplicate and `attempts` never worked. Constraint applied + verified live.
  MET A: John Farmer added as Meta Tester (Pending) on app 772426605937002 via Playwright.
  NEXT: P0-4 — live Facebook post to OPP's page once John accepts.
+
+
+## P0-5 FOUND 2026-09-22 (VERIFICATION PASS) — INNGEST EVENT KEY IS INVALID
+BLOCKER for John's pilot. Severity: equal to P0-1.
+
+Evidence:
+  - Vercel runtime log, /api/cron/collect-analytics -> 500
+      "Inngest API Error: 401 Event key not found"
+  - Direct probe, independent of the app:
+      POST https://inn.gs/e/<INNGEST_EVENT_KEY>
+      -> 401 {"error":"Event key not found","error_code":"event_key_not_found"}
+  - Key is structurally plausible (65 chars) and NOT 
+-corrupted, so the earlier env
+    cleanup did not cause this. The key itself is wrong/revoked//from another environment.
+  - /api/inngest reports has_event_key:true — that only proves the var is SET, not VALID.
+    A "true" there is NOT evidence the key works.
+
+Impact — this breaks POSTING, not just the analytics cron:
+  - /api/v1/post:88          await inngest.send(...)
+  - /api/dashboard/post:106  await inngest.send(...)  <- John's dashboard path
+  - /api/dashboard/approvals:66,110 ; rss-feeds/trigger:26
+  None are wrapped in try/catch. The post row is INSERTED first, then inngest.send() throws
+  => user sees a 500, and a `pending` post row is stranded: never published, never retried
+  (the retry cron only looks at post_results rows with status='failed', which never get written
+  because fanOut never runs).
+
+FIX REQUIRED before P0-4:
+  1. Mint a valid Event Key in the Inngest dashboard for the `fanout` app (prod environment).
+  2. vercel env rm/add INNGEST_EVENT_KEY (production) + redeploy.
+  3. Re-probe inn.gs/e/<key> -> expect 200, not 401.
+  4. Also verify INNGEST_SIGNING_KEY (signkey-prod-..., 77 chars) matches the SAME Inngest
+     environment — a mismatched pair fails differently and is easy to miss.
+  5. Consider wrapping inngest.send() so a queue failure marks the post failed instead of
+     stranding it as `pending` behind a 500.
