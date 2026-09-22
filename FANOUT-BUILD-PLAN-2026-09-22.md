@@ -143,3 +143,24 @@ FIX REQUIRED before P0-4:
      environment — a mismatched pair fails differently and is easy to miss.
   5. Consider wrapping inngest.send() so a queue failure marks the post failed instead of
      stranding it as `pending` behind a 500.
+
+
+## P0-5 RESOLVED 2026-09-22
+Root cause: the Production Event Keys list had NO key for fanout — only "Nustack digital",
+"Little Roots Studio", "Vercel: content-engine", "Default ingest key". Fanout had been using a
+key belonging to another project that was later rotated/revoked, hence 401 event_key_not_found.
+
+Fix (done by CC via browser on Brad's logged-in Inngest session):
+  1. Created a dedicated Production event key named `fanout` (NuStack Digital / Production).
+  2. Validated BEFORE touching Vercel: POST inn.gs/e/<key> -> 200 {"ids":[...],"status":200}
+  3. Swapped INNGEST_EVENT_KEY in Vercel production; read back byte-identical (86 chars), 0 corruption.
+  4. Redeployed. /api/inngest -> function_count=15, event_key=true, signing_key=true.
+  5. PROOF ON THE REAL PATH: the endpoint that was 500ing,
+     GET /api/cron/collect-analytics with CRON_SECRET -> 200 {"triggered":true}
+
+Lesson: /api/inngest reporting has_event_key:true proves the var is SET, not VALID.
+Only an inn.gs probe or a real send distinguishes the two.
+
+STILL RECOMMENDED (not yet done): wrap inngest.send() in the posting routes so a queue failure
+marks the post failed instead of stranding it as `pending` behind a 500.
+  /api/v1/post:88, /api/dashboard/post:106,112, /api/dashboard/approvals:66,110
