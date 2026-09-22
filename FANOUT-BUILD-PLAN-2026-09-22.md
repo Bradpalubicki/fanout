@@ -69,6 +69,35 @@ P2-13 Decide on out-of-spec dashboard pages. CX CORRECTION: approvals ARE spec'd
   CONFIG, not the absence of a console app.
 - G10 trial-limit — a product opinion, not a spec violation.
 
-## OPEN DECISION FOR BRAD (changes sequencing, not the blocker)
-Which role is the near-term target? (a) internal infra (b) sellable SaaS (c) NuStack product
-marketing. Spec says 1 then 3. P0-1..P0-4 are required for ALL THREE, so work starts regardless.
+## NEAR-TERM TARGET — DECIDED BY BRAD 2026-09-22
+John Farmer uses Fanout for his own org + project as the FIRST REAL PILOT, to prove the
+platform, then enhance it for non-NuStack clients. This is role 3 (standalone SaaS) reached
+THROUGH a design-partner pilot — not role 1.
+
+PILOT ACCOUNT: The Open Play Project (OPP) — https://opplv.org — Greater Las Vegas.
+ - Youth after-school org: academics, STEM, health/wellness, youth mentorship. "Play to Learn"
+   education-first gaming pathway. Permanent locations still coming.
+ - STATUS CORRECTION: site footer states "A Nevada nonprofit IN FORMATION — not yet a
+   501(c)(3). Contributions are not tax deductible at this time." Posts must NOT claim
+   501(c)(3) status or tax-deductible giving.
+ - Existing social: Facebook Page id=61591645414843 + Instagram @open.play.project ONLY.
+ - Contact: support@opplv.org, text 702-831-0183.
+
+WHY THIS FITS THE CURRENT STATE: OPP's only two platforms are Facebook and Instagram — exactly
+the two whose credentials CC validated live this session. LinkedIn/X/TikTok placeholders do NOT
+block the pilot.
+
+IMPLICATION FOR SEQUENCING: as an external pilot user John exercises the DASHBOARD path
+(connect -> compose -> post), not the machine API. So P0-1 (done) unblocks the product thesis,
+but John's pilot depends on P0-2 (tenant isolation, done) and P0-3/P0-4.
+INSTAGRAM CONSTRAINT: instagram.ts:17 requires >=1 media URL — text-only IG posts fail by design
+(Meta rule). Facebook accepts text alone, so Facebook is the first test. IG also requires a
+Business/Creator account linked to the FB Page.
+
+## PROGRESS 2026-09-22
+ P0-1 DONE + VERIFIED live. commit afa6812. /api/v1 + /api/cron removed from Clerk matcher.
+      GATE PASSED: bogus key -> 401 {"error":"Invalid API key"} from verifyApiKey(), was 307 /sign-in.
+      No regression: /dashboard still 307 -> /sign-in.
+ P0-2 DONE (deployed, not yet adversarially tested). Ownership enforced in oauth authorize +
+      select-page GET/POST via assertProfileOwned(profileId, orgId).
+ NEXT: P0-3 (failure/retry correctness), then P0-4 live Facebook post for OPP.
