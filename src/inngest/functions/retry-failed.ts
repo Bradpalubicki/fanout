@@ -20,10 +20,15 @@ export const retryFailedPosts = inngest.createFunction(
 
     if (!failedPosts.length) return { retried: 0 }
 
-    const events = failedPosts.map((r) => ({
-      name: 'social/post.retry' as const,
-      data: { postId: r.post_id, platform: r.platform },
-    }))
+    // profileId comes from the posts!inner join above; fanOut() requires it.
+    const events = failedPosts.map((r) => {
+      const joined = (r as { posts?: { profile_id?: string } | { profile_id?: string }[] }).posts
+      const profileId = Array.isArray(joined) ? joined[0]?.profile_id : joined?.profile_id
+      return {
+        name: 'social/post.retry' as const,
+        data: { postId: r.post_id, platform: r.platform, profileId },
+      }
+    })
 
     await step.sendEvent('send-retry-events', events)
 

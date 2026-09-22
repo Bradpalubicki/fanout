@@ -77,20 +77,28 @@ export async function fanOut(
     platforms.map(async (platform): Promise<FanOutResult> => {
       const token = tokenMap[platform]
       if (!token) {
-        return {
+        const error = `No OAuth token found for ${platform}`
+        // Persist the failure: without this the caller sees a failed result but the post
+        // has no post_results row, so the UI shows nothing and retry has nothing to find.
+        await supabase.from('post_results').upsert({
+          post_id: postId,
           platform,
-          success: false,
-          error: `No OAuth token found for ${platform}`,
-        }
+          status: 'failed',
+          error_message: error,
+        })
+        return { platform, success: false, error }
       }
 
       const distributor = DISTRIBUTORS[platform]
       if (!distributor) {
-        return {
+        const error = `Platform ${platform} not supported`
+        await supabase.from('post_results').upsert({
+          post_id: postId,
           platform,
-          success: false,
-          error: `Platform ${platform} not supported`,
-        }
+          status: 'failed',
+          error_message: error,
+        })
+        return { platform, success: false, error }
       }
 
       try {
@@ -159,6 +167,22 @@ export async function fanOut(
       ? r.value
       : { platform: platforms[i], success: false, error: String(r.reason) }
   )
+
+  // A rejected promise never reached the per-platform catch, so it wrote no result row.
+  // Persist those too, otherwise a thrown error leaves the post with no record of why.
+  const rejected = results
+    .map((r, i) => ({ r, platform: platforms[i] }))
+    .filter((x) => x.r.status === 'rejected')
+  if (rejected.length) {
+    await supabase.from('post_results').upsert(
+      rejected.map((x) => ({
+        post_id: postId,
+        platform: x.platform,
+        status: 'failed',
+        error_message: String((x.r as PromiseRejectedResult).reason),
+      }))
+    )
+  }
 
   // Update post status
   const anySuccess = fanOutResults.some((r) => r.success)

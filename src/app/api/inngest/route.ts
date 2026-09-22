@@ -3,6 +3,7 @@ import { inngest } from '@/lib/inngest'
 import { fanOutPost } from '@/inngest/functions/fan-out-post'
 import { scheduledPost } from '@/inngest/functions/scheduled-post'
 import { retryFailedPosts } from '@/inngest/functions/retry-failed'
+import { retryPost } from '@/inngest/functions/retry-post'
 import { refreshExpiringTokens, refreshSingleToken } from '@/inngest/functions/refresh-tokens'
 import { collectAnalytics } from '@/inngest/functions/collect-analytics'
 import { rssAutoPost, rssCheckFeed } from '@/inngest/functions/rss-auto-post'
@@ -18,6 +19,7 @@ export const { GET, POST, PUT } = serve({
     fanOutPost,
     scheduledPost,
     retryFailedPosts,
+    retryPost,
     refreshExpiringTokens,
     refreshSingleToken,
     collectAnalytics,
