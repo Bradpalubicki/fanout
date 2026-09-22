@@ -164,3 +164,31 @@ Only an inn.gs probe or a real send distinguishes the two.
 STILL RECOMMENDED (not yet done): wrap inngest.send() in the posting routes so a queue failure
 marks the post failed instead of stranding it as `pending` behind a 500.
   /api/v1/post:88, /api/dashboard/post:106,112, /api/dashboard/approvals:66,110
+
+
+## P0-6 DONE 2026-09-22 — QUEUE FAILURES ARE NOW VISIBLE
+commit 0dff44e, Vercel READY, verified live.
+
+New helper src/lib/enqueue.ts -> enqueuePostEvent(payload, {postId, platforms}).
+On a send() throw it marks the post `failed` AND writes a post_results row per platform,
+then the route returns 503 (not 500). Wired into the three user-facing creation paths:
+  /api/v1/post, /api/dashboard/post (scheduled + immediate), /api/mobile/posts
+Cron/internal routes intentionally left raw — they are machine paths with their own logging.
+
+Why: this is exactly the P0-5 failure. A revoked event key stranded posts at `pending`
+with no post_results row, so nothing published them and the retry cron could never see them.
+
+## SWEEP RESULTS (same session, no defects found)
+ - oauth_tokens has UNIQUE(profile_id, platform) -> the callback upsert is correct
+   (contrast with post_results, which was MISSING its constraint — fixed in migration 016)
+ - platform_page_id column EXISTS on oauth_tokens; fan-out.ts:106 reads it, select-page:183 writes it
+ - callback routes facebook/instagram/threads to /select-page with correct onConflict
+ - facebook.ts posts to /{pageId}/feed with message+access_token — correct for a Page post
+
+## LIVE STATE AFTER THIS SESSION
+ P0-1 machine API      bogus key -> 401 {"error":"Invalid API key"} (was 307 /sign-in)
+ P0-2 tenant isolation ownership enforced in authorize + select-page GET/POST
+ P0-3 delivery         failures persist on all paths; retryPost consumer registered
+ P0-5 inngest          cron w/ CRON_SECRET -> 200 {"triggered":true}
+ P0-6 queue failures   visible as failed + post_results, 503 not 500
+ function_count=15, event_key=true, signing_key=true; all public routes 200; /dashboard 307
