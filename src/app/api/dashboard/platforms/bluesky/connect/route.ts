@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { supabase } from '@/lib/supabase'
+import { encryptToken } from '@/lib/crypto'
 import { z } from 'zod'
 
 const schema = z.object({
@@ -48,7 +49,10 @@ export async function POST(req: NextRequest) {
       {
         profile_id: profileId,
         platform: 'bluesky',
-        access_token: JSON.stringify({ identifier, password }),
+        // fan-out.ts decrypts every token unconditionally, so this must be stored
+        // encrypted like the OAuth platforms. Plaintext threw at decrypt_token on
+        // every post, and left app passwords readable in the database.
+        access_token: await encryptToken(JSON.stringify({ identifier, password })),
         platform_page_id: sessionData.did ?? null,
         platform_username: sessionData.handle ?? identifier,
         expires_at: null, // app passwords don't expire
