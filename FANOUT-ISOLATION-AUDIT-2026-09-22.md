@@ -47,3 +47,27 @@ Other non-verified but LIVE sites (do not remove without checking):
   kidcreatives.art (200), appraiserfound.com (200), vetsthrive.org (200),
   appraiserengine.com, akultimatedental.com, veteransthrive.org
 KEEP: nustack.digital (partially_failed but core).
+
+
+## UPDATE 2026-09-22 — RESEND SLOT ATTEMPT FAILED, SQUARE DECIDED
+
+SQUARE (S2): DECIDED BY BRAD — stay on the shared NuStack Digital Ventures LLC merchant
+(LN64VJ45Q6HQ2). Accepted trade-off, not an open defect. Revisit only if per-product
+fund separation or reporting becomes a requirement.
+
+RESEND: freeing slots did NOT work.
+ - removed wellnessengine.io (Brad-approved; failed status, no DNS, no MX, never verified)
+ - removed stylistengine.io (identical dead profile: failed, no DNS, no MX)
+ - 22 -> 21 -> 20 domains; create fanout.digital STILL 403 "reached the domain limit"
+CONCLUSION: the account is already ABOVE its plan cap (Resend Pro = 10 domains; 20 exist).
+Deleting into compliance would require removing ~11 more, most of them LIVE and verified
+(sendpaid.co, lockelum.store, certusaudit.co, pocketpals.app, menshealthctr.com, etc.).
+=> Freeing slots is the WRONG lever. fanout.digital email requires a PLAN UPGRADE (SPEND,
+   Brad only: amount + vendor + "confirm spend"), or use an already-verified domain
+   (e.g. send Fanout mail from nustack.digital) as an interim.
+
+INTERIM OPTION (no spend): send Fanout transactional mail from a verified domain such as
+nustack.digital. Downside for an external SaaS pilot: password reset / invite email arrives
+from nustack.digital, not fanout.digital — weaker branding and slightly higher spam risk,
+but it UNBLOCKS John. RESEND_API_KEY is currently the literal string "placeholder", so a real
+key is needed either way.
