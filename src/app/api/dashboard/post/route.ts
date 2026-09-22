@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { z } from 'zod'
 import { supabase } from '@/lib/supabase'
-import { inngest } from '@/lib/inngest'
+import { enqueuePostEvent } from '@/lib/enqueue'
 import { getOrCreateOrgSubscription, isSubscriptionActive, isTrialExpired } from '@/lib/subscriptions'
 import { checkRateLimit } from '@/lib/rate-limit'
 
@@ -102,17 +102,34 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to create post' }, { status: 500 })
   }
 
+  const queueFailed = NextResponse.json(
+    {
+      error: 'Queue unavailable',
+      message: 'The post was saved and marked failed, but could not be dispatched. Retry shortly.',
+      id: postRecord.id,
+    },
+    { status: 503 }
+  )
+
   if (scheduledFor) {
-    await inngest.send({
-      name: 'social/post.scheduled',
-      data: { postId: postRecord.id, profileId: profile.id, platforms, scheduledFor },
-    })
+    const queued = await enqueuePostEvent(
+      {
+        name: 'social/post.scheduled',
+        data: { postId: postRecord.id, profileId: profile.id, platforms, scheduledFor },
+      },
+      { postId: postRecord.id, platforms }
+    )
+    if (!queued) return queueFailed
     return NextResponse.json({ status: 'scheduled', id: postRecord.id, scheduledFor })
   } else {
-    await inngest.send({
-      name: 'social/post.created',
-      data: { postId: postRecord.id, profileId: profile.id, platforms },
-    })
+    const queued = await enqueuePostEvent(
+      {
+        name: 'social/post.created',
+        data: { postId: postRecord.id, profileId: profile.id, platforms },
+      },
+      { postId: postRecord.id, platforms }
+    )
+    if (!queued) return queueFailed
     return NextResponse.json({ status: 'queued', id: postRecord.id })
   }
 }

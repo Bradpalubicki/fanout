@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { supabase } from '@/lib/supabase'
 import { verifyApiKey } from '@/lib/auth'
-import { inngest } from '@/lib/inngest'
+import { enqueuePostEvent } from '@/lib/enqueue'
 import { checkRateLimit } from '@/lib/rate-limit'
 import { getOrCreateOrgSubscription, isSubscriptionActive, isTrialExpired } from '@/lib/subscriptions'
 
@@ -84,15 +84,30 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to create post' }, { status: 500 })
   }
 
-  // Trigger Inngest fan-out
-  await inngest.send({
-    name: 'social/post.created',
-    data: {
-      postId: postRecord.id,
-      profileId: auth.profile.id,
-      platforms,
+  // Trigger Inngest fan-out. If the queue rejects the event the post is marked
+  // failed rather than stranded at `pending` behind a 500.
+  const queued = await enqueuePostEvent(
+    {
+      name: 'social/post.created',
+      data: {
+        postId: postRecord.id,
+        profileId: auth.profile.id,
+        platforms,
+      },
     },
-  })
+    { postId: postRecord.id, platforms }
+  )
+
+  if (!queued) {
+    return NextResponse.json(
+      {
+        error: 'Queue unavailable',
+        message: 'The post was saved and marked failed, but could not be dispatched. Retry shortly.',
+        id: postRecord.id,
+      },
+      { status: 503 }
+    )
+  }
 
   return NextResponse.json({
     status: 'queued',

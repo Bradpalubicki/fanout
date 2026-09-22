@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { supabase } from '@/lib/supabase'
 import { getMobileUser } from '@/lib/mobile-auth'
-import { inngest } from '@/lib/inngest'
+import { enqueuePostEvent } from '@/lib/enqueue'
 
 const PostSchema = z.object({
   profileId: z.string().min(1),
@@ -64,17 +64,30 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to create post' }, { status: 500 })
   }
 
+  const queueFailed = NextResponse.json(
+    { error: 'Queue unavailable', id: postRecord.id as string },
+    { status: 503 }
+  )
+
   if (scheduledFor) {
-    await inngest.send({
-      name: 'social/post.scheduled',
-      data: { postId: postRecord.id, profileId: profile.id, platforms, scheduledFor },
-    })
+    const queued = await enqueuePostEvent(
+      {
+        name: 'social/post.scheduled',
+        data: { postId: postRecord.id, profileId: profile.id, platforms, scheduledFor },
+      },
+      { postId: postRecord.id as string, platforms }
+    )
+    if (!queued) return queueFailed
     return NextResponse.json({ id: postRecord.id as string, status: 'scheduled' })
   } else {
-    await inngest.send({
-      name: 'social/post.created',
-      data: { postId: postRecord.id, profileId: profile.id, platforms },
-    })
+    const queued = await enqueuePostEvent(
+      {
+        name: 'social/post.created',
+        data: { postId: postRecord.id, profileId: profile.id, platforms },
+      },
+      { postId: postRecord.id as string, platforms }
+    )
+    if (!queued) return queueFailed
     return NextResponse.json({ id: postRecord.id as string, status: 'queued' })
   }
 }
