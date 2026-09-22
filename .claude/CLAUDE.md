@@ -23,7 +23,9 @@ https://www.notion.so/32f663704e4081f3ac93e81a3782412a
 - 13 social platform distributors in src/distributors/
 
 ## Platform Status
-- ✅ WORKING: Bluesky, Mastodon
+- ⚠️ Bluesky, Mastodon: connect routes work, but posting was BROKEN until 2026-09-22
+  (credentials stored plaintext while fan-out.ts decrypts unconditionally — fixed in
+  220414ae). Never verified end to end with a real post; treat as UNPROVEN, not working.
 - ❌ BROKEN (need OAuth app creds): Reddit, Twitter/X, LinkedIn, YouTube, Pinterest
 - ❌ BROKEN (need Meta Business Verification): Facebook, Instagram, Threads
 - ❌ BROKEN (need TikTok app review): TikTok

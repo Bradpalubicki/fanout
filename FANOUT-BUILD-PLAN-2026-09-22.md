@@ -192,3 +192,79 @@ with no post_results row, so nothing published them and the retry cron could nev
  P0-5 inngest          cron w/ CRON_SECRET -> 200 {"triggered":true}
  P0-6 queue failures   visible as failed + post_results, 503 not 500
  function_count=15, event_key=true, signing_key=true; all public routes 200; /dashboard 307
+
+
+## SESSION 2026-09-22 (later) — JOHN STILL PENDING; THREE DEFECTS FOUND AND FIXED
+
+STATE CHECK FIRST (no work started until measured):
+  Meta app 772426605937002 roles: John Farmer = Tester, still **Pending**. Unchanged.
+  Supabase jifhgpwiqgwkgqtmozsu: oauth_tokens=0, post_results=0, posts=0, profiles=2.
+  => Steps 1 and 2 of the pilot are blocked on John, not on us. Verified, not assumed.
+
+### P0-7 DONE + VERIFIED — META REDIRECT URI LIST WAS EMPTY (would have blocked John)
+This contradicted the prior session's "nothing is blocking John."
+
+Evidence (Meta's own Redirect URI Validator, not inference):
+  Before: "This is an invalid redirect URI for this application"
+  App had "Use Strict Mode for redirect URIs" = Yes with an EMPTY
+  "Valid OAuth Redirect URIs" list. Strict mode allows only exact matches
+  against that list, so every Meta authorization would have been rejected
+  BY META, before Fanout ever saw the user.
+
+Fix: added https://www.fanout.digital/api/oauth/facebook/callback to the app's
+Valid OAuth Redirect URIs (Facebook Login for Business -> Settings). Saved.
+  After (same validator, post-reload): "This is a valid redirect URI for this application"
+  Persistence confirmed by reloading the page, not by the toast.
+
+LESSON: the Tester-invite check answers "may he use the app", not "will the
+redirect work". Two separate gates; only one had been checked.
+
+STILL OPEN (deliberately not forced): the Instagram and Threads URIs would not
+commit as chips in Meta's combobox after 3 attempts (typed text kept replacing
+the prior pending entry rather than committing). Stopped per the 3-attempt visual
+rule instead of fighting the widget. NOT a blocker for John: Facebook is his only
+first test, Instagram additionally needs a Business/Creator account + an image per
+post, and Threads is not in OPP's stack. Add them when Instagram is actually next.
+
+### P0-8 DONE + VERIFIED — BLUESKY/MASTODON CREDENTIALS WERE PLAINTEXT AND UNPOSTABLE
+commit 220414ae, Vercel READY.
+
+fan-out.ts:105 calls decryptToken() on EVERY platform's token unconditionally,
+but both manual connect routes wrote credentials in plaintext:
+  bluesky/connect:51   access_token: JSON.stringify({identifier, password})
+  mastodon/connect:52  access_token: accessToken
+decrypt_token() is base64-decode-then-decrypt, so it THROWS on plaintext.
+Proven live against the deployed function, not reasoned about:
+  select decrypt_token('{"identifier":...}', 'k')
+  -> ERROR 22023: invalid symbol "{" found while decoding base64 sequence
+
+So repo CLAUDE.md's "✅ WORKING: Bluesky, Mastodon" was false — they were the
+only two platforms claimed working, and both failed at the decrypt step.
+Severity is bounded by P0-3: the throw is caught and persists a failed
+post_results row, so it failed VISIBLY rather than silently.
+
+Also removed plaintext app passwords / access tokens from the database.
+Round-trip verified: decrypt_token(encrypt_token(json)) == original json,
+so the distributors still receive the exact shape they expect.
+Swept all 6 oauth_tokens writers; the other 4 already encrypted. Class closed,
+not just the two paths noticed first. No stored rows to migrate (table empty).
+
+### P1-6 RESOLVED — WAS "UNPROVEN", NOW PROVEN AND FIXED
+commit 28ce2cc. CX's suspicion was correct.
+
+FACEBOOK_CALLBACK_URL = "https://www.fanout.digital/api/oauth/facebook/callback"
+— the path pins ONE platform. instagram and threads both pointed at it
+(oauth-config.ts:64,88). The callback derives `platform` from the ROUTE SEGMENT
+and matches oauth_state on it (callback:37), so an Instagram authorization would
+return to the facebook route and query platform='facebook' against a state row
+written as 'instagram' -> 0 rows -> misleading ?error=invalid_state.
+
+Fix: instagram -> INSTAGRAM_CALLBACK_URL, threads -> THREADS_CALLBACK_URL.
+Both env vars added to Vercel production, read back byte-identical
+(55 and 53 chars, 0 literal-backslash-n corruption).
+NOTE: these two also need their URIs in the Meta app list before use — see P0-7.
+
+### NOT DONE THIS SESSION (stated plainly)
+ - Notion session-start sync (steps 1-7) and CC COMPLETE / Open Items filings:
+   still not run, now spanning 8 P0/P1 items and a schema migration.
+ - P0-4 live Facebook post: cannot proceed until John accepts. Unchanged.
