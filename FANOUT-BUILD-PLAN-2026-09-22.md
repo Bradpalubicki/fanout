@@ -100,4 +100,12 @@ Business/Creator account linked to the FB Page.
       No regression: /dashboard still 307 -> /sign-in.
  P0-2 DONE (deployed, not yet adversarially tested). Ownership enforced in oauth authorize +
       select-page GET/POST via assertProfileOwned(profileId, orgId).
- NEXT: P0-3 (failure/retry correctness), then P0-4 live Facebook post for OPP.
+ P0-3 DONE + VERIFIED. commit 2b3079b, Vercel READY, function_count=15 live.
+      (a) fan-out.ts early returns (missing token / unsupported platform) AND rejected
+          allSettled promises now persist a failed post_results row.
+      (b) retryPost consumer added for social/post.retry (events were previously discarded);
+          retries ONLY the failed platform; event now carries profileId.
+      (c) MIGRATION 016: post_results had NO unique(post_id, platform), so every upsert
+          INSERTED a duplicate and `attempts` never worked. Constraint applied + verified live.
+ MET A: John Farmer added as Meta Tester (Pending) on app 772426605937002 via Playwright.
+ NEXT: P0-4 — live Facebook post to OPP's page once John accepts.
