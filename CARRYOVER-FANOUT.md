@@ -50,6 +50,12 @@ CLOSED 2026-09-22 in 306c278 (do NOT redo): transient-vs-corrupt decrypt
 classification, false-success inbox replies (res.ok now checked on all 5
 transports), and a replay-unsafe totalNew counter.
 
+ALSO DONE (do NOT redo): migration 017 (commit 3433d7f) revoked unused anon
+grants and IS APPLIED TO PROD. Re-verified live: 0 anon writes schema-wide,
+0 anon SELECT on oauth_tokens, short_links still anon-readable (deliberate,
+public redirects), service_role still reads profiles=2 / org_subscriptions=3.
+The DB change is live regardless of the Clerk deploy blocker.
+
 ## NOTION
 CC COMPLETE:  https://app.notion.com/p/3e4663704e4081239e0bd9c0c9bc322f
 Open Items:   collection://62ef8679-8772-4a64-b116-c6a731342913 (3 rows filed 2026-09-22)
