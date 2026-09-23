@@ -61,11 +61,14 @@ export default function ComposePage() {
           const preProfile = searchParams.get("profileId");
           const first = preProfile ?? d.profiles[0].id;
           setSelectedProfile(first);
-          const p = d.profiles.find((x) => x.id === first);
-          if (p) {
-            const connected = p.oauth_tokens.map((t) => t.platform as Platform);
-            setSelectedPlatforms(connected);
-          }
+          /**
+           * Deliberately does NOT pre-select the connected platforms.
+           * Publishing is irreversible and public. Pre-ticking everything made
+           * "post" the default for every live client account at once — a CFC
+           * audit on 2026-09-23 opened Compose to write a throwaway test and
+           * found the real @lockelum.bsky.social account already selected.
+           * Choosing where to publish must be a deliberate act.
+           */
         }
       })
       .finally(() => setLoading(false));
@@ -76,8 +79,9 @@ export default function ComposePage() {
 
   function handleProfileChange(id: string) {
     setSelectedProfile(id);
-    const p = profiles.find((x) => x.id === id);
-    if (p) setSelectedPlatforms(p.oauth_tokens.map((t) => t.platform as Platform));
+    // Clear rather than re-select all: switching client must never carry a
+    // selection over, and must not silently arm every platform on the new one.
+    setSelectedPlatforms([]);
   }
 
   function togglePlatform(platform: Platform) {
