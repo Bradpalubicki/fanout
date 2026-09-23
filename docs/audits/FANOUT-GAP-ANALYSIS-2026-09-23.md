@@ -132,3 +132,40 @@ FALSIFIED — CX P0 "/api/v1 still behind Clerk" (see section above)
  OAuth callback env vars deliberately LEFT on www — a redirect URI must match
  each provider console exactly and John's Meta connection is imminent. www still
  301s so registered URIs stay valid. Flip once consoles are updated.
+
+## CFC VISUAL AUDIT — 2026-09-23 (deploy 1227f7e)
+VERDICT: NOT PILOT-READY. Headline check PASSED — the Clerk widget renders on
+/sign-in and /sign-up at all 4 viewports, no blank box, no handshake errors.
+Every signed-in page renders an HONEST empty state (no spinner-forever, no NaN,
+no chart with no data). CFC correctly declined to create an account.
+
+FIXED THIS SESSION (6d9d85a)
+ CFC#2 /dashboard/social exposed to tenants. Root cause was worse than the UI:
+   /api/social-status and /api/social-queue checked only that SOME orgId existed,
+   never WHICH, and queried social_posts_queue with NO org filter. Any tenant
+   could read AND WRITE NuStack's product queue, and see the Meta App ID.
+   Fixed: new src/lib/nustack-admin.ts (one definition, replacing two identical
+   private copies), both routes 404 for non-staff, sidebar link moved to
+   INTERNAL_NAV. Also closed the env-unset bypass in the old copies.
+ CFC#4 No sign-in link below 640px — 'hidden sm:flex' on HomeClient. A returning
+   pilot user on a phone had no way to log in. Now always visible.
+
+OPEN — NEEDS BRAD, NOT CC
+ CFC#3 Starter plan contradicts itself: pricing card says "All 9 platforms",
+   comparison table and billing page say 5. FAQ says AI generation is on all
+   plans; the table shows "—" for Starter.
+   IMPORTANT: no platform limit is enforced ANYWHERE in code (no maxPlatforms,
+   no gate). Plan limits exist only as UI strings in dashboard/billing/page.tsx.
+   So this is a product decision + a missing enforcement, not a copy typo.
+ CFC#5 /privacy and /terms "Last updated" = today's UTC date, both ~1,700 chars.
+   Counsel's call. No agent edits.
+ CFC#1 ORG CREATION STILL UNVERIFIED — the actual pilot P0. Nobody has observed
+   what an org-less user sees. Brad's account already has an org. Requires a
+   fresh sign-up with CFC watching.
+
+## NEW-1 TEST SUITE — DONE (77e8556)
+ 67 tests, 5 files, ~180ms, no network. vitest. npm test.
+ Each suite guards a failure that actually shipped:
+  twilio-signature(8) · nustack-admin(9) · decrypt-token/F1(14) ·
+  distributor-base/F2(11) · distributor-contract(25)
+ Mutation-verified: breaking the validator fails 2 tests; restoring passes 8.
