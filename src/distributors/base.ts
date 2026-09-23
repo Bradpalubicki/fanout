@@ -64,6 +64,41 @@ export interface ListPostsOptions {
 }
 
 /**
+ * Account-level metrics — properties of the ACCOUNT, not of any post.
+ *
+ * Deliberately split into two groups, because mixing them is exactly how the
+ * double-count bug happens (fixed in mobile/analytics on 2026-09-23):
+ *  - CUMULATIVE: running totals. Two readings of 400 then 410 followers mean
+ *    the account has 410, never 810. Never sum these across snapshots.
+ *  - PERIOD: describe a window, and are not comparable to the cumulative ones.
+ */
+export interface AccountMetrics {
+  /** Cumulative — running totals at the moment of collection. */
+  followers?: number
+  following?: number
+  postsCount?: number
+  /** Period — for the window the provider reports, usually the last day. */
+  impressions?: number
+  reach?: number
+  profileViews?: number
+  engagements?: number
+  /** Platform-specific fields with no column of their own. */
+  raw?: Record<string, unknown>
+}
+
+/**
+ * Thrown when a platform cannot report ACCOUNT-level metrics. Distinct from
+ * returning zeros: zero followers is a real answer, "we cannot read this" is
+ * not, and a collector must not record the former when it means the latter.
+ */
+export class AccountMetricsUnsupportedError extends Error {
+  constructor(public readonly platform: string, reason: string) {
+    super(`${platform} cannot report account metrics: ${reason}`)
+    this.name = 'AccountMetricsUnsupportedError'
+  }
+}
+
+/**
  * Thrown when a platform cannot read an account's own posts at all — the
  * scopes are write-only, or the provider exposes no such endpoint.
  *
@@ -111,6 +146,23 @@ export abstract class BaseDistributor {
     _accountId?: string
   ): Promise<ListPostsResult> {
     throw new NativeHistoryUnsupportedError(this.platform, 'listPosts is not implemented')
+  }
+
+  /**
+   * Account-level metrics: followers, reach, profile views. This is what an
+   * agency reports to its client monthly — "is this account growing?" — and it
+   * is a different question from per-post performance, which getAnalytics
+   * already answers.
+   *
+   * Concrete, and throws by default, for the same reason as listPosts: a stub
+   * returning zeros would be indistinguishable from an account that genuinely
+   * has zero followers, and the collector would record that fiction as fact.
+   */
+  async getAccountMetrics(_accessToken: string, _accountId?: string): Promise<AccountMetrics> {
+    throw new AccountMetricsUnsupportedError(
+      this.platform,
+      'getAccountMetrics is not implemented'
+    )
   }
 
   protected async fetchJson<T>(

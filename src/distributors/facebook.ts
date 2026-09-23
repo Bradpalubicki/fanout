@@ -1,6 +1,8 @@
 import {
   BaseDistributor,
+  AccountMetricsUnsupportedError,
   NativeHistoryUnsupportedError,
+  type AccountMetrics,
   type ListPostsOptions,
   type ListPostsResult,
   type NativePost,
@@ -73,6 +75,67 @@ export class FacebookDistributor extends BaseDistributor {
     const nextCursor = data.paging?.next ? data.paging?.cursors?.after : undefined
 
     return { posts, nextCursor }
+  }
+
+  /**
+   * Account metrics for a Facebook PAGE.
+   *
+   * followers_count is cumulative; the page_impressions / page_views_total
+   * insights are PERIOD metrics for the last day. They are reported separately
+   * because they are not comparable — summing a cumulative follower count
+   * across days is the double-count bug this design exists to prevent.
+   *
+   * Insights need pages_read_engagement, which we already request. If insights
+   * fail (a new Page with too little data returns nothing), the cumulative
+   * counts are still returned rather than failing the whole read.
+   */
+  async getAccountMetrics(accessToken: string, accountId?: string): Promise<AccountMetrics> {
+    if (!accountId) {
+      throw new AccountMetricsUnsupportedError(
+        this.platform,
+        'a Page id is required — account metrics are a property of the Page, not the user'
+      )
+    }
+
+    const profile = await this.fetchJson<{
+      followers_count?: number
+      fan_count?: number
+      name?: string
+    }>(
+      `https://graph.facebook.com/v19.0/${accountId}?fields=followers_count,fan_count,name&access_token=${encodeURIComponent(accessToken)}`,
+      { method: 'GET' }
+    )
+
+    if (!profile.ok) {
+      throw new Error(`Facebook page read failed (${profile.status})`)
+    }
+
+    const metrics: AccountMetrics = {
+      // fan_count is the legacy "likes" figure; followers_count is what the
+      // Page UI shows today. Prefer the latter, fall back so older Pages work.
+      followers: profile.data.followers_count ?? profile.data.fan_count,
+      raw: { name: profile.data.name },
+    }
+
+    // Insights are best-effort: a Page with insufficient data returns an empty
+    // set, which is not an error and must not discard the counts above.
+    const insights = await this.fetchJson<{
+      data?: Array<{ name?: string; values?: Array<{ value?: number }> }>
+    }>(
+      `https://graph.facebook.com/v19.0/${accountId}/insights?metric=page_impressions,page_views_total&period=day&access_token=${encodeURIComponent(accessToken)}`,
+      { method: 'GET' }
+    )
+
+    if (insights.ok) {
+      for (const row of insights.data.data ?? []) {
+        const value = row.values?.[0]?.value
+        if (typeof value !== 'number') continue
+        if (row.name === 'page_impressions') metrics.impressions = value
+        if (row.name === 'page_views_total') metrics.profileViews = value
+      }
+    }
+
+    return metrics
   }
 
   async post(

@@ -1,6 +1,8 @@
 import {
   BaseDistributor,
+  AccountMetricsUnsupportedError,
   NativeHistoryUnsupportedError,
+  type AccountMetrics,
   type ListPostsOptions,
   type ListPostsResult,
   type NativePost,
@@ -166,6 +168,53 @@ export class BlueskyDistributor extends BaseDistributor {
     // An absent cursor means the last page. Returning one regardless would loop
     // the backfill forever on the final page.
     return { posts, nextCursor: data.cursor }
+  }
+
+  /**
+   * Account metrics via app.bsky.actor.getProfile — public appview, no auth.
+   * Field names verified against the live API on 2026-09-23.
+   *
+   * Bluesky exposes no period metrics (no impressions/reach), so only the
+   * cumulative group is populated. Omitting them is correct: a zero would be
+   * indistinguishable from a real zero.
+   */
+  async getAccountMetrics(accessToken: string, accountId?: string): Promise<AccountMetrics> {
+    let actor = accountId
+    if (!actor) {
+      try {
+        actor = (JSON.parse(accessToken) as { identifier?: string }).identifier
+      } catch {
+        // fall through to the explicit error below
+      }
+    }
+    if (!actor) {
+      throw new AccountMetricsUnsupportedError(
+        this.platform,
+        'no handle or DID available — pass an accountId or store {identifier,password}'
+      )
+    }
+
+    const { ok, data, status } = await this.fetchJson<{
+      followersCount?: number
+      followsCount?: number
+      postsCount?: number
+      handle?: string
+      displayName?: string
+    }>(
+      `https://public.api.bsky.app/xrpc/app.bsky.actor.getProfile?actor=${encodeURIComponent(actor)}`,
+      { method: 'GET' }
+    )
+
+    if (!ok) {
+      throw new Error(`Bluesky profile read failed (${status})`)
+    }
+
+    return {
+      followers: data.followersCount,
+      following: data.followsCount,
+      postsCount: data.postsCount,
+      raw: { handle: data.handle, displayName: data.displayName },
+    }
   }
 
   async post(payload: PostPayload, accessToken: string, _pageId?: string): Promise<PostResult> {
