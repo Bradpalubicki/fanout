@@ -1,5 +1,5 @@
 import { inngest } from '@/lib/inngest'
-import { fanOut } from '@/lib/fan-out'
+import { fanOut, rethrowTupleMismatch } from '@/lib/fan-out'
 
 /**
  * Consumer for `social/post.retry`.
@@ -27,8 +27,10 @@ export const retryPost = inngest.createFunction(
       return { skipped: true, reason: 'missing postId, platform or profileId' }
     }
 
+    // Rechecked on every retry: the retry event carries profileId as data,
+    // and a replayed or crafted event must not bypass the binding.
     const results = await step.run('retry-single-platform', async () =>
-      fanOut(postId, [platform], profileId)
+      fanOut(postId, [platform], profileId).catch(rethrowTupleMismatch)
     )
 
     return { postId, platform, results }

@@ -1,5 +1,5 @@
 import { inngest } from '@/lib/inngest'
-import { fanOut } from '@/lib/fan-out'
+import { fanOut, rethrowTupleMismatch } from '@/lib/fan-out'
 
 export const scheduledPost = inngest.createFunction(
   {
@@ -18,8 +18,10 @@ export const scheduledPost = inngest.createFunction(
     // Wait until scheduled time
     await step.sleepUntil('wait-for-schedule', scheduledFor)
 
+    // Rechecked here, not only at enqueue time: a post's ownership or target
+    // platforms can change during the sleepUntil window above.
     const results = await step.run('fan-out-scheduled', async () => {
-      return fanOut(postId, platforms, profileId)
+      return fanOut(postId, platforms, profileId).catch(rethrowTupleMismatch)
     })
 
     return { postId, results }

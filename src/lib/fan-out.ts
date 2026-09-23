@@ -1,3 +1,4 @@
+import { NonRetriableError } from 'inngest'
 import { supabase } from './supabase'
 import { decryptToken } from './crypto'
 import { TwitterDistributor } from '@/distributors/twitter'
@@ -43,6 +44,65 @@ export interface FanOutResult {
   retryAfterSeconds?: number
 }
 
+/**
+ * Thrown when the (post, profile, platform) tuple a caller supplied does not
+ * match the post row itself. This is a tenant-isolation failure, not a
+ * transient error: it means the job would have dispatched one profile's
+ * content using another profile's credentials.
+ */
+export class TupleMismatchError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'TupleMismatchError'
+  }
+}
+
+/**
+ * The post row is the single authority for who owns a post and where it may go.
+ * Callers supply profileId and platforms as event data (fan-out-post.ts:51,
+ * scheduled-post.ts:22, retry-post.ts:31); event data is not a credential.
+ * Previously the post was read by id while tokens were selected by the
+ * separately-supplied profileId, so a mismatched tuple dispatched post B's
+ * content on profile A's token — proven by an in-memory probe.
+ *
+ * This runs before token selection, before the `posting` status write, and
+ * before any provider call, notification or webhook, so a rejected job has
+ * zero side effects. It lives inside fanOut() rather than in the callers so
+ * that scheduled and retried jobs are rechecked at execution time, not only
+ * at enqueue time.
+ */
+function assertTupleMatches(
+  post: Pick<Post, 'profile_id' | 'platforms'>,
+  postId: string,
+  platforms: string[],
+  profileId: string
+): void {
+  if (post.profile_id !== profileId) {
+    throw new TupleMismatchError(
+      `Post ${postId} belongs to profile ${post.profile_id}, not ${profileId}`
+    )
+  }
+
+  const allowed = new Set(post.platforms ?? [])
+  const disallowed = platforms.filter((p) => !allowed.has(p))
+  if (disallowed.length > 0) {
+    throw new TupleMismatchError(
+      `Post ${postId} was not authored for platform(s) ${disallowed.join(', ')}`
+    )
+  }
+}
+
+/**
+ * A tuple mismatch is a permanent isolation failure, not a transient one.
+ * Retrying it would only re-attempt the same cross-tenant dispatch, and would
+ * bury the cause under a generic retry-exhausted error. Inngest callers wrap
+ * their fanOut() call with this so the job fails immediately and by name.
+ */
+export function rethrowTupleMismatch(err: unknown): never {
+  if (err instanceof TupleMismatchError) throw new NonRetriableError(err.message)
+  throw err
+}
+
 export async function fanOut(
   postId: string,
   platforms: string[],
@@ -56,6 +116,10 @@ export async function fanOut(
     .single()
 
   if (postError || !post) throw new Error(`Post not found: ${postId}`)
+
+  // Tenant isolation gate. Must stay above the token query and the status
+  // write: everything below this line trusts that the tuple is bound.
+  assertTupleMatches(post as Post, postId, platforms, profileId)
 
   // Get encrypted tokens for platforms
   const { data: tokens } = await supabase

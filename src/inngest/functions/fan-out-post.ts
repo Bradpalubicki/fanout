@@ -1,5 +1,5 @@
 import { inngest } from '@/lib/inngest'
-import { fanOut, type FanOutResult } from '@/lib/fan-out'
+import { fanOut, rethrowTupleMismatch, type FanOutResult } from '@/lib/fan-out'
 import { supabase } from '@/lib/supabase'
 
 export const fanOutPost = inngest.createFunction(
@@ -48,7 +48,7 @@ export const fanOutPost = inngest.createFunction(
     }
 
     const results = await step.run('fan-out-to-platforms', async () => {
-      return fanOut(postId, platforms, profileId)
+      return fanOut(postId, platforms, profileId).catch(rethrowTupleMismatch)
     }) as FanOutResult[]
 
     // Handle rate-limited platforms: sleep then surface as retriable
