@@ -340,3 +340,45 @@ NEEDS BRAD (hard stop #2, OAuth): mint pk_live_ + matching CLERK_SECRET_KEY from
 the SAME Clerk instance. A mismatched pair is the documented cause of past
 multi-hour auth debugging. Then CC sets both via `vercel env` and redeploys.
 Notion: https://app.notion.com/p/3e4663704e4081d6b18fca7761afe6b7
+
+
+## CX ROUND-2 P2s CLOSED — commit 306c278 (pushed, SHA confirmed on remote)
+
+F1 — TRANSIENT vs CORRUPT DECRYPT FAILURES NOW DISTINGUISHED
+decryptToken threw ONE undifferentiated Error for both a bad ciphertext and a
+Supabase blip. collect-inbox caught everything and returned, so a transient RPC
+failure silently discarded VALID credentials, and the memoized empty step result
+blocked retry until the next cron (CX proved: 5 valid rows -> processed=0).
+
+Now: TokenCorruptError (skip + log; retry can never help) vs
+TokenDecryptUnavailableError (rethrown so Inngest retries).
+
+Classifier INDEPENDENTLY RE-VERIFIED against live project jifhgpwiqgwkgqtmozsu:
+  wrong key       -> SQLSTATE 39000 "Wrong key or corrupt data"   -> corrupt  OK
+  malformed input -> SQLSTATE 22023 "invalid symbol ... base64"   -> corrupt  OK
+  happy path      -> returns the token                            -> no regression
+Both codes are in CORRUPT_PG_CODES. Anything else (timeout/5xx/network) falls
+through to TokenDecryptUnavailableError and is retried.
+
+F2 — FALSE-SUCCESS REPLIES FIXED (this was the "inherited" item in P0-9's list)
+None of the 5 reply transports checked res.ok. fetch() RESOLVES on a 403, so the
+catch could only fire on a network error: a platform-REJECTED reply returned
+HTTP 200 and the item was marked 'replied'. The operator was told a customer had
+been answered who had not been. Every transport now calls assertDelivered();
+'replied' is set only after genuine success, else 502 with the platform's own
+message. An unsupported platform now throws instead of silently succeeding with
+zero network calls.
+
+F3 — REPLAY-SAFE COUNTER (not previously identified by CC or CX)
+totalNew was incremented inside a memoized step.run, so a replay served the
+cached result and lost the increment. Counts now come from each step's return
+value. inbox_items insert errors are no longer swallowed.
+
+BACKWARD COMPATIBLE: no caller matched the old "Decryption failed" message, and
+both new classes extend Error, so all 7 decryptToken call sites behave as before
+(fan-out.ts still persists a failed post_results row). tsc + eslint clean.
+
+REMAINING OPEN AFTER THIS: only the developer-apps UI callbackEnv being
+decorative (save-platform-credentials.ts:72 persists credential fields only),
+the product_platform_accounts mismatch (separate table, P1-9), the Instagram/
+Threads Meta allowlist entries, and P1-10 (Clerk pk_test_ blocking deploys).
