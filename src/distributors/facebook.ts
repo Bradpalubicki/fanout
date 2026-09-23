@@ -1,8 +1,79 @@
-import { BaseDistributor, type PostPayload, type PostResult, type RefreshResult } from './base'
+import {
+  BaseDistributor,
+  NativeHistoryUnsupportedError,
+  type ListPostsOptions,
+  type ListPostsResult,
+  type NativePost,
+  type PostPayload,
+  type PostResult,
+  type RefreshResult,
+} from './base'
 import type { AnalyticsSnapshot } from '@/lib/types'
+
+interface GraphFeedPost {
+  id: string
+  message?: string
+  created_time?: string
+  permalink_url?: string
+  full_picture?: string
+}
 
 export class FacebookDistributor extends BaseDistributor {
   platform = 'facebook'
+
+  /**
+   * Native history via the Page feed. Covered by pages_read_engagement, which
+   * we already request — collect-inbox.ts has read this same endpoint in
+   * production, so the read path is proven; only retention was missing.
+   *
+   * Requires a Page id: 'me' resolves to the USER, whose feed is a different
+   * (and for a business profile, empty) thing. Failing loudly beats silently
+   * backfilling zero posts and marking the account complete.
+   */
+  async listPosts(
+    accessToken: string,
+    options?: ListPostsOptions,
+    accountId?: string
+  ): Promise<ListPostsResult> {
+    if (!accountId) {
+      throw new NativeHistoryUnsupportedError(
+        this.platform,
+        'a Page id is required — the user feed is not the Page feed'
+      )
+    }
+
+    const limit = Math.min(options?.limit ?? 25, 100)
+    const params = new URLSearchParams({
+      fields: 'id,message,created_time,permalink_url,full_picture',
+      limit: String(limit),
+      access_token: accessToken,
+    })
+    // Graph cursor pagination. Persisted verbatim; never parsed.
+    if (options?.cursor) params.set('after', options.cursor)
+
+    const { ok, data, status } = await this.fetchJson<{
+      data?: GraphFeedPost[]
+      paging?: { cursors?: { after?: string }; next?: string }
+    }>(`https://graph.facebook.com/v19.0/${accountId}/feed?${params}`, { method: 'GET' })
+
+    if (!ok) {
+      throw new Error(`Facebook feed read failed (${status})`)
+    }
+
+    const posts: NativePost[] = (data.data ?? []).map((p) => ({
+      platformPostId: p.id,
+      platformPostUrl: p.permalink_url ?? `https://www.facebook.com/${p.id.replace('_', '/posts/')}`,
+      content: p.message,
+      mediaUrls: p.full_picture ? [p.full_picture] : undefined,
+      publishedAt: p.created_time ? new Date(p.created_time) : undefined,
+    }))
+
+    // `next` absent means the last page. Returning a cursor without it would
+    // loop the backfill forever on the final page.
+    const nextCursor = data.paging?.next ? data.paging?.cursors?.after : undefined
+
+    return { posts, nextCursor }
+  }
 
   async post(
     payload: PostPayload,
