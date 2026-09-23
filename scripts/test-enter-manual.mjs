@@ -45,10 +45,10 @@ const ENV_VARS = {
   linkedin: { id: 'LINKEDIN_CLIENT_ID', secret: 'LINKEDIN_CLIENT_SECRET', callback: 'LINKEDIN_CALLBACK_URL' },
   youtube:  { id: 'YOUTUBE_CLIENT_ID', secret: 'YOUTUBE_CLIENT_SECRET', callback: 'YOUTUBE_CALLBACK_URL' },
   facebook: { id: 'FACEBOOK_APP_ID', secret: 'FACEBOOK_APP_SECRET', callback: 'FACEBOOK_CALLBACK_URL' },
-  instagram:{ id: 'INSTAGRAM_APP_ID', secret: 'INSTAGRAM_APP_SECRET', callback: 'FACEBOOK_CALLBACK_URL' },
+  instagram:{ id: 'INSTAGRAM_APP_ID', secret: 'INSTAGRAM_APP_SECRET', callback: 'INSTAGRAM_CALLBACK_URL' },
   tiktok:   { id: 'TIKTOK_CLIENT_KEY', secret: 'TIKTOK_CLIENT_SECRET', callback: 'TIKTOK_CALLBACK_URL' },
   pinterest:{ id: 'PINTEREST_APP_ID', secret: 'PINTEREST_APP_SECRET', callback: 'PINTEREST_CALLBACK_URL' },
-  threads:  { id: 'THREADS_APP_ID', secret: 'THREADS_APP_SECRET', callback: 'FACEBOOK_CALLBACK_URL' },
+  threads:  { id: 'THREADS_APP_ID', secret: 'THREADS_APP_SECRET', callback: 'THREADS_CALLBACK_URL' },
 }
 
 const sessionDir = path.join(SESSIONS_BASE, platform)

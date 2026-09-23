@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { supabase } from '@/lib/supabase'
+import { decryptToken } from '@/lib/crypto'
 import { z } from 'zod'
 
 export async function GET(req: NextRequest) {
@@ -86,12 +87,14 @@ export async function PATCH(req: NextRequest) {
 
     if (token) {
       try {
+        // access_token is stored encrypted — sendPlatformReply puts this straight
+        // into an Authorization header / access_token param, so it must be plaintext.
         await sendPlatformReply({
           platform: item.platform,
           type: item.type,
           platformItemId: item.platform_item_id as string,
           reply,
-          accessToken: token.access_token as string,
+          accessToken: await decryptToken(token.access_token as string),
           pageId: token.platform_page_id as string | null,
         })
       } catch {

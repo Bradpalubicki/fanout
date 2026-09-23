@@ -1,5 +1,6 @@
 import { inngest } from '@/lib/inngest'
 import { supabase } from '@/lib/supabase'
+import { decryptToken } from '@/lib/crypto'
 
 interface OAuthToken {
   profile_id: string
@@ -295,7 +296,22 @@ export const collectInbox = inngest.createFunction(
         .select('profile_id, platform, access_token, platform_page_id')
         .in('platform', SUPPORTED)
         .limit(200)
-      return (data ?? []) as OAuthToken[]
+      // oauth_tokens.access_token is stored ENCRYPTED. Every downstream fetch here
+      // sends this value straight to the platform as a bearer token / query param,
+      // so it has to be decrypted once, here, or the provider receives ciphertext.
+      // A token that fails to decrypt is skipped rather than sent as a garbage
+      // credential — otherwise one bad row poisons the whole poll.
+      const rows = (data ?? []) as OAuthToken[]
+      const decrypted = await Promise.all(
+        rows.map(async (t) => {
+          try {
+            return { ...t, access_token: await decryptToken(t.access_token) }
+          } catch {
+            return null
+          }
+        })
+      )
+      return decrypted.filter((t): t is OAuthToken => t !== null)
     })
 
     if (!tokens.length) return { processed: 0 }

@@ -141,8 +141,13 @@ export async function createBlueskyAccountForOrg(
     // Step 3 — create scoped app password (discard main password after this)
     const appPassword = await createAppPassword(accessJwt, 'fanout-publisher')
 
-    // Step 4 — encrypt and store in oauth_tokens
-    const encryptedToken = await encryptToken(appPassword)
+    // Step 4 — encrypt and store in oauth_tokens.
+    // The Bluesky distributor JSON.parses this into { identifier, password }
+    // (see distributors/bluesky.ts:67) — storing a bare password here made every
+    // agent-created account fail at parse time. Shape must match the connect route.
+    const encryptedToken = await encryptToken(
+      JSON.stringify({ identifier: handle, password: appPassword })
+    )
 
     const { error: tokenError } = await supabase.from('oauth_tokens').upsert(
       {

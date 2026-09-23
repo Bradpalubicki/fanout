@@ -121,8 +121,8 @@ const PLATFORMS: PlatformDef[] = [
     color: "bg-gradient-to-r from-purple-600 to-pink-500",
     portalUrl: "https://developers.facebook.com/apps",
     portalLabel: "developers.facebook.com (same app as Facebook)",
-    callbackEnv: "FACEBOOK_CALLBACK_URL",
-    callbackPath: "/api/oauth/facebook/callback",
+    callbackEnv: "INSTAGRAM_CALLBACK_URL",
+    callbackPath: "/api/oauth/instagram/callback",
     fields: [
       { env: "INSTAGRAM_APP_ID", label: "App ID (same Meta app)", placeholder: "1234567890123456", isSecret: false },
       { env: "INSTAGRAM_APP_SECRET", label: "App Secret (same Meta app)", placeholder: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", isSecret: true },
@@ -144,8 +144,8 @@ const PLATFORMS: PlatformDef[] = [
     color: "bg-gray-900",
     portalUrl: "https://developers.facebook.com/apps",
     portalLabel: "developers.facebook.com (same Meta app)",
-    callbackEnv: "FACEBOOK_CALLBACK_URL",
-    callbackPath: "/api/oauth/facebook/callback",
+    callbackEnv: "THREADS_CALLBACK_URL",
+    callbackPath: "/api/oauth/threads/callback",
     fields: [
       { env: "THREADS_APP_ID", label: "App ID (same Meta app)", placeholder: "1234567890123456", isSecret: false },
       { env: "THREADS_APP_SECRET", label: "App Secret (same Meta app)", placeholder: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", isSecret: true },
