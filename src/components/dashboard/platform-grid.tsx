@@ -33,7 +33,20 @@ type PendingPlatform = typeof PENDING_PLATFORMS[number];
 interface Token {
   platform: string;
   platform_username: string | null;
+  platform_page_id?: string | null;
 }
+
+/**
+ * Meta platforms post to a PAGE, not a user. The OAuth callback stores the user
+ * token before page selection, so a user who abandons the picker leaves a token
+ * row behind that cannot post anything — Fanout would fall back to 'me', which
+ * Meta blocked for publishing years ago.
+ *
+ * Treating "a token row exists" as connected showed a green Connected badge on
+ * exactly that broken state (found by CFC 2026-09-23: card read Connected while
+ * the picker reported "No accounts found").
+ */
+const PAGE_REQUIRED_PLATFORMS = ['facebook', 'instagram', 'threads'] as const;
 
 // Platforms that use custom credential dialogs instead of OAuth
 const CREDENTIAL_PLATFORMS = ['bluesky', 'mastodon'] as const;
@@ -170,7 +183,24 @@ export function PlatformGrid({ profileId, tokens }: { profileId: string; tokens:
   const [disconnecting, setDisconnecting] = useState<string | null>(null);
   const [connecting, setConnecting] = useState<string | null>(null);
   const [credentialDialog, setCredentialDialog] = useState<CredentialPlatform | null>(null);
-  const connected = tokens.map((t) => t.platform);
+  // A Meta token without a page id is connected-but-unusable, so it is NOT
+  // counted as connected. It surfaces as "Finish setup" below instead.
+  const connected = tokens
+    .filter(
+      (t) =>
+        !PAGE_REQUIRED_PLATFORMS.includes(t.platform as (typeof PAGE_REQUIRED_PLATFORMS)[number]) ||
+        !!t.platform_page_id
+    )
+    .map((t) => t.platform);
+
+  // Tokens that exist but cannot post until a Page is chosen.
+  const needsPageSelection = tokens
+    .filter(
+      (t) =>
+        PAGE_REQUIRED_PLATFORMS.includes(t.platform as (typeof PAGE_REQUIRED_PLATFORMS)[number]) &&
+        !t.platform_page_id
+    )
+    .map((t) => t.platform);
 
   const isPending = (p: string): p is PendingPlatform =>
     PENDING_PLATFORMS.includes(p as PendingPlatform);
@@ -258,6 +288,7 @@ export function PlatformGrid({ profileId, tokens }: { profileId: string; tokens:
         {SUPPORTED_PLATFORMS.map((platform) => {
           const token = tokens.find((t) => t.platform === platform);
           const isConnected = connected.includes(platform);
+          const awaitingPage = needsPageSelection.includes(platform);
           const pending = !isConnected && isPending(platform);
           return (
             <div
@@ -290,7 +321,18 @@ export function PlatformGrid({ profileId, tokens }: { profileId: string; tokens:
                     : "Awaiting platform app review"}
                 </p>
               )}
-              {isConnected ? (
+              {awaitingPage ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full text-xs border-amber-300 text-amber-700 hover:bg-amber-50"
+                  onClick={() =>
+                    router.push(`/dashboard/profiles/${profileId}/select-page?platform=${platform}`)
+                  }
+                >
+                  Finish setup — choose a Page
+                </Button>
+              ) : isConnected ? (
                 <Button
                   size="sm"
                   variant="outline"

@@ -25,7 +25,7 @@ export default async function ProfileDetailPage({ params }: { params: Promise<{ 
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("*, oauth_tokens(platform, platform_username, expires_at, created_at), webhook_url")
+    .select("*, oauth_tokens(platform, platform_username, platform_page_id, expires_at, created_at), webhook_url")
     .eq("id", id)
     .eq("org_id", orgId)
     .single();
@@ -35,6 +35,7 @@ export default async function ProfileDetailPage({ params }: { params: Promise<{ 
   const connectedTokens = profile.oauth_tokens as {
     platform: string;
     platform_username: string | null;
+    platform_page_id: string | null;
     expires_at: string | null;
     created_at: string;
   }[];

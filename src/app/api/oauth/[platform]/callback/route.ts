@@ -114,6 +114,33 @@ export async function GET(
   }
 
   // Encrypt tokens
+  /**
+   * Record what the provider ACTUALLY granted, not what we asked for.
+   * Meta's token response omits scopes entirely, so without this oauth_tokens
+   * .scopes stays NULL and there is no way to tell a permission that was denied
+   * from one that was never requested. That ambiguity cost a full debugging
+   * cycle on 2026-09-23 when the Page picker came back empty: "user has no
+   * Pages" and "pages_show_list was not granted" look identical from the empty
+   * /me/accounts response, and they need opposite fixes.
+   * Best-effort — never block a working connection on a diagnostic.
+   */
+  let grantedScopes: string[] | null = null
+  if (platform === 'facebook' || platform === 'instagram' || platform === 'threads') {
+    try {
+      const appId = process.env.FACEBOOK_APP_ID
+      const appSecret = process.env.FACEBOOK_APP_SECRET
+      if (appId && appSecret) {
+        const dbg = await fetch(
+          `https://graph.facebook.com/v19.0/debug_token?input_token=${encodeURIComponent(tokenData.access_token)}&access_token=${appId}|${appSecret}`
+        )
+        const dbgData = (await dbg.json()) as { data?: { scopes?: string[] } }
+        grantedScopes = dbgData.data?.scopes ?? null
+      }
+    } catch {
+      // Diagnostic only.
+    }
+  }
+
   const encryptedAccess = await encryptToken(tokenData.access_token)
   const encryptedRefresh = tokenData.refresh_token
     ? await encryptToken(tokenData.refresh_token)
@@ -159,6 +186,7 @@ export async function GET(
         refresh_token: encryptedRefresh,
         expires_at: expiresAt,
         platform_user_id: platformUserId,
+        scopes: grantedScopes,
         platform_username: platformUsername,
         updated_at: new Date().toISOString(),
       },
@@ -191,6 +219,7 @@ export async function GET(
       refresh_token: encryptedRefresh,
       expires_at: expiresAt,
       platform_user_id: platformUserId,
+      scopes: grantedScopes,
       platform_username: platformUsername,
       updated_at: new Date().toISOString(),
     },
