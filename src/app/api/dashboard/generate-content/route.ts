@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Internal key not configured' }, { status: 500 })
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.fanout.digital'
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://fanout.digital'
   const upstream = await fetch(`${appUrl}/api/generate-social-content`, {
     method: 'POST',
     headers: {

@@ -13,7 +13,7 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.fanout.digital"),
+  metadataBase: new URL("https://fanout.digital"),
   title: {
     template: "%s | Fanout",
     default: "Fanout — Social Media API & Automation Platform",
@@ -36,14 +36,14 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    url: "https://www.fanout.digital",
+    url: "https://fanout.digital",
     siteName: "Fanout",
     title: "Fanout — Social Media API & Automation Platform",
     description:
       "Post to Twitter, LinkedIn, Instagram, TikTok, YouTube, Reddit & more with one API call. The Ayrshare alternative built for developers.",
     images: [
       {
-        url: "https://www.fanout.digital/og",
+        url: "https://fanout.digital/og",
         width: 1200,
         height: 630,
         alt: "Fanout — Social Media API & Automation Platform",
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     title: "Fanout — Social Media API & Automation Platform",
     description:
       "Post to 9 platforms with one API call. The Ayrshare alternative built for developers. Free 14-day trial.",
-    images: ["https://www.fanout.digital/og"],
+    images: ["https://fanout.digital/og"],
   },
   robots: {
     index: true,
@@ -69,7 +69,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: "https://www.fanout.digital",
+    canonical: "https://fanout.digital",
   },
   verification: {
     ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
@@ -86,10 +86,10 @@ const organizationJsonLd = {
   "@graph": [
     {
       "@type": "Organization",
-      "@id": "https://www.fanout.digital/#organization",
+      "@id": "https://fanout.digital/#organization",
       name: "Fanout",
-      url: "https://www.fanout.digital",
-      logo: "https://www.fanout.digital/fanout-logo-dark.svg",
+      url: "https://fanout.digital",
+      logo: "https://fanout.digital/fanout-logo-dark.svg",
       sameAs: [
         "https://github.com/Bradpalubicki",
         "https://www.linkedin.com/company/fanout",
@@ -97,20 +97,20 @@ const organizationJsonLd = {
     },
     {
       "@type": "WebSite",
-      "@id": "https://www.fanout.digital/#website",
-      url: "https://www.fanout.digital",
+      "@id": "https://fanout.digital/#website",
+      url: "https://fanout.digital",
       name: "Fanout",
-      publisher: { "@id": "https://www.fanout.digital/#organization" },
+      publisher: { "@id": "https://fanout.digital/#organization" },
       potentialAction: {
         "@type": "SearchAction",
-        target: "https://www.fanout.digital/docs?q={search_term_string}",
+        target: "https://fanout.digital/docs?q={search_term_string}",
         "query-input": "required name=search_term_string",
       },
     },
     {
       "@type": "SoftwareApplication",
       name: "Fanout",
-      url: "https://www.fanout.digital",
+      url: "https://fanout.digital",
       applicationCategory: "DeveloperApplication",
       operatingSystem: "Web",
       offers: [

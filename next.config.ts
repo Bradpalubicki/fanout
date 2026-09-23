@@ -8,8 +8,8 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/:path*",
-        has: [{ type: "host", value: "fanout.digital" }],
-        destination: "https://www.fanout.digital/:path*",
+        has: [{ type: "host", value: "www.fanout.digital" }],
+        destination: "https://fanout.digital/:path*",
         permanent: true,
       },
     ];
