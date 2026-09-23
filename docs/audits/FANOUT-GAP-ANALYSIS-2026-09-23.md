@@ -99,3 +99,36 @@ not the disposition. P0-1 stands DONE.
 LESSON (generalizable): on a site with an apex->www redirect, a probe that does
 not follow redirects measures the redirect, not the route. And a vendor's
 diagnostic headers are not a status code.
+
+## CX AUDIT RESULTS — 2 of 3 runs usable
+Run 1 (the full 97-line dispatch): exit 0, intent line only, NO verdict —
+the documented CX long-prompt failure. Short single-demand prompts worked.
+Re-dispatch as focused single questions, never as a long file.
+
+CONFIRMED + FIXED — P1 unauthenticated write (CX found it, CC missed it)
+ POST /api/webhooks/inbound-sms had no Twilio signature validation and inserted
+ into two_factor_codes with the SERVICE-ROLE client. PROVEN LIVE: an unsigned
+ curl POST wrote row e6a261f3 to production (deleted; table back to 0).
+ Migration 017 closed the anon GRANT layer; this route bypassed it by holding
+ service_role — the "invariants go where service role cannot bypass" lesson.
+ Reader is /api/admin/2fa-codes, so a seeded code could be consumed by an admin
+ during account creation.
+ FIXED 58ef783: HMAC-SHA1 over URL + sorted params, timing-safe, fails CLOSED
+ when TWILIO_AUTH_TOKEN is unset. Safe to ship: prod has NO Twilio vars, so this
+ webhook was never wired to a live number.
+
+FALSE POSITIVE — CX A4 "Bluesky and Mastodon writers store plaintext"
+ Both live in _Social-Media-Engine/, which is gitignored, untracked (git ls-files
+ = 0), never deployed, and imported by nothing in src/. CX audited a local
+ scratch copy. Main-app writers encrypt correctly.
+ LESSON: scope an agent to tracked, deployed code or it will audit vestiges.
+
+FALSIFIED — CX P0 "/api/v1 still behind Clerk" (see section above)
+
+## APEX-CANONICAL — DONE 9b1f252, live-verified
+ fanout.digital now serves directly (401 from verifier, no redirect);
+ www.fanout.digital 308s to apex. Reverse of before.
+ Removes the trap that caused CX's P0 misdiagnosis.
+ OAuth callback env vars deliberately LEFT on www — a redirect URI must match
+ each provider console exactly and John's Meta connection is imminent. www still
+ 301s so registered URIs stay valid. Flip once consoles are updated.
