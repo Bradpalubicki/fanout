@@ -39,12 +39,34 @@ export async function GET(
   // Bind the profile to the caller's org before reading its token.
   const { data: profile } = await supabase
     .from('profiles')
-    .select('id')
+    .select('id, org_id, name')
     .eq('id', profileId)
-    .eq('org_id', orgId)
     .maybeSingle()
+
   if (!profile) {
-    return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+    return NextResponse.json(
+      { error: 'No profile exists with that id.', profileId },
+      { status: 404 }
+    )
+  }
+
+  /**
+   * A bare 404 here is indistinguishable from "this route is not deployed",
+   * which sent a real debugging session down the wrong path on 2026-09-23.
+   * The profile exists but belongs to another organization, so say exactly
+   * that — the fix is an org switch, not a redeploy.
+   */
+  if (profile.org_id !== orgId) {
+    return NextResponse.json(
+      {
+        error: 'That profile belongs to a different organization.',
+        hint: 'Switch to the organization that owns it using the organization switcher, then retry.',
+        profileName: profile.name,
+        profileOrgId: profile.org_id,
+        yourActiveOrgId: orgId,
+      },
+      { status: 403 }
+    )
   }
 
   const { data: tokenRow } = await supabase
