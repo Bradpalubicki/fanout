@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
+import { requireCronAuth } from '@/lib/cron-auth'
 import { getSupabase } from '@/lib/supabase'
 import { BlueskyDistributor } from '@/distributors/bluesky'
 import { MastodonDistributor } from '@/distributors/mastodon'
@@ -51,9 +52,8 @@ interface ProductAccount {
 }
 
 export async function GET(req: NextRequest) {
-  if (req.headers.get('authorization') !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const denied = requireCronAuth(req)
+  if (denied) return denied
 
   const supabase = getSupabase()
   const now = new Date().toISOString()

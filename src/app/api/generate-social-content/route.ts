@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireBearerSecret } from '@/lib/cron-auth'
 import { getSupabase } from '@/lib/supabase'
 import { PRODUCT_CONFIGS, PLATFORM_RULES, type Product } from '@/lib/product-platforms'
 import { z } from 'zod'
@@ -51,14 +52,11 @@ function checkGuardrails(content: string, guardrails: string[]): string | null {
 }
 
 export async function POST(req: NextRequest) {
-  // Auth: require CRON_SECRET or INTERNAL_API_KEY
-  const authHeader = req.headers.get('authorization')
-  const isCronAuth = authHeader === `Bearer ${process.env.CRON_SECRET}`
-  const isInternalKey = authHeader === `Bearer ${process.env.INTERNAL_API_KEY}`
-
-  if (!isCronAuth && !isInternalKey) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  // Auth: require CRON_SECRET or INTERNAL_API_KEY. Both comparisons were
+  // fail-open — with neither secret configured, `Bearer undefined` matched
+  // either branch and authorized an anonymous caller.
+  const denied = requireBearerSecret(req, ['CRON_SECRET', 'INTERNAL_API_KEY'])
+  if (denied) return denied
 
   let body: unknown
   try {
