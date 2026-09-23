@@ -23,6 +23,36 @@ const pageSchema = z.object({
   profile_id: z.string(),
 })
 
+/**
+ * PATCH previously destructured `{ id, ...rest }` from the raw body and passed
+ * `rest` straight into .update(), with no validation at all — POST's
+ * pageSchema was bypassed entirely. Ownership WAS checked, so this was not
+ * cross-tenant, but a caller could set any column on their own row: notably
+ * `profile_id`, reassigning the page to a different profile, and `created_at`.
+ *
+ * This is an allowlist of the fields the editor may actually change. `id` and
+ * `profile_id` are deliberately absent — identity and ownership are not
+ * editable through an update — and `.strict()` rejects an unknown key loudly
+ * rather than silently dropping it, so a caller attempting mass assignment
+ * gets a 422 instead of a partial success.
+ */
+const patchSchema = z
+  .object({
+    // A plain string, matching pageSchema's profile_id: the ownership query
+    // below is what actually validates this id, and a format check here would
+    // only change which error code a bad id produces.
+    id: z.string().min(1),
+    handle: z.string().min(2).max(30).regex(/^[a-z0-9-_]+$/).optional(),
+    title: z.string().min(1).optional(),
+    bio: z.string().max(300).optional(),
+    avatar_url: z.string().url().optional(),
+    background_color: z.string().optional(),
+    button_style: z.enum(['rounded', 'pill', 'square']).optional(),
+    links: z.array(linkSchema).optional(),
+    is_published: z.boolean().optional(),
+  })
+  .strict()
+
 export async function GET(req: NextRequest) {
   const { userId, orgId } = await auth()
   if (!userId || !orgId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -97,8 +127,15 @@ export async function PATCH(req: NextRequest) {
   if (!userId || !orgId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await req.json()
-  const { id, ...rest } = body as { id: string } & Record<string, unknown>
-  if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 })
+  const parsed = patchSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 })
+  }
+
+  const { id, ...rest } = parsed.data
+  if (Object.keys(rest).length === 0) {
+    return NextResponse.json({ error: 'No updatable fields supplied' }, { status: 400 })
+  }
 
   // Verify ownership
   const { data: page } = await supabase
