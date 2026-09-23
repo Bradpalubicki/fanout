@@ -313,3 +313,30 @@ Same column, same class, one level deeper. See memory/rule_one_reader_many_write
 ### NOT REVIEWABLE BY CX
 The Meta console redirect-URI allowlist (P0-7) is browser-only state, outside a
 read-only repo review. It stays verified solely by CC + Meta's own validator.
+
+
+## 🔴 P1-10 ESCALATED 2026-09-22 — CLERK pk_test_ NOW BLOCKS ALL DEPLOYS
+Found while verifying the last push of the session.
+
+Vercel build log, deploy dpl_JEHP89S7w3TcDsHJz4sJSh5Q4kWz (commit e4c81e56, DOCS ONLY):
+  Error: @clerk/clerk-react: The publishableKey passed to Clerk is invalid. (key=pk_test_...)
+  Export encountered an error on /_not-found/page: /_not-found, exiting the build.
+
+A docs-only commit failing is the proof this is ENVIRONMENTAL, not code.
+Confirmed NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = pk_test_... in Vercel production.
+CC touched no Clerk/middleware/env config this session (only .env.local.example,
+a template Vercel never reads).
+
+This also explains the LOCAL build failure seen all session and previously
+dismissed as "no Clerk key in the local shell". Same root cause, two surfaces.
+
+PRODUCTION IS NOT DOWN. Vercel serves the last successful deploy 76534f8, which
+contains every code fix from this session. Verified live AFTER the failure:
+  / = 200 | /api/inngest function_count=15, event_key=true, signing_key=true
+  bogus API key -> 401 {"error":"Invalid API key"} | /dashboard -> 307 /sign-in
+Only the two trailing docs commits (e4c81e56, be5e2719) are unshipped.
+
+NEEDS BRAD (hard stop #2, OAuth): mint pk_live_ + matching CLERK_SECRET_KEY from
+the SAME Clerk instance. A mismatched pair is the documented cause of past
+multi-hour auth debugging. Then CC sets both via `vercel env` and redeploys.
+Notion: https://app.notion.com/p/3e4663704e4081d6b18fca7761afe6b7

@@ -1,5 +1,20 @@
 cd C:\Users\bradp\dev\fanout
 
+## 🔴 READ FIRST — DEPLOYS ARE BLOCKED (found 2026-09-22, needs Brad)
+Production Clerk key is `pk_test_` and is now INVALID. Every Vercel build fails:
+  "Error: @clerk/clerk-react: The publishableKey passed to Clerk is invalid. (key=pk_test_...)"
+  "Export encountered an error on /_not-found/page, exiting the build."
+A DOCS-ONLY commit failed -- that is the proof it is environmental, not code.
+
+Live site is FINE: it still serves the last good deploy 76534f8, which contains
+every code fix from this session. Only the trailing docs commits are unshipped.
+Verified live: / =200, /api/inngest function_count=15, bogus key -> 401, /dashboard -> 307.
+
+NEEDS BRAD: mint pk_live_ + matching CLERK_SECRET_KEY from the SAME Clerk instance
+(OAuth login, CC cannot). Then CC sets them via `vercel env` and redeploys.
+Notion: https://app.notion.com/p/3e4663704e4081d6b18fca7761afe6b7
+
+
 Read FANOUT-BUILD-PLAN-2026-09-22.md (end of file = current state).
 
 ## WHERE THINGS STAND
