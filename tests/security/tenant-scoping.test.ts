@@ -78,7 +78,8 @@ describe('analytics snapshots — cumulative rows must not be summed or picked a
   it('mobile keeps only the newest snapshot per result instead of summing all', () => {
     const src = read('app/api/mobile/analytics/route.ts')
     expect(src).toMatch(/latestByResult/)
-    expect(src).toMatch(/\.order\(\s*'collected_at'.*ascending: false/s)
+    // Flattened rather than using the `s` flag — tsconfig targets ES2017.
+    expect(src.replace(/\n/g, ' ')).toMatch(/\.order\(\s*'collected_at'[^)]*ascending: false/)
     const reduceIdx = src.indexOf('totalImpressions')
     expect(src.slice(0, reduceIdx)).toMatch(/allSnapshots = \[\.\.\.latestByResult\.values\(\)\]/)
   })
