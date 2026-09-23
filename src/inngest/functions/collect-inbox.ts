@@ -1,6 +1,6 @@
 import { inngest } from '@/lib/inngest'
 import { supabase } from '@/lib/supabase'
-import { decryptToken } from '@/lib/crypto'
+import { decryptToken, TokenCorruptError } from '@/lib/crypto'
 
 interface OAuthToken {
   profile_id: string
@@ -305,10 +305,13 @@ export const collectInbox = inngest.createFunction(
 
     if (!tokens.length) return { processed: 0 }
 
+    // Counted from each step's RETURN value, not a closure variable: on replay
+    // Inngest serves a memoized result without re-running the callback, so an
+    // increment performed inside the step body would be silently lost.
     let totalNew = 0
 
     for (const token of tokens) {
-      await step.run(`poll-${token.platform}-${token.profile_id}`, async () => {
+      const result = await step.run(`poll-${token.platform}-${token.profile_id}`, async () => {
         let newItems: InboxInsert[] = []
 
         // Decrypt here, not in fetch-tokens: this value is used and discarded
@@ -316,11 +319,22 @@ export const collectInbox = inngest.createFunction(
         // plaintext credential stays out of Inngest's memoized step state.
         // A row that cannot be decrypted is skipped rather than sent to the
         // platform as a garbage credential.
+        // A row whose ciphertext is corrupt is skipped and logged — retrying it
+        // can never succeed. A transient decrypt failure is rethrown so Inngest
+        // retries this step; swallowing it here would silently drop a VALID
+        // credential and the memoized empty result would block retry until the
+        // next cron.
         let plain: OAuthToken
         try {
           plain = { ...token, access_token: await decryptToken(token.access_token) }
-        } catch {
-          return
+        } catch (e) {
+          if (e instanceof TokenCorruptError) {
+            console.error(
+              `[collect-inbox] skipping undecryptable token profile=${token.profile_id} platform=${token.platform}: ${e.message}`
+            )
+            return { skipped: 'corrupt' as const, newItems: 0 }
+          }
+          throw e
         }
 
         if (plain.platform === 'facebook') newItems = await fetchFacebookItems(plain)
@@ -329,7 +343,7 @@ export const collectInbox = inngest.createFunction(
         else if (plain.platform === 'linkedin') newItems = await fetchLinkedInItems(plain)
         else if (plain.platform === 'youtube') newItems = await fetchYouTubeItems(plain)
 
-        if (!newItems.length) return
+        if (!newItems.length) return { newItems: 0 }
 
         // Deduplicate against existing items (by platform_item_id)
         const existingIds = (await supabase
@@ -341,11 +355,15 @@ export const collectInbox = inngest.createFunction(
         ).data?.map((r) => r.platform_item_id as string) ?? []
 
         const toInsert = newItems.filter((i) => !existingIds.includes(i.platform_item_id))
-        if (!toInsert.length) return
+        if (!toInsert.length) return { newItems: 0 }
 
-        await supabase.from('inbox_items').insert(toInsert)
-        totalNew += toInsert.length
+        const { error: insertError } = await supabase.from('inbox_items').insert(toInsert)
+        if (insertError) throw new Error(`inbox_items insert failed: ${insertError.message}`)
+
+        return { newItems: toInsert.length }
       })
+
+      totalNew += result?.newItems ?? 0
     }
 
     return { processed: tokens.length, newItems: totalNew }

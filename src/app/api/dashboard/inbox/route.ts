@@ -76,7 +76,6 @@ export async function PATCH(req: NextRequest) {
   if (status) updateData.status = status
 
   if (reply) {
-    updateData.status = 'replied'
     // Fetch access token for this platform + profile
     const { data: token } = await supabase
       .from('oauth_tokens')
@@ -85,25 +84,49 @@ export async function PATCH(req: NextRequest) {
       .eq('platform', item.platform)
       .single()
 
-    if (token) {
-      try {
-        // access_token is stored encrypted — sendPlatformReply puts this straight
-        // into an Authorization header / access_token param, so it must be plaintext.
-        await sendPlatformReply({
-          platform: item.platform,
-          type: item.type,
-          platformItemId: item.platform_item_id as string,
-          reply,
-          accessToken: await decryptToken(token.access_token as string),
-          pageId: token.platform_page_id as string | null,
-        })
-      } catch {
-        // Reply failed — still mark as replied locally so UI updates
-      }
+    if (!token) {
+      return NextResponse.json(
+        { error: 'This profile is not connected. Reconnect the account and try again.' },
+        { status: 409 }
+      )
     }
+
+    try {
+      // access_token is stored encrypted — sendPlatformReply puts this straight
+      // into an Authorization header / access_token param, so it must be plaintext.
+      await sendPlatformReply({
+        platform: item.platform,
+        type: item.type,
+        platformItemId: item.platform_item_id as string,
+        reply,
+        accessToken: await decryptToken(token.access_token as string),
+        pageId: token.platform_page_id as string | null,
+      })
+    } catch (e) {
+      // The send did NOT reach the platform. Marking this 'replied' would tell
+      // the operator a customer was answered who was not. Report the failure and
+      // leave the item in its current status so it stays in the queue.
+      const message = e instanceof Error ? e.message : String(e)
+      console.error(
+        `[inbox] reply failed item=${id} platform=${item.platform}: ${message}`
+      )
+      return NextResponse.json(
+        { error: 'Reply was not delivered', detail: message },
+        { status: 502 }
+      )
+    }
+
+    updateData.status = 'replied'
   }
 
-  await supabase.from('inbox_items').update(updateData).eq('id', id)
+  const { error: updateError } = await supabase
+    .from('inbox_items')
+    .update(updateData)
+    .eq('id', id)
+
+  if (updateError) {
+    return NextResponse.json({ error: 'Failed to update item' }, { status: 500 })
+  }
 
   return NextResponse.json({ success: true })
 }
@@ -126,16 +149,17 @@ async function sendPlatformReply({
   if (platform === 'facebook' || platform === 'instagram') {
     // Graph API comment reply
     const targetId = type === 'comment' ? platformItemId : (pageId ?? 'me')
-    await fetch(`https://graph.facebook.com/v19.0/${targetId}/comments`, {
+    const res = await fetch(`https://graph.facebook.com/v19.0/${targetId}/comments`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: reply, access_token: accessToken }),
     })
+    await assertDelivered(res, platform)
   } else if (platform === 'twitter') {
     // Twitter v2 reply
     const tweetIdMatch = platformItemId.match(/(\d+)$/)
     const tweetId = tweetIdMatch?.[1] ?? platformItemId
-    await fetch('https://api.twitter.com/2/tweets', {
+    const res = await fetch('https://api.twitter.com/2/tweets', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -146,9 +170,10 @@ async function sendPlatformReply({
         reply: { in_reply_to_tweet_id: tweetId },
       }),
     })
+    await assertDelivered(res, platform)
   } else if (platform === 'youtube') {
     // YouTube comment reply
-    await fetch(
+    const res = await fetch(
       `https://www.googleapis.com/youtube/v3/comments?part=snippet`,
       {
         method: 'POST',
@@ -164,9 +189,10 @@ async function sendPlatformReply({
         }),
       }
     )
+    await assertDelivered(res, platform)
   } else if (platform === 'linkedin') {
     // LinkedIn comment reply
-    await fetch(
+    const res = await fetch(
       `https://api.linkedin.com/v2/socialActions/${encodeURIComponent(platformItemId)}/comments`,
       {
         method: 'POST',
@@ -181,5 +207,26 @@ async function sendPlatformReply({
         }),
       }
     )
+    await assertDelivered(res, platform)
+  } else {
+    // No transport exists for this platform. Silently doing nothing here would
+    // mark the item 'replied' with zero network calls.
+    throw new Error(`Replying is not supported for platform '${platform}'`)
   }
+}
+
+/**
+ * fetch() resolves on 4xx/5xx — it only rejects on a network-level failure.
+ * Every reply transport must call this, or a platform-rejected reply is
+ * indistinguishable from a delivered one and the item gets marked 'replied'.
+ */
+async function assertDelivered(res: Response, platform: string): Promise<void> {
+  if (res.ok) return
+  let detail = ''
+  try {
+    detail = (await res.text()).slice(0, 300)
+  } catch {
+    // body unreadable — status alone is enough to fail on
+  }
+  throw new Error(`${platform} rejected the reply (HTTP ${res.status}): ${detail}`)
 }
