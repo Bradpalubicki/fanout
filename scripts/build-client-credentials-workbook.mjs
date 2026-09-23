@@ -32,6 +32,14 @@ const boxed = { top: thin, left: thin, bottom: thin, right: thin }
  *
  * Deliberately does NOT ask for the Fanout login — Fanout uses Clerk sign-up,
  * and no one should be writing that into a shared spreadsheet.
+ *
+ * CREDENTIAL COLUMNS: Brad requires username/password columns so he can create
+ * the accounts on the client's behalf. Fanout itself never needs them — OAuth
+ * means the client approves access on the provider's own screen and the password
+ * is never shared with us. These columns exist for ACCOUNT CREATION, which is a
+ * separate job, and the workbook says so plainly rather than implying Fanout
+ * stores passwords. The handling guidance on "Start Here" is part of the
+ * deliverable, not decoration.
  */
 const PLATFORMS = [
   {
@@ -195,11 +203,25 @@ introRow('4.  Send the file back, or tell us and we will walk through it togethe
 intro.addRow([])
 
 const warn = introRow(
-  'Please do NOT write account passwords in this file. We do not need them. We connect through each platform\'s official "sign in with…" screen, which you approve — your password is never shared. The only exception is Bluesky, which uses a revocable app password, explained on that row.',
-  { bold: true, color: RED, height: 46 },
+  'This file will contain passwords. Please handle it carefully: send it back through a method you trust, and once we confirm the accounts are set up, delete your copy. We will store our copy in a password manager and delete the spreadsheet.',
+  { bold: true, color: RED, height: 44 },
 )
 warn.getCell(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFDF3F2' } }
 warn.getCell(2).border = boxed
+
+intro.addRow([])
+introRow('Why we are asking for logins', { size: 13, bold: true })
+introRow(
+  'We need them to CREATE and set up the accounts for you. Day-to-day publishing does not use them: once an account exists, you connect it by clicking "sign in with…" on the platform\'s own screen, and that approval is what lets us post. You can revoke it at any time without changing your password.',
+)
+introRow(
+  'If you would rather create the accounts yourself, you can — just leave the password columns blank, fill in the usernames, and we will send you connection links instead.',
+  { color: 'FF5B6472' },
+)
+introRow(
+  'One special case: Bluesky uses an APP PASSWORD rather than your real one. Instructions are on that row.',
+  { color: 'FF5B6472' },
+)
 
 intro.addRow([])
 introRow('Timelines to expect', { size: 13, bold: true })
@@ -221,13 +243,16 @@ ws.columns = [
   { key: 'accountType', width: 34 },
   { key: 'url', width: 40 },
   { key: 'fields', width: 46 },
-  { key: 'answer', width: 42 },
+  { key: 'answer', width: 38 },
+  { key: 'username', width: 28 },
+  { key: 'password', width: 28 },
+  { key: 'twofa', width: 30 },
   { key: 'status', width: 16 },
   { key: 'notes', width: 62 },
 ]
 
-const title = ws.addRow(['Account Details — please complete the yellow column'])
-ws.mergeCells(1, 1, 1, 8)
+const title = ws.addRow(['Account Details — please complete the yellow columns'])
+ws.mergeCells(1, 1, 1, 11)
 title.getCell(1).font = { name: 'Calibri', size: 15, bold: true, color: { argb: WHITE } }
 title.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: NAVY } }
 title.getCell(1).alignment = { vertical: 'middle', indent: 1 }
@@ -240,14 +265,27 @@ const HEADERS = [
   'Where to create it',
   'What we need from you',
   'YOUR ANSWERS  ▼',
+  'Username / email  ▼',
+  'Password  ▼',
+  '2FA / recovery  ▼',
   'Done?',
   'Notes',
 ]
+// Columns 6-9 are client-editable (gold). 7-9 are credentials and are tinted
+// differently so it is obvious at a glance which cells are sensitive.
+const EDITABLE = new Set([6, 7, 8, 9])
+const CREDENTIAL = new Set([7, 8, 9])
+
 const head = ws.addRow(HEADERS)
 head.height = 26
 head.eachCell((cell, i) => {
-  cell.font = { name: 'Calibri', size: 11, bold: true, color: { argb: i === 6 ? NAVY : WHITE } }
-  cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: i === 6 ? GOLD : NAVY } }
+  const editable = EDITABLE.has(i)
+  cell.font = { name: 'Calibri', size: 11, bold: true, color: { argb: editable ? NAVY : WHITE } }
+  cell.fill = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: CREDENTIAL.has(i) ? 'FFFFD98A' : editable ? GOLD : NAVY },
+  }
   cell.alignment = { vertical: 'middle', horizontal: 'left', indent: 1, wrapText: true }
   cell.border = boxed
 })
@@ -260,6 +298,9 @@ for (const p of PLATFORMS) {
     url: p.url,
     fields: p.fields.map((f) => `•  ${f}`).join('\n'),
     answer: '',
+    username: '',
+    password: '',
+    twofa: '',
     status: '',
     notes: p.notes,
   })
@@ -274,10 +315,22 @@ for (const p of PLATFORMS) {
       const req = p.required === 'Required'
       cell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: req ? RED : GREEN } }
     }
-    // The yellow column is the ONLY thing the client edits.
-    if (i === 6) cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF9E3' } }
-    else if (i !== 2) cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: LIGHT } }
+    if (CREDENTIAL.has(i)) {
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF2D6' } }
+    } else if (EDITABLE.has(i)) {
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF9E3' } }
+    } else if (i !== 2) {
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: LIGHT } }
+    }
   })
+
+  // Bluesky is the one platform where an APP password is the correct answer and
+  // the account password is the wrong one. Say so in the cell itself, because
+  // this row is where the mistake would actually be made.
+  if (p.name === 'Bluesky') {
+    row.getCell(8).note =
+      'Use an APP PASSWORD, not your account password.\nBluesky: Settings → Privacy and security → App passwords.\nAn app password can be revoked on its own without changing your login.'
+  }
 
   const link = row.getCell(4)
   link.value = { text: p.url, hyperlink: p.url }
@@ -291,7 +344,7 @@ for (const p of PLATFORMS) {
   }
 }
 
-ws.autoFilter = { from: { row: 2, column: 1 }, to: { row: 2, column: 8 } }
+ws.autoFilter = { from: { row: 2, column: 1 }, to: { row: 2, column: 11 } }
 
 // ── Sheet 3: Brand Info ─────────────────────────────────────────────────────
 const brand = wb.addWorksheet('Brand Info', {
