@@ -322,16 +322,34 @@ export function PlatformGrid({ profileId, tokens }: { profileId: string; tokens:
                 </p>
               )}
               {awaitingPage ? (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="w-full text-xs border-amber-300 text-amber-700 hover:bg-amber-50"
-                  onClick={() =>
-                    router.push(`/dashboard/profiles/${profileId}/select-page?platform=${platform}`)
-                  }
-                >
-                  Finish setup — choose a Page
-                </Button>
+                /**
+                 * Two buttons, not one. "Finish setup" alone was a DEAD END:
+                 * if Meta granted zero Pages, the picker is permanently empty
+                 * and there was no Disconnect or Reconnect to escape with
+                 * (found by CFC 2026-09-23). Reconnect now forces Meta to
+                 * re-show the Page picker via auth_type=rerequest.
+                 */
+                <div className="space-y-1.5">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full text-xs border-amber-300 text-amber-700 hover:bg-amber-50"
+                    onClick={() =>
+                      router.push(`/dashboard/profiles/${profileId}/select-page?platform=${platform}`)
+                    }
+                  >
+                    Finish setup — choose a Page
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="w-full text-xs text-gray-500 hover:text-gray-700"
+                    onClick={() => handleOAuthConnect(platform)}
+                    disabled={connecting === platform}
+                  >
+                    {connecting === platform ? "Reconnecting…" : "No Pages listed? Reconnect"}
+                  </Button>
+                </div>
               ) : isConnected ? (
                 <Button
                   size="sm"

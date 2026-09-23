@@ -94,6 +94,26 @@ export async function GET(
     authUrl.searchParams.set('access_type', 'offline')
     authUrl.searchParams.set('prompt', 'consent')
   }
+  if (platform === 'facebook' || platform === 'instagram' || platform === 'threads') {
+    /**
+     * Force Meta to re-show the Page picker.
+     *
+     * Meta remembers a prior approval and silently re-approves on every
+     * subsequent connect — no consent screen, no Page picker. If the user
+     * granted "current Pages only" and did not tick the Page they actually
+     * wanted, that choice becomes permanent from the app's side: reconnecting
+     * returns a valid token with every scope granted and /me/accounts empty,
+     * forever. There is then NO way to fix it from inside Fanout.
+     *
+     * Observed live on 2026-09-23: three reconnect attempts, each silently
+     * approved with zero Pages.
+     *
+     * auth_type=rerequest makes Meta present the picker again so a different
+     * Page can be granted. The same reasoning as prompt=consent for YouTube
+     * above.
+     */
+    authUrl.searchParams.set('auth_type', 'rerequest')
+  }
 
   return NextResponse.redirect(authUrl.toString())
 }

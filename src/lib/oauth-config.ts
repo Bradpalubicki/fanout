@@ -55,7 +55,20 @@ export const OAUTH_CONFIGS: Record<string, OAuthConfig> = {
   facebook: {
     authUrl: 'https://www.facebook.com/v19.0/dialog/oauth',
     tokenUrl: 'https://graph.facebook.com/v19.0/oauth/access_token',
-    scopes: ['pages_manage_posts', 'pages_show_list', 'pages_read_engagement'],
+    // business_management is required for Pages owned by a BUSINESS PORTFOLIO.
+    // Without it /me/accounts returns only Pages the user personally
+    // administers, so a client whose Page sits in a Business portfolio sees an
+    // empty or partial picker and cannot connect the Page they actually want.
+    // Reported independently on 2026-09-23 by a pilot user ("it only finds one
+    // of the pages I created... the only page showing is one that is not
+    // connected to a business portfolio") and by a CFC audit run.
+    // This is the normal shape for agency clients, so it is not an edge case.
+    scopes: [
+      'pages_manage_posts',
+      'pages_show_list',
+      'pages_read_engagement',
+      'business_management',
+    ],
     clientIdEnv: 'FACEBOOK_APP_ID',
     clientSecretEnv: 'FACEBOOK_APP_SECRET',
     callbackEnv: 'FACEBOOK_CALLBACK_URL',
@@ -90,7 +103,16 @@ export const OAUTH_CONFIGS: Record<string, OAuthConfig> = {
     // NOT api.instagram.com which is the deprecated Basic Display API.
     authUrl: 'https://www.facebook.com/v19.0/dialog/oauth',
     tokenUrl: 'https://graph.facebook.com/v19.0/oauth/access_token',
-    scopes: ['instagram_basic', 'instagram_content_publish', 'pages_show_list', 'pages_read_engagement'],
+    // business_management for the same reason as facebook: IG Business accounts
+    // are reached THROUGH /me/accounts, so a Page in a Business portfolio hides
+    // its linked Instagram account too.
+    scopes: [
+      'instagram_basic',
+      'instagram_content_publish',
+      'pages_show_list',
+      'pages_read_engagement',
+      'business_management',
+    ],
     clientIdEnv: 'INSTAGRAM_APP_ID',
     clientSecretEnv: 'INSTAGRAM_APP_SECRET',
     // Must be its OWN callback path. The callback handler derives `platform` from the
