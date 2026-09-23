@@ -4,20 +4,43 @@ cd C:\Users\bradp\dev\fanout
 
 Read "DO THIS FIRST", act, then the rest only if needed.
 
-## DO THIS FIRST
+## DO THIS FIRST — no decisions needed, just build
 
-1. `git push origin main` — commit 3219299 (the audit docs below) is COMMITTED
-   BUT NOT PUSHED. A permission classifier blocked the push at the end of the
-   last session. Verify it lands:
-   `git ls-remote origin main | grep $(git rev-parse HEAD)`
+**THE TRACK IS P0 SECURITY. It is already decided. Do not re-litigate it.**
+Polish work (media on reddit/threads/mastodon, youtube videos.insert, image
+generation, AI enhancement) is DEFERRED until the three P1 defects close.
+Reason: polish makes posts prettier; P0 stops one client's key from reaching
+another client's tokens.
 
-2. Decide the next build track. Two candidates, and they are not equal:
-   - **P0 SECURITY** (recommended) — three P1 defects found today, below.
-     Nothing should be exposed to a real client API key until these close.
-   - **POLISH** — media on reddit/threads/mastodon, youtube videos.insert,
-     image generation, AI content enhancement.
-   My read: P0 first. The polish work makes posts prettier; the P0 work stops
-   one client's key from touching another client's tokens.
+Build in this order. Each is a separate micro-prompt, max 3 files, verify with
+`npx tsc --noEmit` and commit before starting the next.
+
+**P0-1. Fan-out token/post pairing** (src/lib/fan-out.ts)
+  Defect: `:52` reads post by id, `:65` picks tokens by separately-supplied
+  profileId. Proven: probe dispatched post-B content on token-A.
+  Fix: reject any job whose (post, profile, platform) tuple does not match
+  before tokens are selected, before any write, notification, webhook or
+  provider call. Recheck on retry and on schedule.
+  Callers to update: fan-out-post.ts:51, scheduled-post.ts:22, retry-post.ts:31.
+  DONE WHEN: a test that constructs a mismatched tuple FAILS the job, and
+  breaking the guard makes that test fail.
+
+**P0-2. DM replies on public transports** (src/app/api/dashboard/inbox/route.ts)
+  Defect: `:155` rejects type `dm` for Meta; `:168/:184/:203` do not check type
+  at all for Twitter/YouTube/LinkedIn. A private DM can be published publicly.
+  Fix: reject `dm` and unknown types for EVERY public transport before token
+  decryption and before any provider call. Do not mark replied from caller
+  status alone.
+  DONE WHEN: type `dm` produces zero provider calls on all five platforms.
+
+**P0-3. Fail-open cron auth** (src/app/api/cron/process-queue/route.ts:8)
+  Defect: accepts literal `Bearer undefined` when CRON_SECRET is unset.
+  FIRST: check whether CRON_SECRET is actually set in Vercel — that decides
+  whether this is live or latent. Then fail closed on missing/empty secret and
+  audit the sibling guards in generate-social-content/route.ts:55-57.
+  DONE WHEN: a request with no secret configured returns 401, not 200.
+
+Then reassess. Do NOT start polish work without saying so explicitly.
 
 ## THE THREE P1 DEFECTS (found 2026-09-23, PLAN ONLY, nothing fixed)
 
