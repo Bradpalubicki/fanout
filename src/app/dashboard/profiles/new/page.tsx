@@ -28,6 +28,7 @@ export default function NewProfilePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [generatedKey, setGeneratedKey] = useState<string | null>(null);
+  const [newProfileId, setNewProfileId] = useState<string | null>(null);
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -59,9 +60,11 @@ export default function NewProfilePage() {
       setGeneratedKey(json.apiKey ?? null);
       toast.success("Profile created!");
 
-      setTimeout(() => {
-        router.push(`/dashboard/profiles/${(json.profile as { id: string }).id}`);
-      }, 3000);
+      // Deliberately NO auto-redirect. Only the key's hash is stored, so this
+      // is the one and only time the plaintext key is ever shown — navigating
+      // away after 3s destroyed it before a user could copy it (found by CFC
+      // 2026-09-23). The key panel now owns the transition instead.
+      setNewProfileId((json.profile as { id: string }).id);
     } catch {
       toast.error("Something went wrong");
     } finally {
@@ -80,7 +83,27 @@ export default function NewProfilePage() {
           <div className="bg-white rounded-lg p-3 font-mono text-sm break-all border border-green-200 mb-4">
             {generatedKey}
           </div>
-          <p className="text-xs text-green-600">Redirecting to profile in 3 seconds...</p>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                navigator.clipboard?.writeText(generatedKey).then(
+                  () => toast.success("API key copied"),
+                  () => toast.error("Copy failed — select the key and copy it manually")
+                );
+              }}
+            >
+              Copy key
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => router.push(`/dashboard/profiles/${newProfileId}`)}
+              disabled={!newProfileId}
+            >
+              I&apos;ve saved it — continue
+            </Button>
+          </div>
         </Card>
       </div>
     );

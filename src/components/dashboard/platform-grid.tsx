@@ -8,11 +8,25 @@ import { useRouter } from "next/navigation";
 import { Loader2, X, Clock } from "lucide-react";
 import { SUPPORTED_PLATFORMS, PLATFORM_LABELS, type Platform } from "@/lib/types";
 
-// Platforms pending Meta business verification
-const META_PENDING_PLATFORMS = ['facebook', 'instagram', 'threads'] as const;
-// Platforms pending app review
-const REVIEW_PENDING_PLATFORMS = ['tiktok'] as const;
-// All platforms with placeholder credentials (not yet live)
+// Platforms whose OAuth app credentials are still the literal string
+// "placeholder" in production. Connecting these cannot work: the authorize
+// request is built from those credentials, so it fails at the provider.
+//
+// CORRECTED 2026-09-23: this list previously named facebook, instagram and
+// threads as "pending Meta business verification". Those are the only three
+// that DO hold real credentials (Meta app 772426605937002), so the grid showed
+// "Check status" on the only working platforms while offering a live "Connect"
+// button on six that cannot work. A CFC run failed here: there was no Connect
+// button for Facebook at all.
+const REVIEW_PENDING_PLATFORMS = [
+  'twitter',
+  'linkedin',
+  'tiktok',
+  'youtube',
+  'pinterest',
+  'reddit',
+] as const;
+const META_PENDING_PLATFORMS = [] as const;
 const PENDING_PLATFORMS = [...META_PENDING_PLATFORMS, ...REVIEW_PENDING_PLATFORMS] as const;
 type PendingPlatform = typeof PENDING_PLATFORMS[number];
 
@@ -301,11 +315,14 @@ export function PlatformGrid({ profileId, tokens }: { profileId: string; tokens:
                   variant="outline"
                   className="w-full text-xs"
                   onClick={() => handleOAuthConnect(platform)}
-                  disabled={connecting === platform}
+                  // A pending platform has placeholder credentials, so the
+                  // authorize request is guaranteed to fail at the provider.
+                  // Leaving it clickable sends users to a provider error page.
+                  disabled={connecting === platform || pending}
                 >
                   {connecting === platform ? (
                     <><Loader2 className="w-3 h-3 mr-1 animate-spin" /> Connecting…</>
-                  ) : pending ? "Check status" : "Connect"}
+                  ) : pending ? "Not available yet" : "Connect"}
                 </Button>
               )}
             </div>
