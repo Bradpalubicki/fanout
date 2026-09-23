@@ -1,75 +1,104 @@
 cd C:\Users\bradp\dev\fanout
 
-## STATE 2026-09-23 — SIGN-IN IS LIVE. PILOT-READY. ONE GATE LEFT: JOHN.
+## STATE 2026-09-23 — IT POSTS. Fanout published its first real post today.
 
-Clerk is fixed. Deploy is green. All code + DB fixes are live and verified.
-The ONLY remaining gate is John Farmer accepting the Meta Tester invite.
+Everything below the "DO THIS FIRST" block is context. Read that block, act, then
+read the rest only if you need it.
 
-## FIRST COMMAND — confirm still healthy
-  curl -s -o /dev/null -w '%{http_code}\n' https://clerk.fanout.digital/v1/environment
-  200 = sign-in works. (Was 000 all of 2026-09-22 evening.)
+## DO THIS FIRST (two things, both need Brad)
 
-## WHERE IT STANDS
-Head 016a0c0 · Deploy dpl_J8QXJnAoHWdxTbkoLLVU7evLJy5j READY
-Supabase jifhgpwiqgwkgqtmozsu · oauth_tokens=0, post_results=0, profiles=2
+1. POST TO BLUESKY from Compose.
+   fanout.digital/dashboard/compose -> profile "CFC Test Brand" -> tick Bluesky
+   ONLY -> Post. Facebook already proved the pipeline, but via an event CC
+   re-emitted by hand. Bluesky proves the NORMAL user path now that Inngest
+   works. Bluesky is connected and verified; it needs no Meta anything.
+   Then check: the post should appear at bsky.app/profile/lockelum.bsky.social
 
-NEXT ACTION: John accepts Meta Tester invite (app 772426605937002), then runs
-the 7-step instruction set (in the session transcript + CC COMPLETE page).
-Verify him SERVER-SIDE, never by his word:
-  select count(*) from oauth_tokens;   -- expect 1
-  select * from post_results;          -- expect a real platform_post_id
-  select * from inbox_items;           -- comments (collect-inbox cron is */15)
+2. EMAIL JOHN. Draft is in the session transcript. He found the Business-portfolio
+   bug; the fix is deployed and he can retry. His Page (Open Play Project) is the
+   better pilot target than Lockelum — it is in a Business portfolio, which is how
+   real agency clients are set up.
 
-## SHIPPED 2026-09-22 (all live)
-- F1 306c278e — decryptToken split into TokenCorruptError (skip+log) vs
-  TokenDecryptUnavailableError (rethrow -> Inngest retries). Classifier verified
-  against the LIVE db: wrong key=39000, malformed=22023, round-trip still true.
-- F2 306c278e — all 5 reply transports now call assertDelivered(). fetch()
-  resolves on 403; NONE of them checked res.ok, so a rejected reply returned 200
-  and the item was marked 'replied'. Route now returns 502 and leaves it queued.
-- F3 306c278e — step counts read from step.run return values, not a closure
-  lost on replay.
-- Migration 017 3433d7f — anon held SELECT/INSERT/UPDATE/DELETE on EVERY table
-  incl oauth_tokens and two_factor_codes, with RLS the only barrier. Anon now
-  denied at the GRANT layer. short_links keeps its public read. service_role
-  still reads real data (profiles=2, org_subscriptions=3).
-- Organizations ENABLED on both Clerk instances (see below).
-- 016a0c0 — clean rebuild on restored pk_live_ keys.
+## WHAT HAPPENED TODAY — the headline
 
-## TWO BLOCKERS RESOLVED — DO NOT RE-INVESTIGATE
-1. CLERK DOMAIN. Prod vars held literal placeholders "pk_test_..."/"sk_test_..."
-   copied from .env.local.example lines 11-12. Six deploys ERRORed. Brad supplied
-   live keys (pair match PROVEN: secret's instance owns fanout.digital with
-   frontend_api_url https://clerk.fanout.digital = what the pk decodes to).
-   Domain then sat Unverified 3.5h. RESOLVED when Brad's Verify Records click
-   finally registered at 02:10:23Z — updated_at moved for the first time and the
-   cert issued seconds later.
-   FALSIFIED: CX's "Deploy certificates step" (CFC proved no such control exists
-   on Hobby plan). CC's "resolves on its own" (it waited indefinitely on a click).
-2. ORGANIZATIONS DISABLED on BOTH instances. 48 of 48 API routes 401 without an
-   orgId. Would have broken the pilot even with the cert working. Also disabled
-   the recovery UI: dashboard/page.tsx:42-55 renders Clerk's <OrganizationList>
-   for org-less users, which needs the instance flag. Nothing in the codebase
-   calls createOrganization — getOrCreateOrgSubscription(orgId) takes the org as
-   a PARAMETER and creates only the DB row. One flag gated all onboarding.
-   Now enabled + verified on both (GET /v1/organizations = 200, was 403).
+Nothing had EVER published, and the cause was not code.
 
-## CLERK INSTANCE TOPOLOGY
-prod ins_3JhcXd7I0OQpSeT0fruGzXyzw1j — clerk.fanout.digital — 0 users
-dev  ins_3IhEypzXMtuuxDT2lKynugOPhzk — notable-dolphin-1159 — 3 users incl
-     frr.joh.1@gmail.com (John). NOT the same as the older rich-chow-70 instance
-     that the last good build 76534f8 shipped.
-John's old account is on DEV. The live site uses PROD. He must SIGN UP FRESH —
-do not issue him credentials.
+INNGEST_SIGNING_KEY in Vercel was stale (signkey-prod-b5f656f...) while the
+Inngest account's real key was signkey-prod-bc781dd... The EVENT key was fine, so
+inngest.send() succeeded and the UI said "Post queued!" — but Inngest could never
+invoke a function. Posts sat at Pending forever with no error in the UI, no
+post_results row, and nothing in the logs. 179 passing tests said otherwise
+because they mock the transport.
 
-## STILL OPEN (held deliberately, off the pilot path)
-F4 developer-apps callbackEnv decorative (save-platform-credentials.ts:72)
-F5 product_platform_accounts encrypt/read mismatch — separate table, unused
-F6 Instagram/Threads Meta redirect URIs — browser-only Meta console state
+ALL FIVE ENGINES had the same stale key. Fixed on all five; fleet now 5/5.
+
+  npm run health:inngest     <- run this any time. exit 1 if anything is broken.
+
+That script exists because GET /api/inngest reports has_signing_key: true even
+while the key is REJECTED. Only PUT exercises it. Presence is not validity.
+
+## PROVEN WORKING (first time, end to end, against real providers)
+- Facebook OAuth -> token encrypted -> Page selected -> Compose -> Inngest
+  fan-out -> Graph API -> REAL published post:
+  https://www.facebook.com/1232498056612909/posts/122126177427373572
+  post_results: status=success, real platform_post_id, 0 errors.
+- Bluesky listPosts verified against the LIVE API (real URI, URL, text,
+  timestamp, metrics, working cursor). Account lockelum.bsky.social, DID
+  verified, credentials encrypted.
+
+## NATIVE HISTORY CHAIN — N1-N5 COMPLETE (Ayrshare parity feature)
+  N5 aaf34f5  read scopes, added BEFORE clients connect (scope changes force
+              re-consent). LinkedIn native history is BLOCKED: r_member_social
+              is a CLOSED permission, do not request it — it fails the WHOLE
+              authorization, not just history.
+  N1 7340e77  external_posts + external_post_sync_state (live in DB)
+  N2 5859641  listPosts on facebook/instagram/twitter
+  +  7523812  listPosts on bluesky (live-API verified)
+  N3 b5fc352  resumable backfill, one page per run, re-emits itself
+  N4 bb2d57b  GET /api/v1/history, profile-scoped
+  N6 account-level analytics = NOT STARTED. Genuinely new construction per CX,
+     not exposure. Nothing is waiting on it.
+
+## STILL OPEN
+- ORG-CREATION P0 STILL UNVERIFIED. Nobody has watched a genuinely NEW user sign
+  up. Brad's account already had an org. John's next session is the moment.
+- Vercel team split. 20+ projects incl. client work in one team; John would see
+  all of it. DEFERRED because moving a live project touches 69 env vars and the
+  fanout.digital domain. Needs Brad's explicit go-ahead.
+- Org sprawl: 3 Clerk orgs across 4 profiles. Each signup made its own. Will
+  confuse a real client.
+- Facebook Page is named "Lockelum" — brand rule is LockeLum. Cosmetic.
+- 3 engines on an Inngest SDK with a flagged security issue (<3.54.0).
+  wellness-engine is fixed; check content-engine and marketing-engine.
+
+## TODAY'S OTHER FIXES (all pushed)
+  58ef783  P1: inbound-sms webhook accepted UNSIGNED writes to production
+  6d9d85a  P1: /api/social-status + social-queue leaked NuStack's queue to any
+           tenant (checked that SOME org existed, never WHICH)
+  b4f9a5f  4 CX findings incl. a live cross-tenant biolink read
+  e62e94d  business_management scope + auth_type=rerequest + escape from the
+           "Finish setup" dead end
+  434b873  Compose no longer pre-selects every connected platform. It had the
+           REAL lockelum Bluesky account pre-ticked on a test post.
+  0ab5fa1  /api/dashboard/platforms/[platform]/diagnose — asks Meta what was
+           actually granted. Use it whenever a Page picker is empty.
+  63139d3  @types/node ^24 — --legacy-peer-deps had hidden a conflict that
+           broke EVERY production deploy.
+  c8ff802  the fleet health check
+  wellness-engine 7673a81, agency-engine 15831d4 (different repos)
+
+## TESTS
+179 passing, 13 files. npm test. Several are mutation-verified — breaking the
+code under test fails them. Do not trust a suite that has not been shown to fail.
+
+## KEY DOCS IN REPO
+  docs/audits/FANOUT-AYRSHARE-PARITY-PLAN.md   <- the plan, with the NATIVE
+                                                  scope decision and its 4
+                                                  measured blockers
+  docs/audits/FANOUT-GAP-ANALYSIS-2026-09-23.md
+  scripts/check-inngest-health.mjs
 
 ## NOTION
-CC COMPLETE:  3e4663704e4081ffa9dcc66c47be4de9
-Work Queue:   3e4663704e4081ffbc20e678b235598f  (State = BUILDING)
-Active Seq:   360663704e408103b843ca3fc822e450  (fanout block, 85%)
+CC COMPLETE:  3e4663704e4081c1806dc470c7fd0c4d
+Parity plan:  3e4663704e4081b5bf97f6e3ece3a240
 CLAW_GATE_2_STATUS: PENDING — CFC is the sole VERIFIED_DONE authority.
-Two eval-gate checks (F1/F2 runtime) stay DEFERRED until a real account exists.
