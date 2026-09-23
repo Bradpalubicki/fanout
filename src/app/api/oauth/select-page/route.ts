@@ -58,22 +58,36 @@ export async function GET(req: NextRequest) {
 
   try {
     if (platform === 'facebook') {
-      // Fetch pages the user manages
+      // Two separate defences, because either alone is one edit from leaking.
+      //
+      // 1. `access_token` is NOT requested. This response previously asked
+      //    Graph for it and returned the page objects VERBATIM, so every
+      //    managed Page's access token was serialized to the browser. Nothing
+      //    consumed it: the picker renders id, name and picture only, and POST
+      //    re-fetches the page token server-side (see the POST handler below).
+      // 2. The response is projected field by field, so adding a field to the
+      //    Graph query — or Graph returning one we did not ask for — cannot
+      //    reach the client by default.
       const res = await fetch(
-        `https://graph.facebook.com/v19.0/me/accounts?fields=id,name,access_token,picture&access_token=${userToken}`
+        `https://graph.facebook.com/v19.0/me/accounts?fields=id,name,picture&access_token=${encodeURIComponent(userToken)}`
       )
       const data = await res.json() as {
-        data?: { id: string; name: string; access_token: string; picture?: { data: { url: string } } }[]
+        data?: { id: string; name: string; picture?: { data: { url: string } } }[]
         error?: { message: string }
       }
       if (!res.ok) throw new Error(data.error?.message ?? 'Failed to fetch pages')
-      return NextResponse.json({ pages: data.data ?? [] })
+      const pages = (data.data ?? []).map((p) => ({
+        id: p.id,
+        name: p.name,
+        picture: p.picture,
+      }))
+      return NextResponse.json({ pages })
     }
 
     if (platform === 'instagram') {
       // Fetch FB pages first, then get linked IG business accounts
       const pagesRes = await fetch(
-        `https://graph.facebook.com/v19.0/me/accounts?fields=id,name,instagram_business_account&access_token=${userToken}`
+        `https://graph.facebook.com/v19.0/me/accounts?fields=id,name,instagram_business_account&access_token=${encodeURIComponent(userToken)}`
       )
       const pagesData = await pagesRes.json() as {
         data?: { id: string; name: string; instagram_business_account?: { id: string } }[]
@@ -83,7 +97,7 @@ export async function GET(req: NextRequest) {
       for (const page of (pagesData.data ?? [])) {
         if (page.instagram_business_account?.id) {
           const igRes = await fetch(
-            `https://graph.facebook.com/v19.0/${page.instagram_business_account.id}?fields=id,username,profile_picture_url&access_token=${userToken}`
+            `https://graph.facebook.com/v19.0/${page.instagram_business_account.id}?fields=id,username,profile_picture_url&access_token=${encodeURIComponent(userToken)}`
           )
           const igData = await igRes.json() as { id: string; username?: string }
           igAccounts.push({
@@ -100,7 +114,7 @@ export async function GET(req: NextRequest) {
     if (platform === 'threads') {
       // Fetch Threads user profile
       const res = await fetch(
-        `https://graph.threads.net/v1.0/me?fields=id,username&access_token=${userToken}`
+        `https://graph.threads.net/v1.0/me?fields=id,username&access_token=${encodeURIComponent(userToken)}`
       )
       const data = await res.json() as { id?: string; username?: string; error?: { message: string } }
       if (!res.ok || !data.id) throw new Error(data.error?.message ?? 'Failed to fetch Threads profile')
@@ -152,13 +166,13 @@ export async function POST(req: NextRequest) {
     if (platform === 'facebook') {
       // Get the page-specific access token
       const res = await fetch(
-        `https://graph.facebook.com/v19.0/${pageId}?fields=access_token,name&access_token=${userToken}`
+        `https://graph.facebook.com/v19.0/${pageId}?fields=access_token,name&access_token=${encodeURIComponent(userToken)}`
       )
       const data = await res.json() as { access_token?: string; name?: string }
       if (data.access_token) {
         // Exchange for long-lived page token
         const llRes = await fetch(
-          `https://graph.facebook.com/v19.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${process.env.FACEBOOK_APP_ID}&client_secret=${process.env.FACEBOOK_APP_SECRET}&fb_exchange_token=${data.access_token}`
+          `https://graph.facebook.com/v19.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${process.env.FACEBOOK_APP_ID}&client_secret=${process.env.FACEBOOK_APP_SECRET}&fb_exchange_token=${encodeURIComponent(data.access_token)}`
         )
         const llData = await llRes.json() as { access_token?: string }
         finalToken = llData.access_token ?? data.access_token
