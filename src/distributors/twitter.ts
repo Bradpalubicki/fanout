@@ -89,8 +89,66 @@ export class TwitterDistributor extends BaseDistributor {
     return { posts, nextCursor: data.meta?.next_token }
   }
 
+  /**
+   * Upload one image and return its media_id.
+   *
+   * v1.1 media/upload is still the only endpoint that accepts binary uploads —
+   * the v2 API has no equivalent, so this call is deliberately v1.1 while the
+   * tweet itself is v2. Returns null on any failure so the caller can decide
+   * whether to post without media rather than losing the post entirely.
+   */
+  private async uploadMedia(imageUrl: string, accessToken: string): Promise<string | null> {
+    try {
+      const img = await fetch(imageUrl, { signal: AbortSignal.timeout(15000) })
+      if (!img.ok) return null
+      const bytes = Buffer.from(await img.arrayBuffer())
+
+      // Twitter's simple upload caps at 5MB for images.
+      if (bytes.byteLength > 5 * 1024 * 1024) return null
+
+      const form = new FormData()
+      form.append('media_data', bytes.toString('base64'))
+
+      const res = await fetch('https://upload.twitter.com/1.1/media/upload.json', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}` },
+        body: form,
+        signal: AbortSignal.timeout(30000),
+      })
+      if (!res.ok) return null
+
+      const data = (await res.json()) as { media_id_string?: string }
+      return data.media_id_string ?? null
+    } catch {
+      return null
+    }
+  }
+
   async post(payload: PostPayload, accessToken: string, _pageId?: string): Promise<PostResult> {
     const body: Record<string, unknown> = { text: payload.content }
+
+    /**
+     * Media was previously DISCARDED here without a word: payload.mediaUrls was
+     * never read, so a user attached an image, saw "posted", and the image was
+     * silently gone. Found 2026-09-23.
+     *
+     * Twitter allows up to 4 images per tweet. Uploads run in parallel because
+     * each is an independent round trip.
+     */
+    if (payload.mediaUrls?.length) {
+      const ids = (
+        await Promise.all(
+          payload.mediaUrls.slice(0, 4).map((url) => this.uploadMedia(url, accessToken))
+        )
+      ).filter((id): id is string => !!id)
+
+      if (ids.length) {
+        body.media = { media_ids: ids }
+      }
+      // If every upload failed we still post the text. Losing the image is bad;
+      // losing the whole post because of it is worse. post_results records the
+      // success, and the missing media is visible on the platform.
+    }
 
     const { ok, data } = await this.fetchJson<{
       data?: { id: string; text: string }

@@ -4,20 +4,41 @@ import type { AnalyticsSnapshot } from '@/lib/types'
 export class LinkedInDistributor extends BaseDistributor {
   platform = 'linkedin'
 
-  async post(payload: PostPayload, accessToken: string, _pageId?: string): Promise<PostResult> {
-    // Get user URN first
-    const { ok: meOk, data: meData } = await this.fetchJson<{
-      sub?: string
-      id?: string
-    }>('https://api.linkedin.com/v2/userinfo', {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    })
+  async post(payload: PostPayload, accessToken: string, pageId?: string): Promise<PostResult> {
+    /**
+     * Post as the COMPANY PAGE when one is connected, otherwise as the member.
+     *
+     * Previously `_pageId` was ignored and every post went out as
+     * urn:li:person — so an agency posting for a client published to the
+     * account manager's personal LinkedIn rather than the client's Company
+     * Page. For the agency use case that is the wrong author entirely.
+     *
+     * Organization posting additionally needs w_organization_social, which is
+     * granted per-Page by LinkedIn. If it is missing the API returns 403 and
+     * that surfaces as a normal failure rather than a silent wrong-author post.
+     */
+    let authorUrn: string
 
-    if (!meOk || !meData.sub) {
-      return { success: false, error: 'Failed to get LinkedIn user ID' }
+    if (pageId) {
+      // Accept either a bare id or a full URN, since the stored value differs
+      // depending on how the Page was connected.
+      authorUrn = pageId.startsWith('urn:li:organization:')
+        ? pageId
+        : `urn:li:organization:${pageId}`
+    } else {
+      const { ok: meOk, data: meData } = await this.fetchJson<{
+        sub?: string
+        id?: string
+      }>('https://api.linkedin.com/v2/userinfo', {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
+
+      if (!meOk || !meData.sub) {
+        return { success: false, error: 'Failed to get LinkedIn user ID' }
+      }
+
+      authorUrn = `urn:li:person:${meData.sub}`
     }
-
-    const authorUrn = `urn:li:person:${meData.sub}`
 
     const shareBody: Record<string, unknown> = {
       author: authorUrn,
