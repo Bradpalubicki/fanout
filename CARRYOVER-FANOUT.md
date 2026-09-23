@@ -1,67 +1,81 @@
 cd C:\Users\bradp\dev\fanout
 
-## 🔴 READ FIRST — DEPLOYS ARE BLOCKED (found 2026-09-22, needs Brad)
-Production Clerk key is `pk_test_` and is now INVALID. Every Vercel build fails:
-  "Error: @clerk/clerk-react: The publishableKey passed to Clerk is invalid. (key=pk_test_...)"
-  "Export encountered an error on /_not-found/page, exiting the build."
-A DOCS-ONLY commit failed -- that is the proof it is environmental, not code.
+## STATE AS OF 2026-09-22 ~18:40 PT — ONE EXTERNAL BLOCKER, EVERYTHING ELSE LIVE
 
-Live site is FINE: it still serves the last good deploy 76534f8, which contains
-every code fix from this session. Only the trailing docs commits are unshipped.
-Verified live: / =200, /api/inngest function_count=15, bogus key -> 401, /dashboard -> 307.
+Clerk keys are DONE. Deploy is GREEN. Code + DB fixes are LIVE.
+The only open item is a Clerk-side SSL cert that has not issued.
 
-NEEDS BRAD: mint pk_live_ + matching CLERK_SECRET_KEY from the SAME Clerk instance
-(OAuth login, CC cannot). Then CC sets them via `vercel env` and redeploys.
-Notion: https://app.notion.com/p/3e4663704e4081d6b18fca7761afe6b7
+## FIRST COMMAND — is sign-in up yet?
+  curl -s -o /dev/null -w '%{http_code}\n' https://clerk.fanout.digital/v1/environment
 
+  200 -> sign-in works. Tell CFC "rerun 4 and 6". John can connect.
+  000 -> still stuck. See CLERK BLOCKER below.
 
-Read FANOUT-BUILD-PLAN-2026-09-22.md (end of file = current state).
+## WHAT SHIPPED (verified live, not claimed)
+- Deploy dpl_61sxFrBvVJjZE4UAwp6gxrwyeovA = READY, SHA 3433d7f, aliased to
+  fanout.digital + www.fanout.digital. First green build after 6 ERRORs.
+- F1 decrypt retry: TokenCorruptError (skip+log) vs TokenDecryptUnavailableError
+  (rethrow -> Inngest retries). Classifier verified against the LIVE db:
+  wrong key = SQLSTATE 39000, malformed input = 22023, round-trip still true.
+- F2 reply delivery: all 5 transports (fb/ig/twitter/youtube/linkedin) now call
+  assertDelivered(). fetch() resolves on 403 — none of them checked res.ok, so a
+  rejected reply returned 200 and the item was marked 'replied'. Route now
+  returns 502 and leaves the item queued.
+- F3: step counts read from step.run return values, not a closure lost on replay.
+- Migration 017: anon had SELECT/INSERT/UPDATE/DELETE on EVERY table incl
+  oauth_tokens and two_factor_codes, with RLS as the only barrier. Anon is now
+  denied at the GRANT layer (insufficient_privilege, before RLS). short_links
+  keeps its intentional public read. service_role still reads real data
+  (profiles=2, org_subscriptions=3 — non-zero = availability control).
 
-## WHERE THINGS STAND
-John Farmer is STILL PENDING on the Meta Tester invite for app 772426605937002.
-Nothing in the product blocks him any more. Facebook connect -> post will work
-when he accepts. Verify server-side, not by his word:
-  select count(*) from oauth_tokens;   -- expect 1 after he connects
-  select * from post_results;          -- expect a real platform_post_id
-Supabase project: jifhgpwiqgwkgqtmozsu
+## CLERK BLOCKER (the only thing open)
+Domain fanout.digital / instance ins_3JhcXd7I0OQpSeT0fruGzXyzw1j shows
+Unverified (Frontend API, Account portal, Email 0/3). No SSL cert issued.
+Created 2026-09-22T22:39:41Z. Still Unverified ~3h later vs Clerk's <=1h SLA.
 
-## DO NOT REDO
-- Meta Facebook redirect URI IS registered and passes Meta's own validator.
-- oauth_tokens is EMPTY (0 rows) -- no plaintext migration needed.
-- All 6 writers / 4 readers of oauth_tokens.access_token now agree on BOTH
-  encryption AND payload shape. CX round 2 confirmed this explicitly.
-- Bluesky agent payload verified against the official AT Protocol
-  createSession lexicon: a handle IS a valid `identifier`.
+TWO "Verify Records" clicks left the domain record's updated_at at
+2026-09-22T23:03:51Z (a CC PATCH). Neither click registered server-side.
 
-## OPEN, IN PRIORITY ORDER
-1. developer-apps UI callbackEnv is decorative.
-   src/app/actions/save-platform-credentials.ts:72 persists only credential
-   fields, so a user following that screen still gets authorize=503.
-   Design change, not a tweak.
-2. product_platform_accounts encrypt/read mismatch
-   (social-setup/auto-connect:98 writes ciphertext vs cron/social-post-agent:130
-   passes it straight through). Separate table. Relates to existing P1-9.
-3. Instagram/Threads Meta redirect URIs still NOT in the Meta allowlist.
-   Meta combobox would not commit them after 3 attempts (stopped per the
-   3-attempt rule). Not needed for the Facebook-only pilot. IG also needs a
-   Business/Creator account + an image on every post (instagram.ts:17).
+RULED OUT — do not re-investigate:
+- DNS is correct from GoDaddy authoritative NS (ns23/ns24.domaincontrol.com),
+  1.1.1.1, 8.8.8.8, and Google DoH. All 5 CNAMEs match Clerk's own dns_targets.
+- No CAA records. No conflicting A/AAAA/TXT at the clerk subdomain.
+- Not a local TLS problem (cloudflare.com = 200 from this machine).
+- Direct SNI test to Clerk's edge IP 104.18.34.146 gets a fatal TLS alert =
+  no certificate exists for clerk.fanout.digital.
+- Clerk exposes NO verification API endpoint. Probed POST/PUT on
+  /v1/domains/{id}/verify, /verify_dns, /verify_dns_records,
+  /dns_records/verify, /check, /ssl_certificate, /v1/dns_checks,
+  /v1/proxy_checks — all 404/405. PATCH returns 200 but does not verify.
+  It is dashboard-only.
 
-CLOSED 2026-09-22 in 306c278 (do NOT redo): transient-vs-corrupt decrypt
-classification, false-success inbox replies (res.ok now checked on all 5
-transports), and a replay-unsafe totalNew counter.
+NEXT ACTION: CFC files a Clerk support ticket (full text is in the session
+transcript). Or it clears on its own overnight.
 
-ALSO DONE (do NOT redo): migration 017 (commit 3433d7f) revoked unused anon
-grants and IS APPLIED TO PROD. Re-verified live: 0 anon writes schema-wide,
-0 anon SELECT on oauth_tokens, short_links still anon-readable (deliberate,
-public redirects), service_role still reads profiles=2 / org_subscriptions=3.
-The DB change is live regardless of the Clerk deploy blocker.
+## KEYS (already set, do not redo)
+pk_live_Y2xlcmsuZmFub3V0LmRpZ2l0YWwk -> decodes to clerk.fanout.digital
+sk_live_ set in Vercel production. Pair match PROVEN: the secret's instance
+owns fanout.digital with frontend_api_url https://clerk.fanout.digital.
+
+## CFC CHECK STATE
+PASS: 1 (READY), 2 (SHA contains 306c278e), 3 (bundle ships pk_live_),
+      5 (/ 200, /dashboard 307), 7 (bogus key -> 401)
+FAIL: 4 (clerk FAPI TLS), 6 (sign-in widget blank, failed_to_load_clerk_js)
+Both FAILs have ONE cause: the missing cert. Nothing else is wrong.
+
+## DO NOT LET JOHN SIGN UP until check 4 returns 200.
+Site loads, but the Clerk widget cannot reach clerk.fanout.digital.
+
+## STILL OPEN (deliberately held, not on the pilot path)
+F4 developer-apps callbackEnv decorative (save-platform-credentials.ts:72) —
+   design change
+F5 product_platform_accounts encrypt/read mismatch — separate table, unused
+F6 Instagram/Threads Meta redirect URIs — browser-only Meta console state
+John Farmer has not accepted the Meta Tester invite (app 772426605937002).
+Verify him server-side: select count(*) from oauth_tokens; expect 1.
 
 ## NOTION
-CC COMPLETE:  https://app.notion.com/p/3e4663704e4081239e0bd9c0c9bc322f
-Open Items:   collection://62ef8679-8772-4a64-b116-c6a731342913 (3 rows filed 2026-09-22)
-CLAW_GATE_2_STATUS: PENDING -- CC set CLAIMED_DONE only. CFC is the sole VERIFIED_DONE authority.
-
-## NOTE
-Local `npm run build` fails at static prerender (missing Clerk key in the local
-shell). PRE-EXISTING -- confirmed by stashing and rebuilding at HEAD. Vercel builds fine.
-Use `npx tsc --noEmit` locally.
+CC Work Queue row: 3e4663704e4081ffbc20e678b235598f (State = BUILDING)
+Active Sequences: fanout block filed 2026-09-22 (360663704e408103b843ca3fc822e450)
+Supabase: jifhgpwiqgwkgqtmozsu
+CLAW_GATE_2_STATUS: PENDING — CFC is the sole VERIFIED_DONE authority.
