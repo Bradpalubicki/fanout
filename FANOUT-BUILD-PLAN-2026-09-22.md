@@ -382,3 +382,22 @@ REMAINING OPEN AFTER THIS: only the developer-apps UI callbackEnv being
 decorative (save-platform-credentials.ts:72 persists credential fields only),
 the product_platform_accounts mismatch (separate table, P1-9), the Instagram/
 Threads Meta allowlist entries, and P1-10 (Clerk pk_test_ blocking deploys).
+
+
+## DEFENSE IN DEPTH — migration 017, commit 3433d7f (APPLIED TO PROD, RE-VERIFIED)
+Revokes unused anon grants so RLS is not the only layer standing between the
+public role and credential/billing tables.
+
+Re-verified independently against live project jifhgpwiqgwkgqtmozsu:
+  anon write grants, public schema ............ 0
+  anon SELECT on oauth_tokens ................. 0
+  anon SELECT on short_links .................. 1  (DELIBERATE — public redirects)
+  service_role still reads real data .......... profiles=2, org_subscriptions=3
+
+The non-zero service_role counts are the discriminating check: a lockout that
+broke legitimate access would also show 0 there and would otherwise look like a
+pass. ALTER DEFAULT PRIVILEGES means the next CREATE TABLE does not silently
+re-grant anon.
+
+NOTE: this is a PRODUCTION DATABASE change, already applied — it is live
+regardless of the Vercel deploy blocker, which only gates application code.
