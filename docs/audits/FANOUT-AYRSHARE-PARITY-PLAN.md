@@ -156,3 +156,66 @@ Meta-gated (needs Brad's verification).
 - [ ] X API paid tier: which, who pays
 - [ ] /dashboard/social: now staff-gated (6d9d85a) — keep internal or delete
 - [ ] First vertical pack: dental / med spa / men's health
+
+---
+
+## CX REVIEW 2026-09-23 — VERDICT ACCEPTED, ESTIMATE WITHDRAWN
+15m23s, exit 0, effort=high, read-only. CX executed the real handlers against
+mocked dependencies rather than only reading them. CC verified every load-bearing
+claim below against the source before accepting.
+
+### CC WAS WRONG: "narrowing, not a blocker" understated the risk
+I wrote that org->profile scoping is "a narrowing, not a blocker". CX proved that
+is unsafe as stated. inbox/route.ts:73 authorizes a reply by comparing only the
+ITEM's org to the caller's org, then loads the token for the ITEM's profile. For
+a Clerk session that is correct — the user owns the whole org. Ported to an API
+key unchanged, profile A's key replies THROUGH profile B's token.
+CX reproduced it: A-key inbox returned A and B; reply to B returned 200 and
+loaded B's token; foreign-org C returned 404.
+The correct pattern already exists in v1: analytics/[postId]:34 constrains the
+resource by BOTH its id AND auth.profile.id before reading descendants.
+=> Every ported route must bind resource lookup, counts, mutation, token
+   selection and queued work to the VERIFIED PROFILE. Org-derived authority is
+   a separate, higher privilege that an API key does not carry.
+
+### CONFIRMED BY CC, INDEPENDENTLY
+- inbox/route.ts:73 org-only reply authorization. VERIFIED in source.
+- DM replies route to a COMMENTS endpoint. inbox/route.ts:152 hardcodes
+  /{targetId}/comments; `type` only picks the target id. A "dm" reply would post
+  a PUBLIC comment. Currently LATENT — the collector never writes type='dm' — but
+  it is a private-to-public disclosure the moment DMs are ingested.
+- v1/analytics/[postId]:55 reads analytics_snapshots[0] with NO ordering, so a
+  public endpoint would report an arbitrary snapshot.
+- biolink/route.ts:41 `clicksFor` queries biolink_clicks by a caller-supplied
+  page_id with NO ownership check. This is a LIVE cross-tenant read TODAY, not a
+  migration risk.
+
+### THE ESTIMATE
+"~2-3 weeks of exposure" is WITHDRAWN as a schedule commitment. It rested on
+"auth swap plus tests", and CX is right that the six features need different
+treatment:
+  history  — local post history reusable; NATIVE history (posts made outside
+             Fanout) needs provider backfill. Decide which we are selling.
+  media    — basic blob upload reusable; note Twitter's adapter discards media
+             entirely, so upload success != publish support.
+  comments — real collector + 5 transports, but needs completion: profile
+             scoping, pagination, ingestion checkpoints, idempotency.
+  DMs      — NEW CONSTRUCTION. A `dm` type label exists; no ingestion, and the
+             reply path is wrong.
+  analytics— account-level is NEW. What exists counts local publishing outcomes
+             and per-post metrics.
+  validate — scattered rules, not a service. v1 post schema accepted an unknown
+             platform, 281 Twitter chars, and Instagram with no media.
+CC's error was treating "an engine exists" as "the capability exists". Exposure
+is real for a subset; the rest is construction. Re-estimate per feature after
+the scope decision below, not as one blanket number.
+
+### SCOPE DECISION REQUIRED BEFORE ANY PHASE 1 WORK (Brad)
+Are we selling LOCAL history/analytics (what Fanout sent, cheap, ready) or
+NATIVE (what the account did anywhere, which is what Ayrshare sells and which
+needs provider sync)? These are different products at different costs.
+
+### THE REGRESSION TEST THAT GATES ALL OF PHASE 1
+A's key against: A's resource (succeeds), sibling B in the same org (discloses
+nothing, no effect), foreign-org C (discloses nothing, no effect). Until that
+holds for a route, that route does not ship.

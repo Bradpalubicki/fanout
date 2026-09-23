@@ -37,9 +37,18 @@ export async function GET(req: NextRequest) {
     .in('profile_id', profileIds)
     .order('created_at', { ascending: false })
 
-  // If a specific page is requested, return per-link click counts
+  // If a specific page is requested, return per-link click counts.
+  // pageId is caller-supplied, so it MUST be constrained to a page this org
+  // owns. Querying biolink_clicks by the raw id returned another tenant's click
+  // counts (found by CX 2026-09-23). Bind the resource to the caller before
+  // reading its descendants — the pattern v1/analytics/[postId]:34 already uses.
   const pageId = req.nextUrl.searchParams.get('clicksFor')
   if (pageId) {
+    const ownsPage = (pages ?? []).some((p) => (p as { id: string }).id === pageId)
+    if (!ownsPage) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
+
     const { data: clicks } = await supabase
       .from('biolink_clicks')
       .select('link_index')

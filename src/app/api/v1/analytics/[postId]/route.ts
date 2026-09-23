@@ -49,6 +49,11 @@ export async function GET(
       analytics_snapshots(impressions, likes, comments, shares, clicks, reach, collected_at)
     `)
     .eq('post_id', postId)
+    // Snapshots accumulate over time (nightly collector). Without an explicit
+    // order, [0] below is an ARBITRARY row, so a public endpoint would report
+    // unstable numbers that move between identical calls (found by CX
+    // 2026-09-23). Newest first makes [0] mean "latest", which is the contract.
+    .order('collected_at', { referencedTable: 'analytics_snapshots', ascending: false })
 
   const totals = { impressions: 0, likes: 0, comments: 0, shares: 0, clicks: 0 }
   const platformBreakdown = (results ?? []).map((r) => {

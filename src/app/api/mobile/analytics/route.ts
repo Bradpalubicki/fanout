@@ -56,11 +56,21 @@ export async function GET(req: NextRequest) {
   const { data: snapshots } = resultIds.length
     ? await supabase
         .from('analytics_snapshots')
-        .select('post_result_id, platform, impressions, likes')
+        .select('post_result_id, platform, impressions, likes, collected_at')
         .in('post_result_id', resultIds)
+        .order('collected_at', { ascending: false })
     : { data: [] }
 
-  const allSnapshots = snapshots ?? []
+  // Snapshots are CUMULATIVE platform totals, collected nightly — not deltas.
+  // Summing every row counted a post once per collection run, so totals grew
+  // each night without any new engagement (found by CX 2026-09-23: 30 from
+  // cumulative values of 10 and 20). Keep only the newest snapshot per result.
+  const latestByResult = new Map<string, (typeof snapshots extends null ? never : NonNullable<typeof snapshots>)[number]>()
+  for (const s of snapshots ?? []) {
+    // Ordered newest-first above, so the first sighting of each id is latest.
+    if (!latestByResult.has(s.post_result_id)) latestByResult.set(s.post_result_id, s)
+  }
+  const allSnapshots = [...latestByResult.values()]
 
   // Summary
   const totalPosts = allPosts.length

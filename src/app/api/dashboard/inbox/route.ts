@@ -147,8 +147,18 @@ async function sendPlatformReply({
   pageId: string | null
 }) {
   if (platform === 'facebook' || platform === 'instagram') {
-    // Graph API comment reply
-    const targetId = type === 'comment' ? platformItemId : (pageId ?? 'me')
+    // This endpoint posts a PUBLIC comment. `type` previously only chose the
+    // target id, so a 'dm' reply was published as a public comment on the page
+    // — a private-to-public disclosure (found by CX 2026-09-23). Latent today
+    // because the collector never writes type='dm', but it must fail loudly
+    // rather than publish the moment DM ingestion lands.
+    if (type !== 'comment' && type !== 'mention') {
+      throw new Error(
+        `Cannot reply to a '${type}' on ${platform}: only comments and mentions have a public reply path. ` +
+          `DM replies require the Messages API, which is not implemented.`
+      )
+    }
+    const targetId = platformItemId
     const res = await fetch(`https://graph.facebook.com/v19.0/${targetId}/comments`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
