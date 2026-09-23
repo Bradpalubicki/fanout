@@ -290,28 +290,17 @@ export const collectInbox = inngest.createFunction(
   async ({ step }) => {
     const SUPPORTED = ['facebook', 'instagram', 'twitter', 'linkedin', 'youtube']
 
+    // NOTE: this step returns tokens still ENCRYPTED on purpose. Inngest memoizes
+    // step.run() output and persists it for replay, so decrypting in here would
+    // write plaintext credentials into Inngest step state. Decryption happens
+    // below, inside the per-token step, and the plaintext never leaves that scope.
     const tokens = await step.run('fetch-tokens', async () => {
       const { data } = await supabase
         .from('oauth_tokens')
         .select('profile_id, platform, access_token, platform_page_id')
         .in('platform', SUPPORTED)
         .limit(200)
-      // oauth_tokens.access_token is stored ENCRYPTED. Every downstream fetch here
-      // sends this value straight to the platform as a bearer token / query param,
-      // so it has to be decrypted once, here, or the provider receives ciphertext.
-      // A token that fails to decrypt is skipped rather than sent as a garbage
-      // credential — otherwise one bad row poisons the whole poll.
-      const rows = (data ?? []) as OAuthToken[]
-      const decrypted = await Promise.all(
-        rows.map(async (t) => {
-          try {
-            return { ...t, access_token: await decryptToken(t.access_token) }
-          } catch {
-            return null
-          }
-        })
-      )
-      return decrypted.filter((t): t is OAuthToken => t !== null)
+      return (data ?? []) as OAuthToken[]
     })
 
     if (!tokens.length) return { processed: 0 }
@@ -322,11 +311,23 @@ export const collectInbox = inngest.createFunction(
       await step.run(`poll-${token.platform}-${token.profile_id}`, async () => {
         let newItems: InboxInsert[] = []
 
-        if (token.platform === 'facebook') newItems = await fetchFacebookItems(token)
-        else if (token.platform === 'instagram') newItems = await fetchInstagramItems(token)
-        else if (token.platform === 'twitter') newItems = await fetchTwitterItems(token)
-        else if (token.platform === 'linkedin') newItems = await fetchLinkedInItems(token)
-        else if (token.platform === 'youtube') newItems = await fetchYouTubeItems(token)
+        // Decrypt here, not in fetch-tokens: this value is used and discarded
+        // within this step and is never part of its return value, so the
+        // plaintext credential stays out of Inngest's memoized step state.
+        // A row that cannot be decrypted is skipped rather than sent to the
+        // platform as a garbage credential.
+        let plain: OAuthToken
+        try {
+          plain = { ...token, access_token: await decryptToken(token.access_token) }
+        } catch {
+          return
+        }
+
+        if (plain.platform === 'facebook') newItems = await fetchFacebookItems(plain)
+        else if (plain.platform === 'instagram') newItems = await fetchInstagramItems(plain)
+        else if (plain.platform === 'twitter') newItems = await fetchTwitterItems(plain)
+        else if (plain.platform === 'linkedin') newItems = await fetchLinkedInItems(plain)
+        else if (plain.platform === 'youtube') newItems = await fetchYouTubeItems(plain)
 
         if (!newItems.length) return
 
