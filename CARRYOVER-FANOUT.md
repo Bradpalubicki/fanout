@@ -1,145 +1,118 @@
 cd C:\Users\bradp\dev\fanout
 
-## STATE 2026-09-23 (evening) — IT POSTS. Now it has to be SAFE to expose.
+## STATE 2026-09-23 (late) — P0 SECURITY TRACK CLOSED. Six defects fixed, all live.
 
 Read "DO THIS FIRST", act, then the rest only if needed.
 
-## DO THIS FIRST — no decisions needed, just build
+## DO THIS FIRST — the security track is DONE. Next is a decision, not a build.
 
-**THE TRACK IS P0 SECURITY. It is already decided. Do not re-litigate it.**
-Polish work (media on reddit/threads/mastodon, youtube videos.insert, image
-generation, AI enhancement) is DEFERRED until the three P1 defects close.
-Reason: polish makes posts prettier; P0 stops one client's key from reaching
-another client's tokens.
+All six known security defects are fixed, mutation-verified, pushed and live
+on fanout.digital. Tests went 205 -> 291. Nothing on the security track is
+open. Do NOT re-audit these; they are closed:
 
-Build in this order. Each is a separate micro-prompt, max 3 files, verify with
-`npx tsc --noEmit` and commit before starting the next.
+  11a57ed  P0-1 fan-out token/post tuple binding
+  de8b0bd  P0-2 DM replies refused on all five public transports
+  095acad  P0-3 cron auth fails closed (5 cron routes + generate-social-content)
+  3be5875  Meta Page access tokens no longer returned to the browser
+  a523777  biolink PATCH allowlist (was mass assignment)
+  de7ab32  generate-content proxy vets the body before lending INTERNAL_API_KEY
 
-**P0-1. Fan-out token/post pairing** (src/lib/fan-out.ts)
-  Defect: `:52` reads post by id, `:65` picks tokens by separately-supplied
-  profileId. Proven: probe dispatched post-B content on token-A.
-  Fix: reject any job whose (post, profile, platform) tuple does not match
-  before tokens are selected, before any write, notification, webhook or
-  provider call. Recheck on retry and on schedule.
-  Callers to update: fan-out-post.ts:51, scheduled-post.ts:22, retry-post.ts:31.
-  DONE WHEN: a test that constructs a mismatched tuple FAILS the job, and
-  breaking the guard makes that test fail.
+**THE NEXT SESSION MUST PICK ONE.** Brad has not chosen between:
 
-**P0-2. DM replies on public transports** (src/app/api/dashboard/inbox/route.ts)
-  Defect: `:155` rejects type `dm` for Meta; `:168/:184/:203` do not check type
-  at all for Twitter/YouTube/LinkedIn. A private DM can be published publicly.
-  Fix: reject `dm` and unknown types for EVERY public transport before token
-  decryption and before any provider call. Do not mark replied from caller
-  status alone.
-  DONE WHEN: type `dm` produces zero provider calls on all five platforms.
+  (A) POLISH — the deferred product work. Reddit/threads/mastodon ignore
+      mediaUrls (same class as the twitter bug fixed in cf9621f). YouTube
+      posts text to /youtube/v3/posts instead of videos.insert. Image
+      generation + AI content enhancement, both asked for, neither started.
 
-**P0-3. Fail-open cron auth** (src/app/api/cron/process-queue/route.ts:8)
-  Defect: accepts literal `Bearer undefined` when CRON_SECRET is unset.
-  FIRST: check whether CRON_SECRET is actually set in Vercel — that decides
-  whether this is live or latent. Then fail closed on missing/empty secret and
-  audit the sibling guards in generate-social-content/route.ts:55-57.
-  DONE WHEN: a request with no secret configured returns 401, not 200.
+  (B) PROVE ISOLATION — see the test-suite limitation below. The 291 passing
+      tests still CANNOT prove A/B/C profile isolation, because the two v1
+      history/analytics tests return canned rows. This is the last thing
+      standing between "secure by inspection" and "secure by evidence".
 
-Then reassess. Do NOT start polish work without saying so explicitly.
+  (C) ORG-CREATION P0 — still UNVERIFIED. Nobody has watched a genuinely NEW
+      user sign up. This is a launch blocker and needs a real signup, not code.
 
-## THE THREE P1 DEFECTS (found 2026-09-23, PLAN ONLY, nothing fixed)
+CC's recommendation: **(B) then (A)**. Isolation is the claim a client will
+actually rely on, and it is currently unproven rather than merely untested.
+Polish makes posts prettier; none of it is blocking.
 
-Both CX and CC reached these independently, each with actual-source probes —
-not by reading commit messages. Full detail:
-  docs/audits/FANOUT-CORRECTION-EXPOSURE-PLAN-20260923.md   (CX plan)
-  docs/audits/FANOUT-CORRECTION-EXPOSURE-CC-20260923.md     (CC review)
-  docs/audits/fanout-plan-probe-20260923.cjs                (the probe)
+## WHAT WAS FIXED THIS SESSION — detail
 
-1. **Worker token/post pairing.** `src/lib/fan-out.ts:52` reads the post by id;
-   `:65` independently selects tokens by the supplied profileId. An in-memory
-   probe dispatched post-B content using token-A and recorded four mocked
-   writes. Callers pass event tuples directly (fan-out-post.ts:51,
-   scheduled-post.ts:22, retry-post.ts:31).
-   Local worker invariant failure PROVEN. Public exploitability UNPROVEN.
+Each fix closed the CLASS, not the reported path. That distinction mattered
+three times:
 
-2. **Fail-open cron auth.** `src/app/api/cron/process-queue/route.ts:8` accepts
-   a literal `Bearer undefined` when CRON_SECRET is unset. Probe with the
-   secret missing returned 200, processed 1. Deployed env UNPROVEN — check
-   whether CRON_SECRET is actually set in Vercel before rating severity.
+1. **P0-3 was wider than reported.** The carryover named process-queue. The
+   same fail-open line was copy-pasted across FIVE cron routes plus
+   generate-social-content. Fixed once in src/lib/cron-auth.ts, with a
+   tree-scan test asserting no source file outside it contains the idiom.
 
-3. **DM replies reaching public transports.** `dashboard/inbox/route.ts:155`
-   rejects type `dm` for Meta, but `:168/:184/:203` select Twitter, YouTube and
-   LinkedIn public reply transports with no type check. Probe: Meta rejected
-   with zero calls; the other three each made one mocked provider call.
-   A private DM can be published publicly.
+2. **P0-2 was inverted, not patched.** Adding the type check to the four
+   unguarded branches would leave the same hole for the fifth transport. The
+   gate is now an ALLOWLIST above all transports: unknown types are refused
+   by default.
 
-Also reopened and needing the same treatment: biolink PATCH forwards arbitrary
-rest into update (:99-113); dashboard generate-content proxies arbitrary body
-with INTERNAL_API_KEY (:24-36); select-page returns provider objects INCLUDING
-access_token (:63-70).
+3. **P0-1 lives in fanOut(), not its callers**, so scheduled jobs are
+   rechecked after sleepUntil and retries on every replay.
 
-**Test-suite limitation, important:** tests/api/v1-history.test.ts and
-v1-account-analytics.test.ts record filters but return canned rows. The 205
-passing tests CANNOT prove A/B/C profile isolation. A real resolver with
-predicate-enforcing fixtures is required before claiming isolation works.
+**CRON_SECRET correction:** an earlier note said it was Production-only. It is
+set in ALL THREE environments (Production, Preview, Development — 177d ago).
+The fail-open was latent everywhere, never exposed. Do not re-investigate.
 
-## WHAT IS PROVEN (first time, against real providers)
+## TEST-SUITE LIMITATION — unchanged, and now the main gap
+tests/api/v1-history.test.ts and v1-account-analytics.test.ts record filters
+but return canned rows. The 291 passing tests CANNOT prove A/B/C profile
+isolation. A real resolver with predicate-enforcing fixtures is required
+before claiming isolation works. This is option (B) above.
+
+## WHAT IS PROVEN (against real providers)
 - Facebook: OAuth -> Page -> Compose -> Inngest fan-out -> Graph API -> real
   published post. 3 posts, 0 failures.
 - Bluesky: same pipeline, different auth model (app password, not OAuth).
 - TRUE FAN-OUT: one post to Facebook AND Bluesky simultaneously, both
   succeeded. That is the Ayrshare value proposition, working.
 
-## SHIPPED (all pushed and verified except 3219299)
-  N1-N6 native history COMPLETE: external_posts schema, listPosts on
-    facebook/instagram/twitter/bluesky, resumable backfill, GET /api/v1/history,
-    read scopes, account_analytics + collector + GET /api/v1/analytics/account
-  cf9621f  twitter media upload (was SILENTLY discarding every image);
-           linkedin posts as Company Page, not the manager's personal profile
-  3219299  the two audit docs + probe        <- LOCAL ONLY, PUSH IT
-
-## STILL OPEN (product)
+## STILL OPEN (product, none security)
 - YOUTUBE posts text to /youtube/v3/posts instead of videos.insert.
-  REDDIT, THREADS, MASTODON still ignore mediaUrls — same class as the twitter
-  bug already fixed.
-- IMAGE GENERATION + AI CONTENT ENHANCEMENT — Brad asked for both. Not started.
-  Held until posting was proven; it now is.
-- ORG-CREATION P0 STILL UNVERIFIED. Nobody has watched a genuinely NEW user
-  sign up.
+  REDDIT, THREADS, MASTODON still ignore mediaUrls.
+- IMAGE GENERATION + AI CONTENT ENHANCEMENT — Brad asked for both, not started.
+- ORG-CREATION P0 STILL UNVERIFIED (option C above).
 - fanout.digital is NOT in Resend and RESEND_API_KEY is "placeholder" —
   noreply@/onboarding@fanout.digital would silently fail. No transactional
   email yet.
 - Vercel team split deferred (20+ projects incl. client work in one team).
 - 3 Clerk orgs across 5 profiles — org sprawl will confuse a real client.
+- `npm run build` fails LOCALLY on missing Clerk publishableKey. There is no
+  .env.local in this repo. Pre-existing and environmental — Vercel builds
+  fine. Do not chase it.
 
 ## FRONTEND REDESIGN (John, not started in-repo)
 John is redesigning the Fanout frontend. Evidence so far is ONE 8.5s phone
 video of a monitor (OneDrive/CLAUDE BUILT APPS.../Fanout.Digital/IMG_5774.mov)
 showing only a NEW LOGO: green fan/arrow mark on a dark rounded tile, lowercase
-wordmark. The mark is good and would make a far better square profile picture
-than the current 120x32 wordmark.
+wordmark. The mark would make a far better square profile picture than the
+current 120x32 wordmark.
 NOT ACTIONABLE AS-IS. To build it, need one of: the HTML he is working in
 (local on his machine, C:/Users/fr...), a deployed URL, a Figma file, or
 full-page screenshots at desktop + mobile widths.
 Frontend lives in src/app/ (Next.js + shadcn). A redesign there is a real
 build, not a paste.
 
-## EMAIL / SOCIAL SETUP — DONE THIS SESSION, out of scope going forward
-- info@fanout.digital and john@fanout.digital: shared mailboxes, forwarding,
-  keep-a-copy. VERIFIED delivering (Brad confirmed receipt).
-- DNS: MX -> fanout-digital.mail.protection.outlook.com, autodiscover CNAME,
-  SPF merged preserving amazonses. All verified live via public resolver.
-- social@nustack.digital created for all social account signups.
-- Third M365 license purchased ($8.40/mo); John has a NuStack mailbox.
-- Brand Info tabs filled in the client workbook; OneDrive/NuStack Brand Assets/
-  created with per-brand folders + README.
-- OPEN: john@fanout.digital still forwards to a personal Gmail. Repoint it to
+## OPEN — NOT CODE
+- john@fanout.digital still forwards to a personal Gmail. Repoint it to
   John's new NuStack mailbox — that removes the external hop that was causing
   Gmail to reject forwarded mail (Microsoft was accepting it all along;
   Resend reported the downstream forward failure as a bounce).
 
 ## TESTS
-205 passing, 15 files. `npm test`. Several mutation-verified. See the
-test-suite limitation above before trusting them for isolation claims.
+291 passing, 21 files. `npm test`. Every security fix this session is
+mutation-verified: the guard was broken, the tests were confirmed to fail, the
+guard was restored. Counts are in each commit message.
 
 ## KEY FILES
+  src/lib/cron-auth.ts                          <- shared fail-closed bearer check
+  src/lib/fan-out.ts                            <- assertTupleMatches()
   docs/audits/FANOUT-AYRSHARE-PARITY-PLAN.md    <- the plan + NATIVE decision
-  docs/audits/FANOUT-CORRECTION-EXPOSURE-*.md   <- today's P1 findings
+  docs/audits/FANOUT-CORRECTION-EXPOSURE-*.md   <- the audit these six came from
   scripts/check-inngest-health.mjs              <- npm run health:inngest
 
 ## NOTION
