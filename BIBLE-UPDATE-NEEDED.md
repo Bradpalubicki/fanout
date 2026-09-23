@@ -1372,3 +1372,1306 @@ Commits to add manually:
 - 76534f8 fix(inbox): keep plaintext tokens out of Inngest step state
 - c2fd74d docs: CX review pass — P0-9/P0-10/P0-11 recorded
 - 7c44b2e fix(tokens): decrypt before use in inbox; correct Meta callback guidance
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+- 9b1f252 fix(seo): make fanout.digital apex-canonical, drop www
+- f83d766 docs(audit): falsify CX P0 — /api/v1 verifier does run on www
+- da8655b docs(audit): CX deep-audit + CFC visual-audit dispatches, gap analysis to completion
+- 1410ee8 docs: carryover — sign-in live, pilot-ready, John is the only gate
+- aaee523 docs: carryover — Clerk cert is the only open blocker
+- f94be2c docs: carryover notes migration 017 already applied to prod
+- 47f0ae7 docs: record migration 017 anon-grant revocation, re-verified live
+- 3433d7f fix(db): revoke unused anon grants so RLS is not the only layer
+- 27fbb12 docs: carryover reflects 306c278 closures
+- 3e6ab5e docs: CX round-2 P2s closed in 306c278, classifier re-verified live
+- 306c278 fix(inbox): stop silent failures on decrypt retry and reply delivery
+- 5d653f0 docs: P1-10 escalated — invalid pk_test_ Clerk key blocks all deploys
+- be5e271 docs: carryover for next fanout session
+- e4c81e5 docs(setup): per-platform Meta callbacks in env example and setup plan
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+- 9b1f252 fix(seo): make fanout.digital apex-canonical, drop www
+- f83d766 docs(audit): falsify CX P0 — /api/v1 verifier does run on www
+- da8655b docs(audit): CX deep-audit + CFC visual-audit dispatches, gap analysis to completion
+- 1410ee8 docs: carryover — sign-in live, pilot-ready, John is the only gate
+- aaee523 docs: carryover — Clerk cert is the only open blocker
+- f94be2c docs: carryover notes migration 017 already applied to prod
+- 47f0ae7 docs: record migration 017 anon-grant revocation, re-verified live
+- 3433d7f fix(db): revoke unused anon grants so RLS is not the only layer
+- 27fbb12 docs: carryover reflects 306c278 closures
+- 3e6ab5e docs: CX round-2 P2s closed in 306c278, classifier re-verified live
+- 306c278 fix(inbox): stop silent failures on decrypt retry and reply delivery
+- 5d653f0 docs: P1-10 escalated — invalid pk_test_ Clerk key blocks all deploys
+- be5e271 docs: carryover for next fanout session
+- e4c81e5 docs(setup): per-platform Meta callbacks in env example and setup plan
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+- 9b1f252 fix(seo): make fanout.digital apex-canonical, drop www
+- f83d766 docs(audit): falsify CX P0 — /api/v1 verifier does run on www
+- da8655b docs(audit): CX deep-audit + CFC visual-audit dispatches, gap analysis to completion
+- 1410ee8 docs: carryover — sign-in live, pilot-ready, John is the only gate
+- aaee523 docs: carryover — Clerk cert is the only open blocker
+- f94be2c docs: carryover notes migration 017 already applied to prod
+- 47f0ae7 docs: record migration 017 anon-grant revocation, re-verified live
+- 3433d7f fix(db): revoke unused anon grants so RLS is not the only layer
+- 27fbb12 docs: carryover reflects 306c278 closures
+- 3e6ab5e docs: CX round-2 P2s closed in 306c278, classifier re-verified live
+- 306c278 fix(inbox): stop silent failures on decrypt retry and reply delivery
+- 5d653f0 docs: P1-10 escalated — invalid pk_test_ Clerk key blocks all deploys
+- be5e271 docs: carryover for next fanout session
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+- 9b1f252 fix(seo): make fanout.digital apex-canonical, drop www
+- f83d766 docs(audit): falsify CX P0 — /api/v1 verifier does run on www
+- da8655b docs(audit): CX deep-audit + CFC visual-audit dispatches, gap analysis to completion
+- 1410ee8 docs: carryover — sign-in live, pilot-ready, John is the only gate
+- aaee523 docs: carryover — Clerk cert is the only open blocker
+- f94be2c docs: carryover notes migration 017 already applied to prod
+- 47f0ae7 docs: record migration 017 anon-grant revocation, re-verified live
+- 3433d7f fix(db): revoke unused anon grants so RLS is not the only layer
+- 27fbb12 docs: carryover reflects 306c278 closures
+- 3e6ab5e docs: CX round-2 P2s closed in 306c278, classifier re-verified live
+- 306c278 fix(inbox): stop silent failures on decrypt retry and reply delivery
+- 5d653f0 docs: P1-10 escalated — invalid pk_test_ Clerk key blocks all deploys
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+- 9b1f252 fix(seo): make fanout.digital apex-canonical, drop www
+- f83d766 docs(audit): falsify CX P0 — /api/v1 verifier does run on www
+- da8655b docs(audit): CX deep-audit + CFC visual-audit dispatches, gap analysis to completion
+- 1410ee8 docs: carryover — sign-in live, pilot-ready, John is the only gate
+- aaee523 docs: carryover — Clerk cert is the only open blocker
+- f94be2c docs: carryover notes migration 017 already applied to prod
+- 47f0ae7 docs: record migration 017 anon-grant revocation, re-verified live
+- 3433d7f fix(db): revoke unused anon grants so RLS is not the only layer
+- 27fbb12 docs: carryover reflects 306c278 closures
+- 3e6ab5e docs: CX round-2 P2s closed in 306c278, classifier re-verified live
+- 306c278 fix(inbox): stop silent failures on decrypt retry and reply delivery
+- 5d653f0 docs: P1-10 escalated — invalid pk_test_ Clerk key blocks all deploys
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+- 9b1f252 fix(seo): make fanout.digital apex-canonical, drop www
+- f83d766 docs(audit): falsify CX P0 — /api/v1 verifier does run on www
+- da8655b docs(audit): CX deep-audit + CFC visual-audit dispatches, gap analysis to completion
+- 1410ee8 docs: carryover — sign-in live, pilot-ready, John is the only gate
+- aaee523 docs: carryover — Clerk cert is the only open blocker
+- f94be2c docs: carryover notes migration 017 already applied to prod
+- 47f0ae7 docs: record migration 017 anon-grant revocation, re-verified live
+- 3433d7f fix(db): revoke unused anon grants so RLS is not the only layer
+- 27fbb12 docs: carryover reflects 306c278 closures
+- 3e6ab5e docs: CX round-2 P2s closed in 306c278, classifier re-verified live
+- 306c278 fix(inbox): stop silent failures on decrypt retry and reply delivery
+- 5d653f0 docs: P1-10 escalated — invalid pk_test_ Clerk key blocks all deploys
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+- 9b1f252 fix(seo): make fanout.digital apex-canonical, drop www
+- f83d766 docs(audit): falsify CX P0 — /api/v1 verifier does run on www
+- da8655b docs(audit): CX deep-audit + CFC visual-audit dispatches, gap analysis to completion
+- 1410ee8 docs: carryover — sign-in live, pilot-ready, John is the only gate
+- aaee523 docs: carryover — Clerk cert is the only open blocker
+- f94be2c docs: carryover notes migration 017 already applied to prod
+- 47f0ae7 docs: record migration 017 anon-grant revocation, re-verified live
+- 3433d7f fix(db): revoke unused anon grants so RLS is not the only layer
+- 27fbb12 docs: carryover reflects 306c278 closures
+- 3e6ab5e docs: CX round-2 P2s closed in 306c278, classifier re-verified live
+- 306c278 fix(inbox): stop silent failures on decrypt retry and reply delivery
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+- 9b1f252 fix(seo): make fanout.digital apex-canonical, drop www
+- f83d766 docs(audit): falsify CX P0 — /api/v1 verifier does run on www
+- da8655b docs(audit): CX deep-audit + CFC visual-audit dispatches, gap analysis to completion
+- 1410ee8 docs: carryover — sign-in live, pilot-ready, John is the only gate
+- aaee523 docs: carryover — Clerk cert is the only open blocker
+- f94be2c docs: carryover notes migration 017 already applied to prod
+- 47f0ae7 docs: record migration 017 anon-grant revocation, re-verified live
+- 3433d7f fix(db): revoke unused anon grants so RLS is not the only layer
+- 27fbb12 docs: carryover reflects 306c278 closures
+- 3e6ab5e docs: CX round-2 P2s closed in 306c278, classifier re-verified live
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+- 9b1f252 fix(seo): make fanout.digital apex-canonical, drop www
+- f83d766 docs(audit): falsify CX P0 — /api/v1 verifier does run on www
+- da8655b docs(audit): CX deep-audit + CFC visual-audit dispatches, gap analysis to completion
+- 1410ee8 docs: carryover — sign-in live, pilot-ready, John is the only gate
+- aaee523 docs: carryover — Clerk cert is the only open blocker
+- f94be2c docs: carryover notes migration 017 already applied to prod
+- 47f0ae7 docs: record migration 017 anon-grant revocation, re-verified live
+- 3433d7f fix(db): revoke unused anon grants so RLS is not the only layer
+- 27fbb12 docs: carryover reflects 306c278 closures
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+- 9b1f252 fix(seo): make fanout.digital apex-canonical, drop www
+- f83d766 docs(audit): falsify CX P0 — /api/v1 verifier does run on www
+- da8655b docs(audit): CX deep-audit + CFC visual-audit dispatches, gap analysis to completion
+- 1410ee8 docs: carryover — sign-in live, pilot-ready, John is the only gate
+- aaee523 docs: carryover — Clerk cert is the only open blocker
+- f94be2c docs: carryover notes migration 017 already applied to prod
+- 47f0ae7 docs: record migration 017 anon-grant revocation, re-verified live
+- 3433d7f fix(db): revoke unused anon grants so RLS is not the only layer
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+- 9b1f252 fix(seo): make fanout.digital apex-canonical, drop www
+- f83d766 docs(audit): falsify CX P0 — /api/v1 verifier does run on www
+- da8655b docs(audit): CX deep-audit + CFC visual-audit dispatches, gap analysis to completion
+- 1410ee8 docs: carryover — sign-in live, pilot-ready, John is the only gate
+- aaee523 docs: carryover — Clerk cert is the only open blocker
+- f94be2c docs: carryover notes migration 017 already applied to prod
+- 47f0ae7 docs: record migration 017 anon-grant revocation, re-verified live
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+- 9b1f252 fix(seo): make fanout.digital apex-canonical, drop www
+- f83d766 docs(audit): falsify CX P0 — /api/v1 verifier does run on www
+- da8655b docs(audit): CX deep-audit + CFC visual-audit dispatches, gap analysis to completion
+- 1410ee8 docs: carryover — sign-in live, pilot-ready, John is the only gate
+- aaee523 docs: carryover — Clerk cert is the only open blocker
+- f94be2c docs: carryover notes migration 017 already applied to prod
+- 47f0ae7 docs: record migration 017 anon-grant revocation, re-verified live
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+- 9b1f252 fix(seo): make fanout.digital apex-canonical, drop www
+- f83d766 docs(audit): falsify CX P0 — /api/v1 verifier does run on www
+- da8655b docs(audit): CX deep-audit + CFC visual-audit dispatches, gap analysis to completion
+- 1410ee8 docs: carryover — sign-in live, pilot-ready, John is the only gate
+- aaee523 docs: carryover — Clerk cert is the only open blocker
+- f94be2c docs: carryover notes migration 017 already applied to prod
+- 47f0ae7 docs: record migration 017 anon-grant revocation, re-verified live
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+- 9b1f252 fix(seo): make fanout.digital apex-canonical, drop www
+- f83d766 docs(audit): falsify CX P0 — /api/v1 verifier does run on www
+- da8655b docs(audit): CX deep-audit + CFC visual-audit dispatches, gap analysis to completion
+- 1410ee8 docs: carryover — sign-in live, pilot-ready, John is the only gate
+- aaee523 docs: carryover — Clerk cert is the only open blocker
+- f94be2c docs: carryover notes migration 017 already applied to prod
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+- 9b1f252 fix(seo): make fanout.digital apex-canonical, drop www
+- f83d766 docs(audit): falsify CX P0 — /api/v1 verifier does run on www
+- da8655b docs(audit): CX deep-audit + CFC visual-audit dispatches, gap analysis to completion
+- 1410ee8 docs: carryover — sign-in live, pilot-ready, John is the only gate
+- aaee523 docs: carryover — Clerk cert is the only open blocker
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+- 9b1f252 fix(seo): make fanout.digital apex-canonical, drop www
+- f83d766 docs(audit): falsify CX P0 — /api/v1 verifier does run on www
+- da8655b docs(audit): CX deep-audit + CFC visual-audit dispatches, gap analysis to completion
+- 1410ee8 docs: carryover — sign-in live, pilot-ready, John is the only gate
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+- 9b1f252 fix(seo): make fanout.digital apex-canonical, drop www
+- f83d766 docs(audit): falsify CX P0 — /api/v1 verifier does run on www
+- da8655b docs(audit): CX deep-audit + CFC visual-audit dispatches, gap analysis to completion
+- 1410ee8 docs: carryover — sign-in live, pilot-ready, John is the only gate
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+- 9b1f252 fix(seo): make fanout.digital apex-canonical, drop www
+- f83d766 docs(audit): falsify CX P0 — /api/v1 verifier does run on www
+- da8655b docs(audit): CX deep-audit + CFC visual-audit dispatches, gap analysis to completion
+- 1410ee8 docs: carryover — sign-in live, pilot-ready, John is the only gate
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+- 9b1f252 fix(seo): make fanout.digital apex-canonical, drop www
+- f83d766 docs(audit): falsify CX P0 — /api/v1 verifier does run on www
+- da8655b docs(audit): CX deep-audit + CFC visual-audit dispatches, gap analysis to completion
+- 1410ee8 docs: carryover — sign-in live, pilot-ready, John is the only gate
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+- 9b1f252 fix(seo): make fanout.digital apex-canonical, drop www
+- f83d766 docs(audit): falsify CX P0 — /api/v1 verifier does run on www
+- da8655b docs(audit): CX deep-audit + CFC visual-audit dispatches, gap analysis to completion
+- 1410ee8 docs: carryover — sign-in live, pilot-ready, John is the only gate
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+- 9b1f252 fix(seo): make fanout.digital apex-canonical, drop www
+- f83d766 docs(audit): falsify CX P0 — /api/v1 verifier does run on www
+- da8655b docs(audit): CX deep-audit + CFC visual-audit dispatches, gap analysis to completion
+- 1410ee8 docs: carryover — sign-in live, pilot-ready, John is the only gate
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+- 9b1f252 fix(seo): make fanout.digital apex-canonical, drop www
+- f83d766 docs(audit): falsify CX P0 — /api/v1 verifier does run on www
+- da8655b docs(audit): CX deep-audit + CFC visual-audit dispatches, gap analysis to completion
+- 1410ee8 docs: carryover — sign-in live, pilot-ready, John is the only gate
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+- 9b1f252 fix(seo): make fanout.digital apex-canonical, drop www
+- f83d766 docs(audit): falsify CX P0 — /api/v1 verifier does run on www
+- da8655b docs(audit): CX deep-audit + CFC visual-audit dispatches, gap analysis to completion
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+- 9b1f252 fix(seo): make fanout.digital apex-canonical, drop www
+- f83d766 docs(audit): falsify CX P0 — /api/v1 verifier does run on www
+- da8655b docs(audit): CX deep-audit + CFC visual-audit dispatches, gap analysis to completion
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+- 9b1f252 fix(seo): make fanout.digital apex-canonical, drop www
+- f83d766 docs(audit): falsify CX P0 — /api/v1 verifier does run on www
+- da8655b docs(audit): CX deep-audit + CFC visual-audit dispatches, gap analysis to completion
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+- 9b1f252 fix(seo): make fanout.digital apex-canonical, drop www
+- f83d766 docs(audit): falsify CX P0 — /api/v1 verifier does run on www
+- da8655b docs(audit): CX deep-audit + CFC visual-audit dispatches, gap analysis to completion
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+- 9b1f252 fix(seo): make fanout.digital apex-canonical, drop www
+- f83d766 docs(audit): falsify CX P0 — /api/v1 verifier does run on www
+- da8655b docs(audit): CX deep-audit + CFC visual-audit dispatches, gap analysis to completion
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 7523812 feat(distributors): Bluesky listPosts — first native read proven against a LIVE API
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+- 9b1f252 fix(seo): make fanout.digital apex-canonical, drop www
+- f83d766 docs(audit): falsify CX P0 — /api/v1 verifier does run on www
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 7523812 feat(distributors): Bluesky listPosts — first native read proven against a LIVE API
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+- 9b1f252 fix(seo): make fanout.digital apex-canonical, drop www
+- f83d766 docs(audit): falsify CX P0 — /api/v1 verifier does run on www
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 7523812 feat(distributors): Bluesky listPosts — first native read proven against a LIVE API
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+- 9b1f252 fix(seo): make fanout.digital apex-canonical, drop www
+- f83d766 docs(audit): falsify CX P0 — /api/v1 verifier does run on www
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 0ab5fa1 fix(oauth): diagnose empty Page lists; stop showing unusable tokens as Connected
+- 7523812 feat(distributors): Bluesky listPosts — first native read proven against a LIVE API
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+- 9b1f252 fix(seo): make fanout.digital apex-canonical, drop www
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 827bd25 fix(diagnose): distinguish wrong-org from missing-route
+- 0ab5fa1 fix(oauth): diagnose empty Page lists; stop showing unusable tokens as Connected
+- 7523812 feat(distributors): Bluesky listPosts — first native read proven against a LIVE API
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 827bd25 fix(diagnose): distinguish wrong-org from missing-route
+- 0ab5fa1 fix(oauth): diagnose empty Page lists; stop showing unusable tokens as Connected
+- 7523812 feat(distributors): Bluesky listPosts — first native read proven against a LIVE API
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 827bd25 fix(diagnose): distinguish wrong-org from missing-route
+- 0ab5fa1 fix(oauth): diagnose empty Page lists; stop showing unusable tokens as Connected
+- 7523812 feat(distributors): Bluesky listPosts — first native read proven against a LIVE API
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 827bd25 fix(diagnose): distinguish wrong-org from missing-route
+- 0ab5fa1 fix(oauth): diagnose empty Page lists; stop showing unusable tokens as Connected
+- 7523812 feat(distributors): Bluesky listPosts — first native read proven against a LIVE API
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 827bd25 fix(diagnose): distinguish wrong-org from missing-route
+- 0ab5fa1 fix(oauth): diagnose empty Page lists; stop showing unusable tokens as Connected
+- 7523812 feat(distributors): Bluesky listPosts — first native read proven against a LIVE API
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- e62e94d fix(oauth): force Meta's Page picker, request business_management, escape the dead end
+- 827bd25 fix(diagnose): distinguish wrong-org from missing-route
+- 0ab5fa1 fix(oauth): diagnose empty Page lists; stop showing unusable tokens as Connected
+- 7523812 feat(distributors): Bluesky listPosts — first native read proven against a LIVE API
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- e62e94d fix(oauth): force Meta's Page picker, request business_management, escape the dead end
+- 827bd25 fix(diagnose): distinguish wrong-org from missing-route
+- 0ab5fa1 fix(oauth): diagnose empty Page lists; stop showing unusable tokens as Connected
+- 7523812 feat(distributors): Bluesky listPosts — first native read proven against a LIVE API
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- e62e94d fix(oauth): force Meta's Page picker, request business_management, escape the dead end
+- 827bd25 fix(diagnose): distinguish wrong-org from missing-route
+- 0ab5fa1 fix(oauth): diagnose empty Page lists; stop showing unusable tokens as Connected
+- 7523812 feat(distributors): Bluesky listPosts — first native read proven against a LIVE API
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 434b873 fix(compose): never pre-select publish targets
+- e62e94d fix(oauth): force Meta's Page picker, request business_management, escape the dead end
+- 827bd25 fix(diagnose): distinguish wrong-org from missing-route
+- 0ab5fa1 fix(oauth): diagnose empty Page lists; stop showing unusable tokens as Connected
+- 7523812 feat(distributors): Bluesky listPosts — first native read proven against a LIVE API
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 434b873 fix(compose): never pre-select publish targets
+- e62e94d fix(oauth): force Meta's Page picker, request business_management, escape the dead end
+- 827bd25 fix(diagnose): distinguish wrong-org from missing-route
+- 0ab5fa1 fix(oauth): diagnose empty Page lists; stop showing unusable tokens as Connected
+- 7523812 feat(distributors): Bluesky listPosts — first native read proven against a LIVE API
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 434b873 fix(compose): never pre-select publish targets
+- e62e94d fix(oauth): force Meta's Page picker, request business_management, escape the dead end
+- 827bd25 fix(diagnose): distinguish wrong-org from missing-route
+- 0ab5fa1 fix(oauth): diagnose empty Page lists; stop showing unusable tokens as Connected
+- 7523812 feat(distributors): Bluesky listPosts — first native read proven against a LIVE API
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 434b873 fix(compose): never pre-select publish targets
+- e62e94d fix(oauth): force Meta's Page picker, request business_management, escape the dead end
+- 827bd25 fix(diagnose): distinguish wrong-org from missing-route
+- 0ab5fa1 fix(oauth): diagnose empty Page lists; stop showing unusable tokens as Connected
+- 7523812 feat(distributors): Bluesky listPosts — first native read proven against a LIVE API
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 434b873 fix(compose): never pre-select publish targets
+- e62e94d fix(oauth): force Meta's Page picker, request business_management, escape the dead end
+- 827bd25 fix(diagnose): distinguish wrong-org from missing-route
+- 0ab5fa1 fix(oauth): diagnose empty Page lists; stop showing unusable tokens as Connected
+- 7523812 feat(distributors): Bluesky listPosts — first native read proven against a LIVE API
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 434b873 fix(compose): never pre-select publish targets
+- e62e94d fix(oauth): force Meta's Page picker, request business_management, escape the dead end
+- 827bd25 fix(diagnose): distinguish wrong-org from missing-route
+- 0ab5fa1 fix(oauth): diagnose empty Page lists; stop showing unusable tokens as Connected
+- 7523812 feat(distributors): Bluesky listPosts — first native read proven against a LIVE API
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+- 6d9d85a fix(security): gate internal NuStack social routes to staff; fix mobile sign-in
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 434b873 fix(compose): never pre-select publish targets
+- e62e94d fix(oauth): force Meta's Page picker, request business_management, escape the dead end
+- 827bd25 fix(diagnose): distinguish wrong-org from missing-route
+- 0ab5fa1 fix(oauth): diagnose empty Page lists; stop showing unusable tokens as Connected
+- 7523812 feat(distributors): Bluesky listPosts — first native read proven against a LIVE API
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+- 558a5c1 docs(audit): record CFC results — 2 fixed, 3 open, test suite closes NEW-1
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- f1c8056 docs: carryover — Fanout published its first real post
+- c8ff802 feat(ops): Inngest fleet health check — catch silent portfolio-wide outages
+- 434b873 fix(compose): never pre-select publish targets
+- e62e94d fix(oauth): force Meta's Page picker, request business_management, escape the dead end
+- 827bd25 fix(diagnose): distinguish wrong-org from missing-route
+- 0ab5fa1 fix(oauth): diagnose empty Page lists; stop showing unusable tokens as Connected
+- 7523812 feat(distributors): Bluesky listPosts — first native read proven against a LIVE API
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- f1c8056 docs: carryover — Fanout published its first real post
+- c8ff802 feat(ops): Inngest fleet health check — catch silent portfolio-wide outages
+- 434b873 fix(compose): never pre-select publish targets
+- e62e94d fix(oauth): force Meta's Page picker, request business_management, escape the dead end
+- 827bd25 fix(diagnose): distinguish wrong-org from missing-route
+- 0ab5fa1 fix(oauth): diagnose empty Page lists; stop showing unusable tokens as Connected
+- 7523812 feat(distributors): Bluesky listPosts — first native read proven against a LIVE API
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+- 0627b16 feat(api): add POST /api/v1/profiles — agency provisioning (P1-5)
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 3c522fc feat(db): N6 step 1 — account_analytics, the storage account metrics need
+- f1c8056 docs: carryover — Fanout published its first real post
+- c8ff802 feat(ops): Inngest fleet health check — catch silent portfolio-wide outages
+- 434b873 fix(compose): never pre-select publish targets
+- e62e94d fix(oauth): force Meta's Page picker, request business_management, escape the dead end
+- 827bd25 fix(diagnose): distinguish wrong-org from missing-route
+- 0ab5fa1 fix(oauth): diagnose empty Page lists; stop showing unusable tokens as Connected
+- 7523812 feat(distributors): Bluesky listPosts — first native read proven against a LIVE API
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 3c522fc feat(db): N6 step 1 — account_analytics, the storage account metrics need
+- f1c8056 docs: carryover — Fanout published its first real post
+- c8ff802 feat(ops): Inngest fleet health check — catch silent portfolio-wide outages
+- 434b873 fix(compose): never pre-select publish targets
+- e62e94d fix(oauth): force Meta's Page picker, request business_management, escape the dead end
+- 827bd25 fix(diagnose): distinguish wrong-org from missing-route
+- 0ab5fa1 fix(oauth): diagnose empty Page lists; stop showing unusable tokens as Connected
+- 7523812 feat(distributors): Bluesky listPosts — first native read proven against a LIVE API
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 3c522fc feat(db): N6 step 1 — account_analytics, the storage account metrics need
+- f1c8056 docs: carryover — Fanout published its first real post
+- c8ff802 feat(ops): Inngest fleet health check — catch silent portfolio-wide outages
+- 434b873 fix(compose): never pre-select publish targets
+- e62e94d fix(oauth): force Meta's Page picker, request business_management, escape the dead end
+- 827bd25 fix(diagnose): distinguish wrong-org from missing-route
+- 0ab5fa1 fix(oauth): diagnose empty Page lists; stop showing unusable tokens as Connected
+- 7523812 feat(distributors): Bluesky listPosts — first native read proven against a LIVE API
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+- fd1eaa4 docs(plan): Ayrshare parity plan revised against measured code state
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 5e7c152 feat(distributors): N6 step 2 — getAccountMetrics for bluesky and facebook
+- 3c522fc feat(db): N6 step 1 — account_analytics, the storage account metrics need
+- f1c8056 docs: carryover — Fanout published its first real post
+- c8ff802 feat(ops): Inngest fleet health check — catch silent portfolio-wide outages
+- 434b873 fix(compose): never pre-select publish targets
+- e62e94d fix(oauth): force Meta's Page picker, request business_management, escape the dead end
+- 827bd25 fix(diagnose): distinguish wrong-org from missing-route
+- 0ab5fa1 fix(oauth): diagnose empty Page lists; stop showing unusable tokens as Connected
+- 7523812 feat(distributors): Bluesky listPosts — first native read proven against a LIVE API
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+- 15c2fdc fix(status): derive platform status from evidence, not hardcoded literals
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- a4f4ff5 feat(docs): client social-media setup workbook + its generator
+- 5e7c152 feat(distributors): N6 step 2 — getAccountMetrics for bluesky and facebook
+- 3c522fc feat(db): N6 step 1 — account_analytics, the storage account metrics need
+- f1c8056 docs: carryover — Fanout published its first real post
+- c8ff802 feat(ops): Inngest fleet health check — catch silent portfolio-wide outages
+- 434b873 fix(compose): never pre-select publish targets
+- e62e94d fix(oauth): force Meta's Page picker, request business_management, escape the dead end
+- 827bd25 fix(diagnose): distinguish wrong-org from missing-route
+- 0ab5fa1 fix(oauth): diagnose empty Page lists; stop showing unusable tokens as Connected
+- 7523812 feat(distributors): Bluesky listPosts — first native read proven against a LIVE API
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+- b4f9a5f fix(security): close 4 defects CX found; withdraw the blanket auth-swap estimate
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- d38ee57 feat(docs): add credential columns to the client setup workbook
+- a4f4ff5 feat(docs): client social-media setup workbook + its generator
+- 5e7c152 feat(distributors): N6 step 2 — getAccountMetrics for bluesky and facebook
+- 3c522fc feat(db): N6 step 1 — account_analytics, the storage account metrics need
+- f1c8056 docs: carryover — Fanout published its first real post
+- c8ff802 feat(ops): Inngest fleet health check — catch silent portfolio-wide outages
+- 434b873 fix(compose): never pre-select publish targets
+- e62e94d fix(oauth): force Meta's Page picker, request business_management, escape the dead end
+- 827bd25 fix(diagnose): distinguish wrong-org from missing-route
+- 0ab5fa1 fix(oauth): diagnose empty Page lists; stop showing unusable tokens as Connected
+- 7523812 feat(distributors): Bluesky listPosts — first native read proven against a LIVE API
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- d38ee57 feat(docs): add credential columns to the client setup workbook
+- a4f4ff5 feat(docs): client social-media setup workbook + its generator
+- 5e7c152 feat(distributors): N6 step 2 — getAccountMetrics for bluesky and facebook
+- 3c522fc feat(db): N6 step 1 — account_analytics, the storage account metrics need
+- f1c8056 docs: carryover — Fanout published its first real post
+- c8ff802 feat(ops): Inngest fleet health check — catch silent portfolio-wide outages
+- 434b873 fix(compose): never pre-select publish targets
+- e62e94d fix(oauth): force Meta's Page picker, request business_management, escape the dead end
+- 827bd25 fix(diagnose): distinguish wrong-org from missing-route
+- 0ab5fa1 fix(oauth): diagnose empty Page lists; stop showing unusable tokens as Connected
+- 7523812 feat(distributors): Bluesky listPosts — first native read proven against a LIVE API
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+- d9fb6d0 docs(plan): scope decision NATIVE — record the 4 measured blockers
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 7dd7cae feat(api): N6 complete — account analytics collector + GET /api/v1/analytics/account
+- d38ee57 feat(docs): add credential columns to the client setup workbook
+- a4f4ff5 feat(docs): client social-media setup workbook + its generator
+- 5e7c152 feat(distributors): N6 step 2 — getAccountMetrics for bluesky and facebook
+- 3c522fc feat(db): N6 step 1 — account_analytics, the storage account metrics need
+- f1c8056 docs: carryover — Fanout published its first real post
+- c8ff802 feat(ops): Inngest fleet health check — catch silent portfolio-wide outages
+- 434b873 fix(compose): never pre-select publish targets
+- e62e94d fix(oauth): force Meta's Page picker, request business_management, escape the dead end
+- 827bd25 fix(diagnose): distinguish wrong-org from missing-route
+- 0ab5fa1 fix(oauth): diagnose empty Page lists; stop showing unusable tokens as Connected
+- 7523812 feat(distributors): Bluesky listPosts — first native read proven against a LIVE API
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 7dd7cae feat(api): N6 complete — account analytics collector + GET /api/v1/analytics/account
+- d38ee57 feat(docs): add credential columns to the client setup workbook
+- a4f4ff5 feat(docs): client social-media setup workbook + its generator
+- 5e7c152 feat(distributors): N6 step 2 — getAccountMetrics for bluesky and facebook
+- 3c522fc feat(db): N6 step 1 — account_analytics, the storage account metrics need
+- f1c8056 docs: carryover — Fanout published its first real post
+- c8ff802 feat(ops): Inngest fleet health check — catch silent portfolio-wide outages
+- 434b873 fix(compose): never pre-select publish targets
+- e62e94d fix(oauth): force Meta's Page picker, request business_management, escape the dead end
+- 827bd25 fix(diagnose): distinguish wrong-org from missing-route
+- 0ab5fa1 fix(oauth): diagnose empty Page lists; stop showing unusable tokens as Connected
+- 7523812 feat(distributors): Bluesky listPosts — first native read proven against a LIVE API
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 7dd7cae feat(api): N6 complete — account analytics collector + GET /api/v1/analytics/account
+- d38ee57 feat(docs): add credential columns to the client setup workbook
+- a4f4ff5 feat(docs): client social-media setup workbook + its generator
+- 5e7c152 feat(distributors): N6 step 2 — getAccountMetrics for bluesky and facebook
+- 3c522fc feat(db): N6 step 1 — account_analytics, the storage account metrics need
+- f1c8056 docs: carryover — Fanout published its first real post
+- c8ff802 feat(ops): Inngest fleet health check — catch silent portfolio-wide outages
+- 434b873 fix(compose): never pre-select publish targets
+- e62e94d fix(oauth): force Meta's Page picker, request business_management, escape the dead end
+- 827bd25 fix(diagnose): distinguish wrong-org from missing-route
+- 0ab5fa1 fix(oauth): diagnose empty Page lists; stop showing unusable tokens as Connected
+- 7523812 feat(distributors): Bluesky listPosts — first native read proven against a LIVE API
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 7dd7cae feat(api): N6 complete — account analytics collector + GET /api/v1/analytics/account
+- d38ee57 feat(docs): add credential columns to the client setup workbook
+- a4f4ff5 feat(docs): client social-media setup workbook + its generator
+- 5e7c152 feat(distributors): N6 step 2 — getAccountMetrics for bluesky and facebook
+- 3c522fc feat(db): N6 step 1 — account_analytics, the storage account metrics need
+- f1c8056 docs: carryover — Fanout published its first real post
+- c8ff802 feat(ops): Inngest fleet health check — catch silent portfolio-wide outages
+- 434b873 fix(compose): never pre-select publish targets
+- e62e94d fix(oauth): force Meta's Page picker, request business_management, escape the dead end
+- 827bd25 fix(diagnose): distinguish wrong-org from missing-route
+- 0ab5fa1 fix(oauth): diagnose empty Page lists; stop showing unusable tokens as Connected
+- 7523812 feat(distributors): Bluesky listPosts — first native read proven against a LIVE API
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
+- 7340e77 feat(db): N1 — external_posts, so a natively-created post can be represented
+- aaf34f5 feat(oauth): N5 — add native-history read scopes before clients connect
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- ed41103 docs: end-of-day carryover — Facebook and Bluesky both posting live
+- cf9621f fix(distributors): twitter media upload, linkedin company-page posting
+- 7dd7cae feat(api): N6 complete — account analytics collector + GET /api/v1/analytics/account
+- d38ee57 feat(docs): add credential columns to the client setup workbook
+- a4f4ff5 feat(docs): client social-media setup workbook + its generator
+- 5e7c152 feat(distributors): N6 step 2 — getAccountMetrics for bluesky and facebook
+- 3c522fc feat(db): N6 step 1 — account_analytics, the storage account metrics need
+- f1c8056 docs: carryover — Fanout published its first real post
+- c8ff802 feat(ops): Inngest fleet health check — catch silent portfolio-wide outages
+- 434b873 fix(compose): never pre-select publish targets
+- e62e94d fix(oauth): force Meta's Page picker, request business_management, escape the dead end
+- 827bd25 fix(diagnose): distinguish wrong-org from missing-route
+- 0ab5fa1 fix(oauth): diagnose empty Page lists; stop showing unusable tokens as Connected
+- 7523812 feat(distributors): Bluesky listPosts — first native read proven against a LIVE API
+- 7ebf283 fix(ui): correct the platform pending list, and stop destroying the API key
+- bb2d57b feat(api): N4 — GET /api/v1/history, native post history
+- b5fc352 feat(inngest): N3 — resumable native-history backfill
+- 5859641 feat(distributors): N2 — listPosts for native history (facebook, instagram, twitter)
+- 63139d3 fix(deps): bump @types/node to ^24 — unbreak production deploys
