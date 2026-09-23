@@ -15,7 +15,10 @@
     "register:twitter": "node scripts/test-register.mjs twitter",
     "register:linkedin": "node scripts/test-register.mjs linkedin",
     "register:youtube": "node scripts/test-register.mjs youtube",
-    "creds:enter": "node scripts/test-enter-manual.mjs"
+    "creds:enter": "node scripts/test-enter-manual.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
@@ -60,6 +63,7 @@
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "^5.0.1",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "shadcn": "^3.8.5",
@@ -67,6 +71,8 @@
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "tw-animate-css": "^1.4.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vite": "^8.3.0",
+    "vitest": "^5.0.1"
   }
 }

@@ -1328,3 +1328,47 @@ Commits to add manually:
 - 0dff44e fix(posting): fail visibly when the queue rejects a post
 - 4b86fb3 docs(plan): P0-5 resolved — dedicated fanout inngest event key, verified live
 - f967496 docs(plan): P0-5 — inngest event key invalid, blocks all posting
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+- 9b1f252 fix(seo): make fanout.digital apex-canonical, drop www
+- f83d766 docs(audit): falsify CX P0 — /api/v1 verifier does run on www
+- da8655b docs(audit): CX deep-audit + CFC visual-audit dispatches, gap analysis to completion
+- 1410ee8 docs: carryover — sign-in live, pilot-ready, John is the only gate
+- aaee523 docs: carryover — Clerk cert is the only open blocker
+- f94be2c docs: carryover notes migration 017 already applied to prod
+- 47f0ae7 docs: record migration 017 anon-grant revocation, re-verified live
+- 3433d7f fix(db): revoke unused anon grants so RLS is not the only layer
+- 27fbb12 docs: carryover reflects 306c278 closures
+- 3e6ab5e docs: CX round-2 P2s closed in 306c278, classifier re-verified live
+- 306c278 fix(inbox): stop silent failures on decrypt retry and reply delivery
+- 5d653f0 docs: P1-10 escalated — invalid pk_test_ Clerk key blocks all deploys
+- be5e271 docs: carryover for next fanout session
+- e4c81e5 docs(setup): per-platform Meta callbacks in env example and setup plan
+- 76534f8 fix(inbox): keep plaintext tokens out of Inngest step state
+- c2fd74d docs: CX review pass — P0-9/P0-10/P0-11 recorded
+- 7c44b2e fix(tokens): decrypt before use in inbox; correct Meta callback guidance
+
+## 2026-09-23 — Changelog section not found in Bible
+Commits to add manually:
+- 1227f7e docs(audit): record CX results — 1 confirmed P1, 1 false positive, 1 falsified
+- 58ef783 fix(security): validate Twilio signature on inbound-sms webhook
+- 9b1f252 fix(seo): make fanout.digital apex-canonical, drop www
+- f83d766 docs(audit): falsify CX P0 — /api/v1 verifier does run on www
+- da8655b docs(audit): CX deep-audit + CFC visual-audit dispatches, gap analysis to completion
+- 1410ee8 docs: carryover — sign-in live, pilot-ready, John is the only gate
+- aaee523 docs: carryover — Clerk cert is the only open blocker
+- f94be2c docs: carryover notes migration 017 already applied to prod
+- 47f0ae7 docs: record migration 017 anon-grant revocation, re-verified live
+- 3433d7f fix(db): revoke unused anon grants so RLS is not the only layer
+- 27fbb12 docs: carryover reflects 306c278 closures
+- 3e6ab5e docs: CX round-2 P2s closed in 306c278, classifier re-verified live
+- 306c278 fix(inbox): stop silent failures on decrypt retry and reply delivery
+- 5d653f0 docs: P1-10 escalated — invalid pk_test_ Clerk key blocks all deploys
+- be5e271 docs: carryover for next fanout session
+- e4c81e5 docs(setup): per-platform Meta callbacks in env example and setup plan
+- 76534f8 fix(inbox): keep plaintext tokens out of Inngest step state
+- c2fd74d docs: CX review pass — P0-9/P0-10/P0-11 recorded
+- 7c44b2e fix(tokens): decrypt before use in inbox; correct Meta callback guidance
