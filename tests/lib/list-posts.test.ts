@@ -4,6 +4,7 @@ import { FacebookDistributor } from '@/distributors/facebook'
 import { InstagramDistributor } from '@/distributors/instagram'
 import { TwitterDistributor } from '@/distributors/twitter'
 import { LinkedInDistributor } from '@/distributors/linkedin'
+import { BlueskyDistributor } from '@/distributors/bluesky'
 
 afterEach(() => vi.unstubAllGlobals())
 
@@ -179,5 +180,90 @@ describe('TwitterDistributor.listPosts', () => {
     stub({ data: [], meta: { next_token: 'NEXT1' } })
     const r = await new TwitterDistributor().listPosts('tok', undefined, 'U1')
     expect(r.nextCursor).toBe('NEXT1')
+  })
+})
+
+describe('BlueskyDistributor.listPosts', () => {
+  /**
+   * Shape below is copied from a LIVE app.bsky.feed.getAuthorFeed response
+   * (2026-09-23), not invented. Bluesky's appview needs no auth at all, which
+   * is why this is the cheapest end-to-end proof of the native-history chain.
+   */
+  const liveShape = (over: Record<string, unknown> = {}) => ({
+    post: {
+      uri: 'at://did:plc:abc/app.bsky.feed.post/3mw2cdr44fc2a',
+      author: { handle: 'lockelum.bsky.social' },
+      record: { text: 'hello world', createdAt: '2026-09-21T18:04:06.128Z' },
+      likeCount: 638, replyCount: 76, repostCount: 76, quoteCount: 45,
+      ...over,
+    },
+  })
+
+  it('maps a live-shaped feed item, building the web URL from the rkey', async () => {
+    stub({ feed: [liveShape()], cursor: 'CUR1' })
+    const r = await new BlueskyDistributor().listPosts('{"identifier":"a","password":"b"}')
+    expect(r.posts[0].platformPostId).toBe('at://did:plc:abc/app.bsky.feed.post/3mw2cdr44fc2a')
+    expect(r.posts[0].platformPostUrl).toBe(
+      'https://bsky.app/profile/lockelum.bsky.social/post/3mw2cdr44fc2a'
+    )
+    expect(r.posts[0].content).toBe('hello world')
+    expect(r.posts[0].metrics).toEqual({ likes: 638, comments: 76, shares: 76, quotes: 45 })
+    expect(r.nextCursor).toBe('CUR1')
+  })
+
+  /**
+   * A repost is someone ELSE's words. Including it would poison a client's
+   * brand-voice history with another account's writing.
+   */
+  it('excludes reposts', async () => {
+    stub({ feed: [{ ...liveShape(), reason: { $type: 'app.bsky.feed.defs#reasonRepost' } }] })
+    const r = await new BlueskyDistributor().listPosts('{"identifier":"a","password":"b"}')
+    expect(r.posts).toHaveLength(0)
+  })
+
+  it('falls back to the stored identifier when no accountId is given', async () => {
+    const f = vi.fn().mockResolvedValue({
+      status: 200, ok: true, headers: new Headers(), json: async () => ({ feed: [] }),
+    })
+    vi.stubGlobal('fetch', f)
+    await new BlueskyDistributor().listPosts('{"identifier":"lockelum.bsky.social","password":"x"}')
+    expect(f.mock.calls[0][0]).toContain('actor=lockelum.bsky.social')
+  })
+
+  it('accepts an explicit DID as the actor', async () => {
+    const f = vi.fn().mockResolvedValue({
+      status: 200, ok: true, headers: new Headers(), json: async () => ({ feed: [] }),
+    })
+    vi.stubGlobal('fetch', f)
+    await new BlueskyDistributor().listPosts('{}', undefined, 'did%3Aplc%3Aabc')
+    expect(f.mock.calls[0][0]).toContain('actor=did')
+  })
+
+  // Sending "undefined" as an actor yields a confusing 400 instead of a clear cause.
+  it('throws when no actor can be determined', async () => {
+    await expect(new BlueskyDistributor().listPosts('not-json')).rejects.toBeInstanceOf(
+      NativeHistoryUnsupportedError
+    )
+  })
+
+  it('returns no cursor on the final page', async () => {
+    stub({ feed: [liveShape()] })
+    const r = await new BlueskyDistributor().listPosts('{"identifier":"a","password":"b"}')
+    expect(r.nextCursor).toBeUndefined()
+  })
+
+  // An empty feed is a VALID answer — the live LockeLum account returns exactly
+  // this today. It must not be confused with an error.
+  it('returns an empty list, not an error, for an account with no posts', async () => {
+    stub({ feed: [] })
+    const r = await new BlueskyDistributor().listPosts('{"identifier":"a","password":"b"}')
+    expect(r.posts).toEqual([])
+  })
+
+  it('throws on a provider error rather than reporting empty history', async () => {
+    stub({ error: 'InvalidRequest' }, 400)
+    await expect(
+      new BlueskyDistributor().listPosts('{"identifier":"a","password":"b"}')
+    ).rejects.toThrow(/400/)
   })
 })
