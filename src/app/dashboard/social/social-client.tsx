@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner'
 import { RefreshCw, Sparkles, CheckCircle2, XCircle, Clock, AlertTriangle, Settings } from 'lucide-react'
 import Link from 'next/link'
-import type { IntegrationCheck } from '@/lib/integration-status'
+import type { IntegrationCheck, IntegrationStatus } from '@/lib/integration-status'
 import { PRODUCT_CONFIGS, PLATFORM_RULES, type Product } from '@/lib/product-platforms'
 
 interface QueueRow {
@@ -41,11 +41,14 @@ interface StatusData {
   }>
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  WORKING: 'bg-green-100 text-green-800',
-  BROKEN: 'bg-red-100 text-red-800',
-  NEVER_SETUP: 'bg-gray-100 text-gray-600',
-  TOKEN_EXPIRED: 'bg-yellow-100 text-yellow-800',
+// Typed on IntegrationStatus rather than string: a stale key must fail the
+// build, not silently render every badge grey.
+const STATUS_COLORS: Record<IntegrationStatus, string> = {
+  VERIFIED: 'bg-green-100 text-green-800',
+  FAILING: 'bg-red-100 text-red-800',
+  CONNECTED_UNPROVEN: 'bg-yellow-100 text-yellow-800',
+  AWAITING_CONNECTION: 'bg-blue-100 text-blue-800',
+  NOT_CONFIGURED: 'bg-gray-100 text-gray-600',
 }
 
 const POST_STATUS_ICON: Record<string, React.ReactNode> = {
@@ -133,8 +136,8 @@ export function SocialCommandCenter() {
     }
   }
 
-  const workingPlatforms = status?.integrations.filter((i) => i.status === 'WORKING') ?? []
-  const brokenPlatforms = status?.integrations.filter((i) => i.status !== 'WORKING') ?? []
+  const verifiedPlatforms = status?.integrations.filter((i) => i.status === 'VERIFIED') ?? []
+  const unprovenPlatforms = status?.integrations.filter((i) => i.status !== 'VERIFIED') ?? []
   const availablePlatforms = PRODUCT_CONFIGS[genProduct]?.platforms ?? []
 
   return (
@@ -159,15 +162,15 @@ export function SocialCommandCenter() {
 
       {/* Integration status */}
       <div className="bg-white border rounded-lg p-5">
-        <h2 className="font-semibold text-gray-900 mb-3">Integration Status (13 platforms)</h2>
+        <h2 className="font-semibold text-gray-900 mb-3">Integration Status — VERIFIED means a real post landed</h2>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b text-left text-gray-500">
                 <th className="pb-2 font-medium">Platform</th>
                 <th className="pb-2 font-medium">Status</th>
-                <th className="pb-2 font-medium">Root Cause</th>
-                <th className="pb-2 font-medium">Fix Time</th>
+                <th className="pb-2 font-medium">Evidence</th>
+                <th className="pb-2 font-medium">External blocker</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -179,23 +182,28 @@ export function SocialCommandCenter() {
                       {item.status}
                     </Badge>
                   </td>
-                  <td className="py-2 text-gray-600 max-w-xs truncate" title={item.rootCause}>
-                    {item.rootCause}
+                  <td className="py-2 text-gray-600 max-w-xs truncate" title={item.evidence}>
+                    {item.evidence}
                   </td>
-                  <td className="py-2 text-gray-500 text-xs">{item.fixTime}</td>
+                  <td className="py-2 text-gray-500 text-xs">{item.externalBlocker ?? '—'}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        {workingPlatforms.length > 0 && (
+        {verifiedPlatforms.length > 0 && (
           <p className="text-xs text-green-600 mt-3">
-            ✓ Working: {workingPlatforms.map((p) => p.platform).join(', ')}
+            ✓ Verified by a real post: {verifiedPlatforms.map((p) => p.platform).join(', ')}
           </p>
         )}
-        {brokenPlatforms.length > 0 && (
-          <p className="text-xs text-red-500 mt-1">
-            ✗ Broken: {brokenPlatforms.map((p) => p.platform).join(', ')}
+        {/* Deliberately NOT "Broken". Only FAILING means a post was attempted
+            and did not land; everything else is simply unproven. Calling
+            untested platforms broken is what produced two false planning
+            conclusions on 2026-09-23. */}
+        {unprovenPlatforms.length > 0 && (
+          <p className="text-xs text-gray-500 mt-1">
+            Not yet proven ({unprovenPlatforms.length}):{' '}
+            {unprovenPlatforms.map((p) => p.platform).join(', ')} — no post has landed yet.
           </p>
         )}
       </div>

@@ -1,124 +1,169 @@
-// Integration status checker for NuStack product social accounts
-// Checks env vars and attempts a read call to verify each platform
+// Integration status for social platforms.
+//
+// HISTORY — why this file was rewritten (2026-09-23):
+// The previous version claimed in its own header to "attempt a read call to
+// verify each platform". It made ZERO network calls and held six hardcoded
+// status literals. Bluesky and Mastodon were hardcoded to WORKING with no check
+// of any kind. Two planning documents (the CFC competitive audit and the
+// Ayrshare parity strategy) drew the conclusion "0 of 9 platforms post in
+// production, only Bluesky and Mastodon work" directly from that output.
+//
+// Both halves were wrong. Nothing had been proven broken — nobody had connected
+// an account (oauth_tokens = 0). And nothing had been proven working either:
+// product_platform_accounts was also 0, so Bluesky/Mastodon had no stored
+// credentials to post with.
+//
+// THE RULE THIS FILE NOW FOLLOWS:
+// Never report a capability we have not observed. The only honest evidence that
+// a platform posts is a post_results row carrying a real platform_post_id.
+// Credentials existing is not evidence of working — that is the
+// presence-is-not-validity failure. Absence of a token is not evidence of
+// broken either; it usually just means nobody has connected yet.
 
-export type IntegrationStatus = 'WORKING' | 'TOKEN_EXPIRED' | 'BROKEN' | 'NEVER_SETUP'
+import { getSupabase } from './supabase'
+
+/**
+ * Deliberately distinguishes "we have never tried" from "we tried and it
+ * failed". The old type could not express that difference, which is what let
+ * NEVER_SETUP and BROKEN both read as "does not work".
+ */
+export type IntegrationStatus =
+  /** A post succeeded and returned a real platform post id. The only proof. */
+  | 'VERIFIED'
+  /** A credential is stored, but no post has ever succeeded. Unproven. */
+  | 'CONNECTED_UNPROVEN'
+  /** App credentials configured, but no account connected. Expected pre-launch. */
+  | 'AWAITING_CONNECTION'
+  /** No app credentials in this environment. Nothing has been attempted. */
+  | 'NOT_CONFIGURED'
+  /** A post was attempted and failed. The only status that means "broken". */
+  | 'FAILING'
 
 export interface IntegrationCheck {
   platform: string
   status: IntegrationStatus
-  rootCause: string
-  fixTime: string
-  envVarsPresent: boolean
-  note?: string
+  /** What was actually observed, not what we assume it implies. */
+  evidence: string
+  credentialsPresent: boolean
+  tokensStored: number
+  successfulPosts: number
+  failedPosts: number
+  /** External gate a human must clear. Null when the next step is ours. */
+  externalBlocker: string | null
 }
 
-// Check which env vars are present (as set in Vercel production)
+interface PlatformSpec {
+  platform: string
+  envKeys: string[]
+  /** Known review/verification gate. Stated as a fact about the platform, not
+   *  as a claim about our status — these do not change with our data. */
+  externalBlocker: string | null
+}
+
+const PLATFORMS: PlatformSpec[] = [
+  { platform: 'twitter', envKeys: ['TWITTER_CLIENT_ID', 'TWITTER_CLIENT_SECRET'], externalBlocker: null },
+  { platform: 'linkedin', envKeys: ['LINKEDIN_CLIENT_ID', 'LINKEDIN_CLIENT_SECRET'], externalBlocker: 'w_member_social scope requires LinkedIn review' },
+  { platform: 'facebook', envKeys: ['FACEBOOK_APP_ID', 'FACEBOOK_APP_SECRET'], externalBlocker: 'Meta Business Verification' },
+  { platform: 'instagram', envKeys: ['INSTAGRAM_APP_ID', 'INSTAGRAM_APP_SECRET'], externalBlocker: 'Meta Business Verification' },
+  { platform: 'threads', envKeys: ['THREADS_APP_ID', 'THREADS_APP_SECRET'], externalBlocker: 'Meta Business Verification (shared Meta app)' },
+  { platform: 'tiktok', envKeys: ['TIKTOK_CLIENT_KEY', 'TIKTOK_CLIENT_SECRET'], externalBlocker: 'TikTok Content Posting API review' },
+  { platform: 'youtube', envKeys: ['YOUTUBE_CLIENT_ID', 'YOUTUBE_CLIENT_SECRET'], externalBlocker: 'Google OAuth verification for production' },
+  { platform: 'pinterest', envKeys: ['PINTEREST_APP_ID', 'PINTEREST_APP_SECRET'], externalBlocker: 'pins:write requires Pinterest review' },
+  { platform: 'reddit', envKeys: ['REDDIT_CLIENT_ID', 'REDDIT_CLIENT_SECRET'], externalBlocker: null },
+  { platform: 'google_business_profile', envKeys: ['YOUTUBE_CLIENT_ID', 'YOUTUBE_CLIENT_SECRET'], externalBlocker: 'Google My Business API access approval' },
+  // Bluesky and Mastodon need no central OAuth app — credentials are per
+  // account. There is no env var to check, so credentialsPresent is decided
+  // solely by whether an account is actually stored.
+  { platform: 'bluesky', envKeys: [], externalBlocker: null },
+  { platform: 'mastodon', envKeys: [], externalBlocker: null },
+]
+
 function hasEnvVars(keys: string[]): boolean {
+  if (keys.length === 0) return false
   return keys.every((k) => {
     const v = process.env[k]
-    return v && v.trim() !== '' && v !== 'placeholder'
+    return !!v && v.trim() !== '' && v !== 'placeholder'
   })
 }
 
-export function getIntegrationAudit(): IntegrationCheck[] {
-  const checks: IntegrationCheck[] = [
-    {
-      platform: 'twitter',
-      envVarsPresent: hasEnvVars(['TWITTER_CLIENT_ID', 'TWITTER_CLIENT_SECRET']),
-      status: hasEnvVars(['TWITTER_CLIENT_ID', 'TWITTER_CLIENT_SECRET']) ? 'BROKEN' : 'NEVER_SETUP',
-      rootCause: hasEnvVars(['TWITTER_CLIENT_ID', 'TWITTER_CLIENT_SECRET'])
-        ? 'OAuth app exists but no user has connected a Twitter account via OAuth flow'
-        : 'Twitter Developer App not registered — no OAuth credentials in production',
-      fixTime: '45 min — register Twitter dev app, add env vars, OAuth connect each product account',
-    },
-    {
-      platform: 'linkedin',
-      envVarsPresent: hasEnvVars(['LINKEDIN_CLIENT_ID', 'LINKEDIN_CLIENT_SECRET']),
-      status: hasEnvVars(['LINKEDIN_CLIENT_ID', 'LINKEDIN_CLIENT_SECRET']) ? 'BROKEN' : 'NEVER_SETUP',
-      rootCause: hasEnvVars(['LINKEDIN_CLIENT_ID', 'LINKEDIN_CLIENT_SECRET'])
-        ? 'OAuth app exists but w_member_social permission may be pending review'
-        : 'LinkedIn OAuth app not registered',
-      fixTime: '45 min + 24-48hr review for w_member_social permission',
-    },
-    {
-      platform: 'instagram',
-      envVarsPresent: hasEnvVars(['INSTAGRAM_APP_ID', 'INSTAGRAM_APP_SECRET']),
-      status: 'BROKEN',
-      rootCause: 'Meta Business Verification pending review (App ID: 772426605937002). Cannot post until verified.',
-      fixTime: 'Waiting on Meta — ETA unknown. Check developers.facebook.com for verification status.',
-    },
-    {
-      platform: 'facebook',
-      envVarsPresent: hasEnvVars(['FACEBOOK_APP_ID', 'FACEBOOK_APP_SECRET']),
-      status: 'BROKEN',
-      rootCause: 'Meta Business Verification pending. Same blocker as Instagram.',
-      fixTime: 'Waiting on Meta verification — same as Instagram',
-    },
-    {
-      platform: 'threads',
-      envVarsPresent: hasEnvVars(['THREADS_APP_ID', 'THREADS_APP_SECRET']),
-      status: 'BROKEN',
-      rootCause: 'Threads shares the Meta app — blocked by same Business Verification.',
-      fixTime: 'Waiting on Meta verification',
-    },
-    {
-      platform: 'tiktok',
-      envVarsPresent: hasEnvVars(['TIKTOK_CLIENT_KEY', 'TIKTOK_CLIENT_SECRET']),
-      status: hasEnvVars(['TIKTOK_CLIENT_KEY', 'TIKTOK_CLIENT_SECRET']) ? 'BROKEN' : 'NEVER_SETUP',
-      rootCause: 'TikTok app review required. Requires Business account + 1-2 week review process.',
-      fixTime: '1-2 weeks — submit TikTok app for review at developers.tiktok.com',
-    },
-    {
-      platform: 'youtube',
-      envVarsPresent: hasEnvVars(['YOUTUBE_CLIENT_ID', 'YOUTUBE_CLIENT_SECRET']),
-      status: hasEnvVars(['YOUTUBE_CLIENT_ID', 'YOUTUBE_CLIENT_SECRET']) ? 'BROKEN' : 'NEVER_SETUP',
-      rootCause: 'Google Cloud Console OAuth app not registered or YouTube Data API v3 not enabled.',
-      fixTime: '45 min setup + up to 1 week for Google verification for production use',
-    },
-    {
-      platform: 'pinterest',
-      envVarsPresent: hasEnvVars(['PINTEREST_APP_ID', 'PINTEREST_APP_SECRET']),
-      status: hasEnvVars(['PINTEREST_APP_ID', 'PINTEREST_APP_SECRET']) ? 'BROKEN' : 'NEVER_SETUP',
-      rootCause: 'Pinterest app review required for write permissions (pins:write).',
-      fixTime: '1-2 weeks — submit Pinterest app for review',
-    },
-    {
-      platform: 'reddit',
-      envVarsPresent: hasEnvVars(['REDDIT_CLIENT_ID', 'REDDIT_CLIENT_SECRET']),
-      status: hasEnvVars(['REDDIT_CLIENT_ID', 'REDDIT_CLIENT_SECRET']) ? 'BROKEN' : 'NEVER_SETUP',
-      rootCause: 'Reddit OAuth app not registered or no user OAuth tokens stored.',
-      fixTime: '30 min — instant approval at reddit.com/prefs/apps',
-    },
-    {
-      platform: 'bluesky',
-      envVarsPresent: true,
-      status: 'WORKING',
-      rootCause: 'Uses app passwords — no OAuth app needed. Working if account + app password stored.',
-      fixTime: 'N/A — working. Connect via Fanout dashboard → Add Bluesky profile.',
-      note: 'Connect product accounts via dashboard, store as JSON {identifier, password} in product_platform_accounts',
-    },
-    {
-      platform: 'mastodon',
-      envVarsPresent: true,
-      status: 'WORKING',
-      rootCause: 'Instance-level OAuth — no central app needed. Working if instance token stored.',
-      fixTime: 'N/A — working. Connect via Fanout dashboard.',
-      note: 'Connect product accounts via dashboard Mastodon OAuth flow',
-    },
-    {
-      platform: 'google_business_profile',
-      envVarsPresent: hasEnvVars(['YOUTUBE_CLIENT_ID', 'YOUTUBE_CLIENT_SECRET']),
-      status: 'BROKEN',
-      rootCause: 'Google Business Profile API untested. Requires Google My Business API enabled and OAuth.',
-      fixTime: '1-2 hours — enable Google My Business API in Cloud Console, test OAuth flow',
-    },
-  ]
+/**
+ * Reads observed state from the database. This is the whole point of the file:
+ * status is derived from what happened, never from configuration.
+ */
+export async function getIntegrationAudit(): Promise<IntegrationCheck[]> {
+  const supabase = getSupabase()
 
-  return checks
+  const [tokensRes, resultsRes] = await Promise.all([
+    supabase.from('oauth_tokens').select('platform'),
+    supabase.from('post_results').select('platform, platform_post_id'),
+  ])
+
+  const tokensByPlatform = new Map<string, number>()
+  for (const row of tokensRes.data ?? []) {
+    const p = (row as { platform: string }).platform
+    tokensByPlatform.set(p, (tokensByPlatform.get(p) ?? 0) + 1)
+  }
+
+  const okByPlatform = new Map<string, number>()
+  const failByPlatform = new Map<string, number>()
+  for (const row of resultsRes.data ?? []) {
+    const r = row as { platform: string; platform_post_id: string | null }
+    // A real platform_post_id is the only thing that proves a post landed.
+    const target = r.platform_post_id ? okByPlatform : failByPlatform
+    target.set(r.platform, (target.get(r.platform) ?? 0) + 1)
+  }
+
+  // A read failure must not silently render as "nothing works". Surface it.
+  const readFailed = !!tokensRes.error || !!resultsRes.error
+
+  return PLATFORMS.map((spec) => {
+    const tokensStored = tokensByPlatform.get(spec.platform) ?? 0
+    const successfulPosts = okByPlatform.get(spec.platform) ?? 0
+    const failedPosts = failByPlatform.get(spec.platform) ?? 0
+    const credentialsPresent = hasEnvVars(spec.envKeys) || tokensStored > 0
+
+    let status: IntegrationStatus
+    let evidence: string
+
+    if (readFailed) {
+      status = 'NOT_CONFIGURED'
+      evidence = 'Could not read post history — status unknown, not measured.'
+    } else if (successfulPosts > 0) {
+      status = 'VERIFIED'
+      evidence = `${successfulPosts} post(s) returned a real platform post id.`
+    } else if (failedPosts > 0) {
+      status = 'FAILING'
+      evidence = `${failedPosts} post attempt(s), none returned a platform post id.`
+    } else if (tokensStored > 0) {
+      status = 'CONNECTED_UNPROVEN'
+      evidence = `${tokensStored} account(s) connected, but no post has been attempted yet.`
+    } else if (credentialsPresent) {
+      status = 'AWAITING_CONNECTION'
+      evidence = 'App credentials configured; no account has connected yet. Untested, not broken.'
+    } else {
+      status = 'NOT_CONFIGURED'
+      evidence = 'No app credentials in this environment. Nothing attempted.'
+    }
+
+    return {
+      platform: spec.platform,
+      status,
+      evidence,
+      credentialsPresent,
+      tokensStored,
+      successfulPosts,
+      failedPosts,
+      externalBlocker: spec.externalBlocker,
+    }
+  })
 }
 
-export function getWorkingPlatforms(): string[] {
-  return getIntegrationAudit()
-    .filter((c) => c.status === 'WORKING')
-    .map((c) => c.platform)
+/**
+ * Platforms proven to post. VERIFIED only — a stored credential is not proof.
+ * Safe to drive public "supported platforms" copy from this: it can only ever
+ * list a platform after a real post has gone out from production.
+ */
+export async function getVerifiedPlatforms(): Promise<string[]> {
+  const audit = await getIntegrationAudit()
+  return audit.filter((c) => c.status === 'VERIFIED').map((c) => c.platform)
 }

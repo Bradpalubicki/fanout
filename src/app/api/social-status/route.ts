@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
     .select('product, platform, account_handle, status, last_used_at')
 
   return NextResponse.json({
-    integrations: getIntegrationAudit(),
+    integrations: await getIntegrationAudit(),
     queue: stats,
     connectedAccounts: accounts ?? [],
   })
