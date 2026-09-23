@@ -78,3 +78,24 @@ NOT ON THE PLAN — found this session
  S5 P2-11 four contracts + async contract decision — completes the public API.
  S6 P1-8 LinkedIn org pages + YouTube videos.insert.
  S7 NEW-2 harden, NEW-3 README.
+
+## CX REVIEW 2026-09-23 — ITS P0 IS FALSIFIED
+CX (gpt-6-astra, effort=high) returned "P0 FIRST PROOF: /api/v1 still behind
+Clerk", quoting HTTP 307 -> /sign-in with X-Clerk-Auth-Reason: token-invalid,
+and graded the product NO-GO on that basis.
+
+MEASURED, both hosts, headers shown:
+  apex  https://fanout.digital/api/v1/platforms      -> 308 -> www   (redirect only)
+  www   https://www.fanout.digital/api/v1/platforms  -> 401
+        body: {"error":"Invalid API key"}
+That body is Fanout's OWN string from src/lib/auth.ts verifyApiKey(). Clerk does
+not emit it. A 64-hex-shaped key returns the same 401 from the same verifier.
+
+CX's error: it tested the APEX, which 308-redirects, and it read the
+X-Clerk-Auth-* headers as proof of a redirect. Those headers are attached by
+clerkMiddleware to EVERY request, including this 401 — they describe the session,
+not the disposition. P0-1 stands DONE.
+
+LESSON (generalizable): on a site with an apex->www redirect, a probe that does
+not follow redirects measures the redirect, not the route. And a vendor's
+diagnostic headers are not a status code.
