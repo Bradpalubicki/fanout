@@ -219,3 +219,68 @@ needs provider sync)? These are different products at different costs.
 A's key against: A's resource (succeeds), sibling B in the same org (discloses
 nothing, no effect), foreign-org C (discloses nothing, no effect). Until that
 holds for a route, that route does not ship.
+
+---
+
+## SCOPE DECISION: NATIVE (Brad, 2026-09-23)
+We sell NATIVE history/analytics — what the account did anywhere, not only what
+Fanout sent. This matches Ayrshare and is required for the AI brand-voice pitch
+(an agent needs a client's real posting history, most of which predates us).
+
+### What native actually requires — measured, not assumed
+
+1. SCHEMA BLOCKER (hard, must go first)
+   post_results.post_id is `NOT NULL REFERENCES posts(id)`. Every result must
+   hang off a post WE created. A post made natively on Instagram has no posts
+   row, so the schema physically cannot represent it today. Native history is
+   not an endpoint over existing data — it needs a store that can hold a post we
+   did not create.
+   => New table (e.g. external_posts) or a nullable post_id + an origin column.
+      Prefer a separate table: post_results carries delivery semantics (attempts,
+      error_message, status) that are meaningless for a post we only observed.
+
+2. DISTRIBUTOR CAPABILITY GAP
+   All 12 distributors implement exactly three methods: post, refreshToken,
+   getAnalytics(platformPostId). NONE can list an account's own posts, and
+   getAnalytics requires an id we already know. Native history needs a new
+   listPosts(since, cursor) capability per platform — a new abstract method on
+   BaseDistributor and 12 implementations, each with its own pagination model.
+
+3. THE PRECEDENT THAT HELPS
+   collect-inbox.ts ALREADY reads native posts on 5 platforms via
+   /{pageId}/feed etc. (facebook:26, instagram:67, twitter:108, linkedin:157,
+   youtube:222). It reads post.id and post.message and DISCARDS them, keeping
+   only comments. So the read path is proven for 5 platforms — what is missing
+   is retention, pagination and backfill, not the ability to read.
+   Limits today: 24h window, limit 25, no cursor. Backfill of 200-500 posts per
+   Ayrshare's pitch needs real pagination.
+
+4. SCOPE GAP — NOT UNIFORM ACROSS PLATFORMS
+   Native read requires read scopes we do not all hold (oauth-config.ts):
+     twitter   tweet.read                       OK
+     facebook  pages_read_engagement            OK
+     instagram instagram_basic                  OK
+     linkedin  w_member_social ONLY             WRITE ONLY -> needs a read scope
+     tiktok    video.upload/publish ONLY        WRITE ONLY -> needs a read scope
+   A scope change means re-consent for every already-connected account, so it
+   must land BEFORE we ask clients to connect, not after. This is the strongest
+   argument for doing native early rather than bolting it on.
+
+### Revised order (native changes the sequence)
+Native history is now a dependency of the AI brand-voice pitch, so it moves
+ahead of the cheap-exposure items:
+  N1 schema for externally-created posts (unblocks everything else)
+  N2 listPosts on BaseDistributor + the 5 platforms whose read path is proven
+  N3 backfill job w/ pagination + checkpoints (resumable; 200-500 posts/account)
+  N4 /api/v1/history over that store, profile-scoped, A/B/C tested
+  N5 add read scopes for linkedin + tiktok BEFORE client connections
+  N6 account-level analytics (separate: needs account endpoints, not post ones)
+
+Cheap-exposure items (media, validate, comments completion) are unchanged and
+can run in parallel — they do not touch the native store.
+
+### Estimate
+Deliberately NOT given as a single number. N1-N4 for 5 proven platforms is the
+first honest unit of work; re-estimate after N2, when per-platform pagination
+reality is known rather than assumed. The previous blanket number is what CX
+correctly rejected.
