@@ -43,18 +43,33 @@ describe('inbox reply — a private message must never publish publicly', () => 
   const src = read('app/api/dashboard/inbox/route.ts')
 
   /**
-   * The Graph branch posts to /{id}/comments, which is PUBLIC. `type` only
-   * selected the target id, so a 'dm' reply became a public page comment.
-   * Latent (the collector writes no type='dm') but it is a private-to-public
-   * disclosure the moment DM ingestion lands.
+   * Every transport here publishes PUBLICLY. This used to be a per-branch
+   * check on the Meta branch alone, which is why Twitter, YouTube and LinkedIn
+   * published DMs — so this test no longer greps that branch. The gate is now
+   * a single allowlist applied above every transport.
+   *
+   * Behavioural coverage (zero provider calls per platform, unknown types
+   * refused, tokens not decrypted for a refused reply) lives in
+   * tests/security/inbox-dm-public-transport.test.ts. This test only pins the
+   * STRUCTURE: an allowlist, not a denylist, so a type nobody anticipated is
+   * refused by default rather than published by default.
    */
-  it('refuses to send a non-comment type down the public comments path', () => {
-    const branch = src.slice(
-      src.indexOf("platform === 'facebook'"),
-      src.indexOf("} else if (platform === 'twitter')")
-    )
-    expect(branch).toMatch(/type !== 'comment'/)
-    expect(branch).toMatch(/throw new Error/)
+  it('gates reply types with an allowlist, not a per-branch denylist', () => {
+    expect(src).toMatch(/PUBLIC_REPLYABLE_TYPES\s*=\s*new Set\(\[\s*'comment',\s*'mention'\s*\]\)/)
+    expect(src).toMatch(/if \(!PUBLIC_REPLYABLE_TYPES\.has\(type\)\) throw/)
+  })
+
+  it('applies the gate above the transports, not inside one branch', () => {
+    const fn = src.slice(src.indexOf('async function sendPlatformReply'))
+    const gateAt = fn.indexOf('assertPubliclyReplyable(type, platform)')
+    const firstBranchAt = fn.indexOf("if (platform === 'facebook'")
+    expect(gateAt).toBeGreaterThan(-1)
+    expect(gateAt).toBeLessThan(firstBranchAt)
+  })
+
+  it('refuses before a credential is decrypted, not after', () => {
+    const patch = src.slice(src.indexOf('export async function PATCH'))
+    expect(patch.indexOf('assertPubliclyReplyable')).toBeLessThan(patch.indexOf('decryptToken('))
   })
 
   it('names the Messages API as the correct path rather than failing silently', () => {

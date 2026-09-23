@@ -76,6 +76,17 @@ export async function PATCH(req: NextRequest) {
   if (status) updateData.status = status
 
   if (reply) {
+    // Refuse before the token is read or decrypted: a reply that can never be
+    // delivered publicly must not cause a credential to be handled at all.
+    try {
+      assertPubliclyReplyable(item.type as string, item.platform as string)
+    } catch (e) {
+      return NextResponse.json(
+        { error: 'Reply was not delivered', detail: e instanceof Error ? e.message : String(e) },
+        { status: 422 }
+      )
+    }
+
     // Fetch access token for this platform + profile
     const { data: token } = await supabase
       .from('oauth_tokens')
@@ -131,6 +142,35 @@ export async function PATCH(req: NextRequest) {
   return NextResponse.json({ success: true })
 }
 
+/**
+ * Every transport in sendPlatformReply() publishes PUBLICLY — a page comment,
+ * a tweet, a YouTube comment, a LinkedIn comment. None of them is a private
+ * channel, so only item types that are themselves public may be replied to
+ * through here.
+ *
+ * Meta alone used to check this, while the Twitter, YouTube and LinkedIn
+ * branches did not check `type` at all: a probe made one provider call each
+ * for type 'dm'. Rather than repeat the check in four more branches — where
+ * the fifth transport added later would miss it again — the gate is hoisted
+ * above all of them and made an ALLOWLIST, so an unknown or future type is
+ * refused by default instead of published by default.
+ */
+const PUBLIC_REPLYABLE_TYPES = new Set(['comment', 'mention'])
+
+export class UnreplyableTypeError extends Error {
+  constructor(type: string, platform: string) {
+    super(
+      `Cannot reply to a '${type}' on ${platform}: only comments and mentions have a public reply path. ` +
+        `DM replies require each platform's private Messages API, which is not implemented.`
+    )
+    this.name = 'UnreplyableTypeError'
+  }
+}
+
+export function assertPubliclyReplyable(type: string, platform: string): void {
+  if (!PUBLIC_REPLYABLE_TYPES.has(type)) throw new UnreplyableTypeError(type, platform)
+}
+
 async function sendPlatformReply({
   platform,
   type,
@@ -146,18 +186,11 @@ async function sendPlatformReply({
   accessToken: string
   pageId: string | null
 }) {
+  // Defence in depth. The caller gates before decrypting the token; this
+  // second check means no future caller can reach a transport without it.
+  assertPubliclyReplyable(type, platform)
+
   if (platform === 'facebook' || platform === 'instagram') {
-    // This endpoint posts a PUBLIC comment. `type` previously only chose the
-    // target id, so a 'dm' reply was published as a public comment on the page
-    // — a private-to-public disclosure (found by CX 2026-09-23). Latent today
-    // because the collector never writes type='dm', but it must fail loudly
-    // rather than publish the moment DM ingestion lands.
-    if (type !== 'comment' && type !== 'mention') {
-      throw new Error(
-        `Cannot reply to a '${type}' on ${platform}: only comments and mentions have a public reply path. ` +
-          `DM replies require the Messages API, which is not implemented.`
-      )
-    }
     const targetId = platformItemId
     const res = await fetch(`https://graph.facebook.com/v19.0/${targetId}/comments`, {
       method: 'POST',
