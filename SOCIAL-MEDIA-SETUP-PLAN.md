@@ -136,7 +136,13 @@ These are registered under brad@nustack.digital dev accounts.
 3. Add to Facebook Login Settings:
    - Redirect URI: `https://fanout.digital/api/oauth/facebook/callback`
 4. Add to Instagram:
-   - Redirect URI: `https://fanout.digital/api/oauth/facebook/callback` (same — shares with Instagram)
+   - Redirect URI: `https://fanout.digital/api/oauth/instagram/callback`
+   - NOT Facebook's callback. Each Meta platform needs its own path — the callback
+     handler derives `platform` from the route segment and matches oauth_state on
+     it, so a shared URL makes Instagram/Threads state lookups return 0 rows.
+   - Threads likewise: `https://fanout.digital/api/oauth/threads/callback`
+   - All three must be listed in the Meta app's Valid OAuth Redirect URIs
+     (strict mode is on — an unlisted URI is rejected by Meta before Fanout sees it).
 5. Request these permissions for App Review:
    - `pages_manage_posts` — post to Facebook Pages
    - `pages_show_list` — list user's pages
