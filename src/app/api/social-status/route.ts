@@ -1,12 +1,12 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getIntegrationAudit } from '@/lib/integration-status'
 import { getSupabase } from '@/lib/supabase'
-import { auth } from '@clerk/nextjs/server'
+import { isNuStackAdmin } from '@/lib/nustack-admin'
 
-export async function GET() {
-  const { orgId } = await auth()
-  if (!orgId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export async function GET(req: NextRequest) {
+  // Internal NuStack product presence — never tenant-visible.
+  if (!(await isNuStackAdmin(req.headers.get('x-admin-key')))) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
   const supabase = getSupabase()

@@ -106,7 +106,7 @@ export default function HomeClient() {
             <Link href="/blog" className="hover:text-black transition-colors">Blog</Link>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="hidden sm:flex text-gray-600" asChild>
+            <Button variant="ghost" size="sm" className="text-gray-600" asChild>
               <Link href="/sign-in">Sign in</Link>
             </Button>
             <Button size="sm" className="bg-black text-white hover:bg-gray-800 rounded-lg" asChild>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import { LayoutDashboard, Users, PenSquare, CalendarClock, BarChart3, Sparkles, Settings, Puzzle, Wand2, CreditCard, CalendarDays, MessageSquare, Link2, Rss, Zap, ClipboardCheck, Radio } from "lucide-react";
 
 const NAV = [
@@ -13,7 +14,6 @@ const NAV = [
   { href: "/dashboard/schedule", label: "Schedule", icon: CalendarClock },
   { href: "/dashboard/inbox", label: "Inbox", icon: MessageSquare },
   { href: "/dashboard/approvals", label: "Approvals", icon: ClipboardCheck },
-  { href: "/dashboard/social", label: "Social Agent", icon: Radio },
   { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/dashboard/ai", label: "AI Drafts", icon: Sparkles },
   { href: "/dashboard/biolink", label: "Link in Bio", icon: Link2 },
@@ -24,8 +24,19 @@ const NAV = [
   { href: "/dashboard/settings/developer-apps", label: "Developer Apps", icon: Puzzle },
 ];
 
+// Internal NuStack product presence. Shown only to @nustack.digital staff —
+// the API behind it (/api/social-status, /api/social-queue) 404s for everyone
+// else, so this only hides a link that would otherwise dead-end for tenants.
+const INTERNAL_NAV = [
+  { href: "/dashboard/social", label: "Social Agent", icon: Radio },
+];
+
 export function SidebarNav() {
   const pathname = usePathname();
+  const { user } = useUser();
+  const isStaff =
+    user?.primaryEmailAddress?.emailAddress?.endsWith("@nustack.digital") ?? false;
+  const items = isStaff ? [...NAV, ...INTERNAL_NAV] : NAV;
 
   return (
     <nav className="flex-1 p-3 space-y-0.5">

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabase } from '@/lib/supabase'
-import { auth } from '@clerk/nextjs/server'
+import { isNuStackAdmin } from '@/lib/nustack-admin'
 import { z } from 'zod'
 
 const FilterSchema = z.object({
@@ -11,8 +11,8 @@ const FilterSchema = z.object({
 })
 
 export async function GET(req: NextRequest) {
-  const { orgId } = await auth()
-  if (!orgId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  // Internal NuStack product queue — never tenant-visible.
+  if (!(await isNuStackAdmin(req.headers.get('x-admin-key')))) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const params = Object.fromEntries(req.nextUrl.searchParams)
   const parsed = FilterSchema.safeParse(params)
@@ -38,8 +38,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const { orgId } = await auth()
-  if (!orgId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  // Internal NuStack product queue — never tenant-visible.
+  if (!(await isNuStackAdmin(req.headers.get('x-admin-key')))) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const InsertSchema = z.object({
     product: z.string().min(1).max(100),

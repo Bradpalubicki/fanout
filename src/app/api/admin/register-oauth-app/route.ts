@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { auth, clerkClient } from '@clerk/nextjs/server'
+import { isNuStackAdmin } from '@/lib/nustack-admin'
 import { z } from 'zod'
 import { PLATFORM_AUTOMATION, type PlatformKey } from '@/lib/oauth-registration/automation-support'
 import { supabase } from '@/lib/supabase'
@@ -19,17 +19,9 @@ const RegisterSchema = z.object({
   clientSecret: z.string().optional(),
 })
 
-async function isNuStackAdmin(req: NextRequest): Promise<boolean> {
-  if (req.headers.get('x-admin-key') === process.env.FANOUT_ADMIN_KEY) return true
-  const { userId } = await auth()
-  if (!userId) return false
-  const clerk = await clerkClient()
-  const user = await clerk.users.getUser(userId)
-  return user.primaryEmailAddress?.emailAddress?.endsWith('@nustack.digital') ?? false
-}
 
 export async function POST(req: NextRequest) {
-  if (!(await isNuStackAdmin(req))) {
+  if (!(await isNuStackAdmin(req.headers.get('x-admin-key')))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
