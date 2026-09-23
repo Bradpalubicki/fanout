@@ -268,3 +268,48 @@ NOTE: these two also need their URIs in the Meta app list before use — see P0-
  - Notion session-start sync (steps 1-7) and CC COMPLETE / Open Items filings:
    still not run, now spanning 8 P0/P1 items and a schema migration.
  - P0-4 live Facebook post: cannot proceed until John accepts. Unchanged.
+
+
+## CX REVIEW PASS 2026-09-22 — 4 MORE DEFECTS, ALL PRE-EXISTING
+commit 7c44b2e. Review run read-only, effort=medium (banner verified).
+Claim submitted: "these 3 commits are correct and complete."
+
+### P0-9 INBOX SENT CIPHERTEXT AS A CREDENTIAL (reachable in John's pilot)
+oauth_tokens.access_token is stored ENCRYPTED (121-char PGP blob, verified:
+  select encrypt_token('EAAxxxFakePageToken123','k') -> 'ww0EBwMCAYyZxL3jX1h8...'
+Neither src/inngest/functions/collect-inbox.ts (8+ call sites) nor
+src/app/api/dashboard/inbox/route.ts imported decryptToken AT ALL. Both sent
+the raw column value to Meta/Twitter/YouTube as a bearer token or access_token
+query param. Every inbox poll and every reply was sending ciphertext.
+
+collectInbox IS registered and live (1 of the 15 functions), so this fires as
+soon as John connects his Page — not dormant code.
+
+Fix: decrypt once at the fetch site in collect-inbox (so all downstream uses
+get plaintext); decrypt at the call site in the reply route. Rows that fail to
+decrypt are SKIPPED rather than sent as a garbage credential.
+
+Swept all 4 readers of oauth_tokens.access_token: inbox, select-page,
+collect-analytics, collect-inbox. collect-analytics already decrypted. Class closed.
+
+### P0-10 SETUP UI TAUGHT THE BROKEN CALLBACK SHAPE  [found by CX, not CC]
+src/app/dashboard/settings/developer-apps/page.tsx:124,147 told users to
+register /api/oauth/facebook/callback for Instagram AND Threads — exactly the
+misconfiguration 28ce2cc fixed in oauth-config.ts. Code was fixed; the UI that
+instructs the human was not. scripts/test-enter-manual.mjs:48,51 had the same
+stale mapping. Both corrected.
+
+### P0-11 BLUESKY AGENT STORED THE WRONG SHAPE  [found by CX, not CC]
+src/agents/account-creation/platforms/bluesky.ts:145 encrypted a BARE app
+password. distributors/bluesky.ts:67 does JSON.parse(accessToken) expecting
+{ identifier, password }. Every agent-created Bluesky account would have failed
+at parse. Now stores JSON.stringify({identifier: handle, password: appPassword}).
+
+LESSON (the reason CX caught these and CC did not): my writer sweep in P0-8
+checked WHETHER each writer encrypted. It did not check WHAT SHAPE each writer
+encrypted. "All 6 writers encrypt" was true and still left a broken writer.
+Same column, same class, one level deeper. See memory/rule_one_reader_many_writers_must_agree.md.
+
+### NOT REVIEWABLE BY CX
+The Meta console redirect-URI allowlist (P0-7) is browser-only state, outside a
+read-only repo review. It stays verified solely by CC + Meta's own validator.
