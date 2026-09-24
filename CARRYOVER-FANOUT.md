@@ -1,14 +1,13 @@
 cd C:\Users\bradp\dev\fanout
 
-## STATE 2026-09-23 (late) — P0 SECURITY TRACK CLOSED. Six defects fixed, all live.
+## STATE 2026-09-23 (late) — SECURITY CLOSED + ISOLATION PROVEN ACROSS v1.
 
 Read "DO THIS FIRST", act, then the rest only if needed.
 
-## DO THIS FIRST — the security track is DONE. Next is a decision, not a build.
+## DO THIS FIRST — the isolation sweep is done. Pick a track below.
 
-All six known security defects are fixed, mutation-verified, pushed and live
-on fanout.digital. Tests went 205 -> 291. Nothing on the security track is
-open. Do NOT re-audit these; they are closed:
+Six security defects fixed and live. Tenant isolation is now PROVEN (not
+merely tested) on every v1 route that has a tenant boundary. Tests 205 -> 352.
 
   11a57ed  P0-1 fan-out token/post tuple binding
   de8b0bd  P0-2 DM replies refused on all five public transports
@@ -16,25 +15,67 @@ open. Do NOT re-audit these; they are closed:
   3be5875  Meta Page access tokens no longer returned to the browser
   a523777  biolink PATCH allowlist (was mass assignment)
   de7ab32  generate-content proxy vets the body before lending INTERNAL_API_KEY
+  2592e63  tests/helpers/predicate-db.ts + A/B/C probe for v1/history
+  ab62b30  A/B/C probe for v1/analytics/account
+  49c911f  A/B/C probe for v1/analytics/[postId]
+  af88ca7  A/B/C probe for v1/platforms + status + disconnect (oauth_tokens)
+  c55b360  A/B/C probe for v1/post + v1/schedule (the write boundary)
 
-**THE NEXT SESSION MUST PICK ONE.** Brad has not chosen between:
+**THE ISOLATION SWEEP IS COMPLETE.** All nine v1 routes accounted for:
 
-  (A) POLISH — the deferred product work. Reddit/threads/mastodon ignore
-      mediaUrls (same class as the twitter bug fixed in cf9621f). YouTube
-      posts text to /youtube/v3/posts instead of videos.insert. Image
-      generation + AI content enhancement, both asked for, neither started.
+  PROVEN by A/B/C probe (8): history, analytics/account, analytics/[postId],
+    platforms, platforms/status, platforms/[platform] DELETE, post, schedule
+  NOT PROBED, deliberately (1): profiles — an admin provisioning route with
+    NO per-profile tenant boundary. orgId comes from the body BY DESIGN
+    (documented in the route). Its 12 existing tests already cover the gate
+    that matters: fail-closed on unset FANOUT_ADMIN_KEY, constant-time
+    compare, prefix-attack rejection, hash non-disclosure. An A/B/C probe
+    would add nothing. Do NOT manufacture one.
 
-  (B) PROVE ISOLATION — see the test-suite limitation below. The 291 passing
-      tests still CANNOT prove A/B/C profile isolation, because the two v1
-      history/analytics tests return canned rows. This is the last thing
-      standing between "secure by inspection" and "secure by evidence".
+Next session, pick one:
 
-  (C) ORG-CREATION P0 — still UNVERIFIED. Nobody has watched a genuinely NEW
-      user sign up. This is a launch blocker and needs a real signup, not code.
+  (A)  POLISH — reddit/threads/mastodon ignore mediaUrls (same class as the
+       twitter bug fixed in cf9621f). YouTube posts text to /youtube/v3/posts
+       instead of videos.insert. Image generation + AI enhancement, both asked
+       for, neither started. RECOMMENDED — it is the only track left that
+       adds product.
 
-CC's recommendation: **(B) then (A)**. Isolation is the claim a client will
-actually rely on, and it is currently unproven rather than merely untested.
-Polish makes posts prettier; none of it is blocking.
+  (C)  ORG-CREATION P0 — still UNVERIFIED. Needs a real signup watched by a
+       human, not code. Launch blocker. Brad-only.
+
+  (D)  DASHBOARD ISOLATION — the harness now covers v1. The /api/dashboard
+       routes were NOT swept; they use Clerk org auth rather than API keys, so
+       they are a different boundary and a separate pass. Two dashboard
+       defects were already found by inspection this session (biolink PATCH,
+       generate-content proxy), which is weak evidence that more exist.
+
+CC's recommendation: **(A)**, then (D). Security and isolation are done; the
+product gap is now the binding constraint.
+
+## HOW THE ISOLATION HARNESS WORKS — read before extending it
+
+tests/helpers/predicate-db.ts. The OLD fixtures (tests/api/v1-history.test.ts,
+v1-account-analytics.test.ts) record the filters a handler builds and then
+return canned rows regardless. They prove a handler CALLED .eq('profile_id',…)
+but not that the call had any EFFECT. Measured: seeding a row owned by
+profile-B into the old history fixture left all 18 tests passing.
+
+createPredicateDb() APPLIES the filters. Seed three principals at once —
+A (caller), B (sibling profile, SAME org), C (foreign org) — and a leak shows
+up as another tenant's data in the response body.
+
+Two fixture traps, both hit and fixed while building this. Watch for them when
+you add a route:
+  1. **Seed rows need org_id.** Without it an org-scoped filter matches
+     NOTHING, so the org-scoped leak reads as a pass.
+  2. **Do not confound the discriminator with tenancy.** Each tenant must
+     share platform/date values with A. When each tenant had its own platform,
+     a handler filtering by platform excluded siblings COINCIDENTALLY and
+     looked correctly scoped — the old suite caught that mutation and the new
+     probe did not, until the seed was fixed.
+
+Mutation numbers are in each commit. New probe vs old suite, v1/history:
+posts filter deleted 6v2, org-scoped 5v2, wrong value 4v2, sync-state only 3v1.
 
 ## WHAT WAS FIXED THIS SESSION — detail
 
@@ -58,11 +99,11 @@ three times:
 set in ALL THREE environments (Production, Preview, Development — 177d ago).
 The fail-open was latent everywhere, never exposed. Do not re-investigate.
 
-## TEST-SUITE LIMITATION — unchanged, and now the main gap
-tests/api/v1-history.test.ts and v1-account-analytics.test.ts record filters
-but return canned rows. The 291 passing tests CANNOT prove A/B/C profile
-isolation. A real resolver with predicate-enforcing fixtures is required
-before claiming isolation works. This is option (B) above.
+## TEST-SUITE LIMITATION — RESOLVED for v1
+The old canned-row fixtures still exist and still pass; they are kept because
+they cover query-shape details (ordering, keyset pagination, limit probing)
+that the isolation probes do not. They are no longer the only evidence for
+any v1 route. The /api/dashboard routes remain unswept — that is option (D).
 
 ## WHAT IS PROVEN (against real providers)
 - Facebook: OAuth -> Page -> Compose -> Inngest fan-out -> Graph API -> real
@@ -104,11 +145,12 @@ build, not a paste.
   Resend reported the downstream forward failure as a bounce).
 
 ## TESTS
-291 passing, 21 files. `npm test`. Every security fix this session is
+352 passing, 26 files. `npm test`. Every security fix this session is
 mutation-verified: the guard was broken, the tests were confirmed to fail, the
 guard was restored. Counts are in each commit message.
 
 ## KEY FILES
+  tests/helpers/predicate-db.ts                 <- the isolation harness
   src/lib/cron-auth.ts                          <- shared fail-closed bearer check
   src/lib/fan-out.ts                            <- assertTupleMatches()
   docs/audits/FANOUT-AYRSHARE-PARITY-PLAN.md    <- the plan + NATIVE decision
