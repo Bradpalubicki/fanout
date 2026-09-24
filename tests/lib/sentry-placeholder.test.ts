@@ -36,24 +36,41 @@ describe('sentry enables only on a DSN Sentry can parse', () => {
   }
 })
 
+// THE MIRROR TRAP: this file previously re-declared isUsableDsn by hand. The
+// copy was correct while the SHIPPED config had /^d+$/ — a lost backslash that
+// inverts the check (valid "456" false, invalid "d" true). Every test passed
+// against the copy and proved nothing about the deployed code.
+//
+// The validator is therefore EXTRACTED from the real config source and
+// evaluated, so these assertions can only pass if the shipped file is correct.
 // client/server/edge cannot share a module import in every Next build target,
-// so the validator is duplicated per config. Its BEHAVIOUR is therefore
-// exercised directly here rather than inferred from source inspection.
-function isUsableDsn(dsn: string | undefined): boolean {
-  if (!dsn) return false
-  if (dsn !== dsn.trim()) return false
-  try {
-    const u = new URL(dsn)
-    if (u.protocol !== 'http:' && u.protocol !== 'https:') return false
-    if (!u.username) return false
-    const projectId = u.pathname.split('/').filter(Boolean).pop()
-    return !!projectId && /^\d+$/.test(projectId)
-  } catch {
-    return false
+// so each copy is extracted and checked independently.
+function loadValidator(configFile: string): (dsn: string | undefined) => boolean {
+  const src = fs.readFileSync(path.join(process.cwd(), configFile), 'utf-8')
+  const start = src.indexOf('function isUsableDsn')
+  if (start < 0) throw new Error('isUsableDsn not found in ' + configFile)
+  // Walk braces to the end of the function body.
+  const bodyStart = src.indexOf('{', start)
+  let depth = 0
+  let end = -1
+  for (let i = bodyStart; i < src.length; i++) {
+    const c = src[i]
+    if (c === '{') depth++
+    else if (c === '}') { depth--; if (depth === 0) { end = i + 1; break } }
   }
+  if (end < 0) throw new Error('unbalanced isUsableDsn in ' + configFile)
+  // Strip the TS annotations so the body can be evaluated as plain JS. Only
+  // the signature carries them; the logic under test is untouched.
+  const fnSrc = src
+    .slice(start, end)
+    .replace('function isUsableDsn(dsn: string | undefined): boolean', 'function isUsableDsn(dsn)')
+  // eslint-disable-next-line @typescript-eslint/no-implied-eval
+  return new Function(`${fnSrc}; return isUsableDsn;`)() as (d: string | undefined) => boolean
 }
 
-describe('isUsableDsn behaviour', () => {
+describe.each(CONFIGS)('isUsableDsn behaviour (%s)', (configFile) => {
+  const isUsableDsn = loadValidator(configFile)
+
   it('rejects the production placeholder and its variants', () => {
     for (const bad of ['placeholder', 'Placeholder', ' PLACEHOLDER ', '', '   ', undefined]) {
       expect(isUsableDsn(bad as string | undefined), String(bad)).toBe(false)

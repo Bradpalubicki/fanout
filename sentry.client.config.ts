@@ -33,7 +33,7 @@ function isUsableDsn(dsn: string | undefined): boolean {
     if (u.protocol !== 'http:' && u.protocol !== 'https:') return false
     if (!u.username) return false
     const projectId = u.pathname.split('/').filter(Boolean).pop()
-    return !!projectId && /^d+$/.test(projectId)
+    return !!projectId && /^\d+$/.test(projectId)
   } catch {
     return false
   }
