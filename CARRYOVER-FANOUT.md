@@ -1,163 +1,114 @@
 cd C:\Users\bradp\dev\fanout
 
-## STATE 2026-09-23 (late) — SECURITY CLOSED + ISOLATION PROVEN ACROSS v1.
+Open src/distributors/reddit.ts and make it upload media. Then threads.ts, then
+mastodon.ts, then youtube.ts. Work in that order, one file per pass, commit
+between each.
 
-Read "DO THIS FIRST", act, then the rest only if needed.
+## THE TASK
 
-## DO THIS FIRST — the isolation sweep is done. Pick a track below.
+Four distributors are silently dropping what the user gave them. Each `post()`
+receives `payload.mediaUrls` and never reads it — the post succeeds, the user
+sees "posted", and the image is gone. Same defect already fixed on Twitter in
+cf9621f; read that commit first, it is the template.
 
-Six security defects fixed and live. Tenant isolation is now PROVEN (not
-merely tested) on every v1 route that has a tenant boundary. Tests 205 -> 352.
+**Pass 1 — reddit.ts.** Reddit needs a separate submit path for images
+(`kind: 'image'` with a lease-uploaded asset, not `kind: 'self'`). If a media
+post cannot be made to work, FAIL LOUDLY rather than posting text and
+discarding the image.
 
-  11a57ed  P0-1 fan-out token/post tuple binding
-  de8b0bd  P0-2 DM replies refused on all five public transports
-  095acad  P0-3 cron auth fails closed (5 cron routes + generate-social-content)
+**Pass 2 — threads.ts.** Threads is a two-step publish: create a media
+container (`POST /{user}/threads` with `media_type=IMAGE` + `image_url`), then
+publish it (`POST /{user}/threads_publish`). Text-only posts keep the current
+single-step path.
+
+**Pass 3 — mastodon.ts.** Simplest of the four: `POST /api/v2/media` to get
+attachment ids, then pass `media_ids[]` on the status. Do this one if short on
+time.
+
+**Pass 4 — youtube.ts.** DIFFERENT DEFECT, bigger. It posts text to
+`/youtube/v3/posts`, which is not how video gets to YouTube. It needs
+`videos.insert` with a resumable upload. This is a real build, not a media
+flag — if it does not fit the session, STOP after pass 3 and say so.
+
+DONE WHEN, each pass: a test asserts the provider call carries the media, and
+deleting the media handling makes that test fail. `npx tsc --noEmit` clean,
+committed, pushed, Vercel READY.
+
+## HOW TO VERIFY — non-negotiable, this repo has been burned by both
+
+1. **Mutation-check every test you write.** Break the thing under test, run the
+   test, confirm it FAILS, restore. A test that passes on broken code is worse
+   than no test. Three times last session my own tests did not discriminate the
+   mutation they existed to catch — green means nothing until you have seen it
+   go red.
+2. **Never parse Vercel CLI output.** Use `mcp__claude_ai_Vercel__get_deployment`
+   and read `state` + `meta.githubCommitSha`. Two silent-failure incidents last
+   session came from grepping `vercel inspect`; also note `cmd | tail` reports
+   TAIL's exit code, not the command's.
+3. After every push: `git ls-remote origin main | grep $(git rev-parse HEAD)`.
+
+## DO NOT DO THESE
+
+- Do not re-audit the six security fixes or the eight isolation probes. Closed,
+  live, mutation-verified. Listed at the bottom.
+- Do not write an A/B/C probe for v1/profiles. Admin provisioning route, orgId
+  comes from the body BY DESIGN, no per-profile boundary, 12 existing tests
+  already cover the real gate. Manufacturing one is coverage theater.
+- Do not chase `npm run build` failing locally. There is no .env.local in this
+  repo; it dies on a missing Clerk key at prerender. Vercel builds fine.
+- Do not re-investigate CRON_SECRET. Set in all three environments, verified.
+
+## IF YOU FINISH THE MEDIA WORK
+
+Next, in order:
+  1. IMAGE GENERATION + AI CONTENT ENHANCEMENT — Brad asked for both, neither
+     started. Scope it before building; it is not a small feature.
+  2. DASHBOARD ISOLATION — tests/helpers/predicate-db.ts now covers v1, but
+     /api/dashboard uses Clerk org auth instead of API keys, so it is a
+     different boundary the harness does not reach. Two dashboard defects were
+     found by inspection last session (biolink PATCH mass assignment,
+     generate-content proxy), which is weak evidence more exist.
+
+## NEEDS BRAD — cannot be closed by code
+
+- **ORG-CREATION P0 UNVERIFIED.** Nobody has watched a genuinely NEW user sign
+  up. Launch blocker, needs a human doing a real signup.
+- fanout.digital is NOT in Resend and RESEND_API_KEY is "placeholder", so
+  noreply@/onboarding@fanout.digital silently fail. No transactional email.
+- john@fanout.digital still forwards to a personal Gmail. Repoint to John's
+  NuStack mailbox — that external hop is what made Gmail reject forwarded mail.
+- Frontend redesign (John): only evidence is an 8.5s phone video of a monitor
+  showing a new logo. NOT ACTIONABLE. Need the HTML, a URL, a Figma file, or
+  full-page screenshots at desktop + mobile widths.
+
+## STATE — read only if the above is not enough
+
+Tests: 352 passing, 26 files. `npm test`.
+Stack: Next.js 16 App Router, Supabase, Clerk, Inngest, Vercel.
+Proven live against real providers: Facebook and Bluesky both published, and
+TRUE FAN-OUT (one post to both simultaneously) succeeded.
+
+Security track, all fixed + live + mutation-verified:
+  11a57ed  fan-out (post,profile,platform) tuple bound before token selection
+  de8b0bd  DM replies refused on all 5 public transports (allowlist, not denylist)
+  095acad  cron auth fails closed — 5 cron routes + generate-social-content
   3be5875  Meta Page access tokens no longer returned to the browser
-  a523777  biolink PATCH allowlist (was mass assignment)
-  de7ab32  generate-content proxy vets the body before lending INTERNAL_API_KEY
-  2592e63  tests/helpers/predicate-db.ts + A/B/C probe for v1/history
-  ab62b30  A/B/C probe for v1/analytics/account
-  49c911f  A/B/C probe for v1/analytics/[postId]
-  af88ca7  A/B/C probe for v1/platforms + status + disconnect (oauth_tokens)
-  c55b360  A/B/C probe for v1/post + v1/schedule (the write boundary)
+  a523777  biolink PATCH allowlist (was mass assignment via ...rest)
+  de7ab32  generate-content proxy vets body before lending INTERNAL_API_KEY
 
-**THE ISOLATION SWEEP IS COMPLETE.** All nine v1 routes accounted for:
+Isolation track, 8 of 9 v1 routes proven by A/B/C probe:
+  2592e63  tests/helpers/predicate-db.ts + v1/history
+  ab62b30  v1/analytics/account
+  49c911f  v1/analytics/[postId]
+  af88ca7  v1/platforms + status + disconnect (oauth_tokens, read AND delete)
+  c55b360  v1/post + v1/schedule (write boundary)
 
-  PROVEN by A/B/C probe (8): history, analytics/account, analytics/[postId],
-    platforms, platforms/status, platforms/[platform] DELETE, post, schedule
-  NOT PROBED, deliberately (1): profiles — an admin provisioning route with
-    NO per-profile tenant boundary. orgId comes from the body BY DESIGN
-    (documented in the route). Its 12 existing tests already cover the gate
-    that matters: fail-closed on unset FANOUT_ADMIN_KEY, constant-time
-    compare, prefix-attack rejection, hash non-disclosure. An A/B/C probe
-    would add nothing. Do NOT manufacture one.
+Extending the harness? Two traps, both hit for real:
+  - Seed rows need org_id, or an org-scoped filter matches NOTHING and the
+    org-scoped leak reads as a pass.
+  - Do not confound the discriminator with tenancy. Every principal must share
+    platform/date values, or a handler filtering by platform excludes siblings
+    coincidentally and looks correctly scoped.
 
-Next session, pick one:
-
-  (A)  POLISH — reddit/threads/mastodon ignore mediaUrls (same class as the
-       twitter bug fixed in cf9621f). YouTube posts text to /youtube/v3/posts
-       instead of videos.insert. Image generation + AI enhancement, both asked
-       for, neither started. RECOMMENDED — it is the only track left that
-       adds product.
-
-  (C)  ORG-CREATION P0 — still UNVERIFIED. Needs a real signup watched by a
-       human, not code. Launch blocker. Brad-only.
-
-  (D)  DASHBOARD ISOLATION — the harness now covers v1. The /api/dashboard
-       routes were NOT swept; they use Clerk org auth rather than API keys, so
-       they are a different boundary and a separate pass. Two dashboard
-       defects were already found by inspection this session (biolink PATCH,
-       generate-content proxy), which is weak evidence that more exist.
-
-CC's recommendation: **(A)**, then (D). Security and isolation are done; the
-product gap is now the binding constraint.
-
-## HOW THE ISOLATION HARNESS WORKS — read before extending it
-
-tests/helpers/predicate-db.ts. The OLD fixtures (tests/api/v1-history.test.ts,
-v1-account-analytics.test.ts) record the filters a handler builds and then
-return canned rows regardless. They prove a handler CALLED .eq('profile_id',…)
-but not that the call had any EFFECT. Measured: seeding a row owned by
-profile-B into the old history fixture left all 18 tests passing.
-
-createPredicateDb() APPLIES the filters. Seed three principals at once —
-A (caller), B (sibling profile, SAME org), C (foreign org) — and a leak shows
-up as another tenant's data in the response body.
-
-Two fixture traps, both hit and fixed while building this. Watch for them when
-you add a route:
-  1. **Seed rows need org_id.** Without it an org-scoped filter matches
-     NOTHING, so the org-scoped leak reads as a pass.
-  2. **Do not confound the discriminator with tenancy.** Each tenant must
-     share platform/date values with A. When each tenant had its own platform,
-     a handler filtering by platform excluded siblings COINCIDENTALLY and
-     looked correctly scoped — the old suite caught that mutation and the new
-     probe did not, until the seed was fixed.
-
-Mutation numbers are in each commit. New probe vs old suite, v1/history:
-posts filter deleted 6v2, org-scoped 5v2, wrong value 4v2, sync-state only 3v1.
-
-## WHAT WAS FIXED THIS SESSION — detail
-
-Each fix closed the CLASS, not the reported path. That distinction mattered
-three times:
-
-1. **P0-3 was wider than reported.** The carryover named process-queue. The
-   same fail-open line was copy-pasted across FIVE cron routes plus
-   generate-social-content. Fixed once in src/lib/cron-auth.ts, with a
-   tree-scan test asserting no source file outside it contains the idiom.
-
-2. **P0-2 was inverted, not patched.** Adding the type check to the four
-   unguarded branches would leave the same hole for the fifth transport. The
-   gate is now an ALLOWLIST above all transports: unknown types are refused
-   by default.
-
-3. **P0-1 lives in fanOut(), not its callers**, so scheduled jobs are
-   rechecked after sleepUntil and retries on every replay.
-
-**CRON_SECRET correction:** an earlier note said it was Production-only. It is
-set in ALL THREE environments (Production, Preview, Development — 177d ago).
-The fail-open was latent everywhere, never exposed. Do not re-investigate.
-
-## TEST-SUITE LIMITATION — RESOLVED for v1
-The old canned-row fixtures still exist and still pass; they are kept because
-they cover query-shape details (ordering, keyset pagination, limit probing)
-that the isolation probes do not. They are no longer the only evidence for
-any v1 route. The /api/dashboard routes remain unswept — that is option (D).
-
-## WHAT IS PROVEN (against real providers)
-- Facebook: OAuth -> Page -> Compose -> Inngest fan-out -> Graph API -> real
-  published post. 3 posts, 0 failures.
-- Bluesky: same pipeline, different auth model (app password, not OAuth).
-- TRUE FAN-OUT: one post to Facebook AND Bluesky simultaneously, both
-  succeeded. That is the Ayrshare value proposition, working.
-
-## STILL OPEN (product, none security)
-- YOUTUBE posts text to /youtube/v3/posts instead of videos.insert.
-  REDDIT, THREADS, MASTODON still ignore mediaUrls.
-- IMAGE GENERATION + AI CONTENT ENHANCEMENT — Brad asked for both, not started.
-- ORG-CREATION P0 STILL UNVERIFIED (option C above).
-- fanout.digital is NOT in Resend and RESEND_API_KEY is "placeholder" —
-  noreply@/onboarding@fanout.digital would silently fail. No transactional
-  email yet.
-- Vercel team split deferred (20+ projects incl. client work in one team).
-- 3 Clerk orgs across 5 profiles — org sprawl will confuse a real client.
-- `npm run build` fails LOCALLY on missing Clerk publishableKey. There is no
-  .env.local in this repo. Pre-existing and environmental — Vercel builds
-  fine. Do not chase it.
-
-## FRONTEND REDESIGN (John, not started in-repo)
-John is redesigning the Fanout frontend. Evidence so far is ONE 8.5s phone
-video of a monitor (OneDrive/CLAUDE BUILT APPS.../Fanout.Digital/IMG_5774.mov)
-showing only a NEW LOGO: green fan/arrow mark on a dark rounded tile, lowercase
-wordmark. The mark would make a far better square profile picture than the
-current 120x32 wordmark.
-NOT ACTIONABLE AS-IS. To build it, need one of: the HTML he is working in
-(local on his machine, C:/Users/fr...), a deployed URL, a Figma file, or
-full-page screenshots at desktop + mobile widths.
-Frontend lives in src/app/ (Next.js + shadcn). A redesign there is a real
-build, not a paste.
-
-## OPEN — NOT CODE
-- john@fanout.digital still forwards to a personal Gmail. Repoint it to
-  John's new NuStack mailbox — that removes the external hop that was causing
-  Gmail to reject forwarded mail (Microsoft was accepting it all along;
-  Resend reported the downstream forward failure as a bounce).
-
-## TESTS
-352 passing, 26 files. `npm test`. Every security fix this session is
-mutation-verified: the guard was broken, the tests were confirmed to fail, the
-guard was restored. Counts are in each commit message.
-
-## KEY FILES
-  tests/helpers/predicate-db.ts                 <- the isolation harness
-  src/lib/cron-auth.ts                          <- shared fail-closed bearer check
-  src/lib/fan-out.ts                            <- assertTupleMatches()
-  docs/audits/FANOUT-AYRSHARE-PARITY-PLAN.md    <- the plan + NATIVE decision
-  docs/audits/FANOUT-CORRECTION-EXPOSURE-*.md   <- the audit these six came from
-  scripts/check-inngest-health.mjs              <- npm run health:inngest
-
-## NOTION
-CC COMPLETE: 3e4663704e4081c1806dc470c7fd0c4d
-Parity plan: 3e4663704e4081b5bf97f6e3ece3a240
+Notion: CC COMPLETE 3e4663704e4081c1806dc470c7fd0c4d
 CLAW_GATE_2_STATUS: PENDING — CFC is the sole VERIFIED_DONE authority.
