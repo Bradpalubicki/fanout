@@ -162,7 +162,21 @@ export function createPredicateDb(initial: Record<string, Row[]> = {}): Predicat
       }
       return onResolve(resolve())
     }
+    /**
+     * `.insert(row).select().single()` must return the INSERTED row, not a
+     * filtered read: at that point the row is the result, and re-reading would
+     * apply predicates that were never meant for it. Real PostgREST returns
+     * the representation of what it just wrote; so does this.
+     */
     chain.single = async () => {
+      if (inserted.length) {
+        tables[table] = [...(tables[table] ?? []), ...inserted]
+        // Give the row an id the way the database would, so a handler that
+        // passes postRecord.id downstream gets something usable.
+        const row = { id: `row-${(tables[table] ?? []).length}`, ...inserted[0] }
+        tables[table] = (tables[table] ?? []).map((r) => (r === inserted[0] ? row : r))
+        return { data: row, error: null }
+      }
       const { data } = resolve()
       return { data: data[0] ?? null, error: data.length ? null : { message: 'No rows' } }
     }
