@@ -10,16 +10,30 @@ import { supabase } from './supabase'
  * nothing and the retry cron has nothing to find, which is the same class of
  * invisible failure this file already fixed once for the missing-token path.
  */
-async function writePostResult(
+export async function writePostResult(
   row: Record<string, unknown> | Record<string, unknown>[]
 ): Promise<void> {
-  const { error } = await supabase
-    .from('post_results')
-    .upsert(row as never, { onConflict: 'post_id,platform' })
-  if (error) {
+  // Two distinct failure modes, and only one of them is a returned error:
+  // supabase-js resolves with { error } for a database rejection, but the call
+  // itself can REJECT on a transport fault (network, abort, JSON parse). An
+  // unhandled rejection here escapes into the delivery path and can fail the
+  // publish over a bookkeeping problem — the opposite of what this helper is
+  // for. Both are caught and logged; neither throws.
+  try {
+    const { error } = await supabase
+      .from('post_results')
+      .upsert(row as never, { onConflict: 'post_id,platform' })
+    if (error) {
+      console.error(
+        '[fan-out] post_results write FAILED — delivery record lost:',
+        error.message,
+        JSON.stringify(row)
+      )
+    }
+  } catch (err) {
     console.error(
-      '[fan-out] post_results write FAILED — delivery record lost:',
-      error.message,
+      '[fan-out] post_results write THREW — delivery record lost:',
+      err instanceof Error ? err.message : String(err),
       JSON.stringify(row)
     )
   }

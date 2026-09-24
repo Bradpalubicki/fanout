@@ -12,13 +12,28 @@ Sentry.init({
   enabled: isUsableDsn(process.env.NEXT_PUBLIC_SENTRY_DSN),
 })
 
-/** True only for a syntactically usable Sentry DSN (absolute http/https URL). */
+/**
+ * True only for a DSN Sentry itself can parse.
+ *
+ * A protocol-only check was not enough: https://example.com passed it but has
+ * no public key and no project id, so Sentry's own parser rejects it and
+ * reporting silently does not work — the same invisible failure as the
+ * placeholder. A Sentry DSN is
+ *   <protocol>://<publicKey>@<host>[:port]/<path...>/<projectId>
+ * so the key and a numeric-ish project id are both required.
+ */
 function isUsableDsn(dsn: string | undefined): boolean {
-  const v = dsn?.trim()
-  if (!v) return false
+  if (!dsn) return false
+  // Compared AND passed untrimmed: validating a trimmed copy while handing the
+  // padded original to Sentry.init means the check answers a question about a
+  // different string than the one that is actually used.
+  if (dsn !== dsn.trim()) return false
   try {
-    const u = new URL(v)
-    return u.protocol === 'http:' || u.protocol === 'https:'
+    const u = new URL(dsn)
+    if (u.protocol !== 'http:' && u.protocol !== 'https:') return false
+    if (!u.username) return false
+    const projectId = u.pathname.split('/').filter(Boolean).pop()
+    return !!projectId && /^d+$/.test(projectId)
   } catch {
     return false
   }
