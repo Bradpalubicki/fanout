@@ -52,6 +52,7 @@ export function createPredicateDb(initial: Record<string, Row[]> = {}): Predicat
     // of chaining cannot change the result — matching PostgREST.
     const eqs: [string, unknown][] = []
     const lts: [string, unknown][] = []
+    const gtes: [string, unknown][] = []
     const ins: [string, unknown[]][] = []
     let orderBy: { column: string; ascending: boolean } | null = null
     let rowLimit: number | null = null
@@ -79,6 +80,12 @@ export function createPredicateDb(initial: Record<string, Row[]> = {}): Predicat
       return self()
     })
 
+    chain.gte = vi.fn((col: string, val: unknown) => {
+      filters.gte = [col, val]
+      gtes.push([col, val])
+      return self()
+    })
+
     chain.order = vi.fn((col: string, opts?: { ascending?: boolean; nullsFirst?: boolean }) => {
       filters.order = [col, opts]
       orderBy = { column: col, ascending: opts?.ascending ?? true }
@@ -98,6 +105,9 @@ export function createPredicateDb(initial: Record<string, Row[]> = {}): Predicat
       for (const [col, vals] of ins) rows = rows.filter((r) => vals.includes(r[col]))
       for (const [col, val] of lts) {
         rows = rows.filter((r) => r[col] != null && String(r[col]) < String(val))
+      }
+      for (const [col, val] of gtes) {
+        rows = rows.filter((r) => r[col] != null && String(r[col]) >= String(val))
       }
 
       if (orderBy) {
