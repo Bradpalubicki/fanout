@@ -36,6 +36,8 @@ export interface PredicateDb {
   calls: QueryRecord[]
   /** Replace the rows for one table. */
   seed(table: string, rows: Row[]): void
+  /** Current rows in a table — use after a write to assert what survived. */
+  rows(table: string): Row[]
   /** The mock passed to vi.mock('@/lib/supabase'). */
   supabase: { from(table: string): unknown }
 }
@@ -56,6 +58,8 @@ export function createPredicateDb(initial: Record<string, Row[]> = {}): Predicat
     const ins: [string, unknown[]][] = []
     let orderBy: { column: string; ascending: boolean } | null = null
     let rowLimit: number | null = null
+    let isDelete = false
+    const inserted: Row[] = []
 
     const chain: Record<string, unknown> = {}
     const self = () => chain
@@ -128,8 +132,36 @@ export function createPredicateDb(initial: Record<string, Row[]> = {}): Predicat
       return { data: rows, error: null }
     }
 
+    /**
+     * A write boundary, not just a read one. An unscoped .delete() destroys
+     * another tenant's rows rather than merely disclosing them, so the fake
+     * actually removes matching rows from the seeded table: a test can assert
+     * on what SURVIVED, which is the only way to catch a delete whose filter
+     * is missing or bound to the wrong value.
+     */
+    chain.delete = vi.fn(() => {
+      isDelete = true
+      return self()
+    })
+
+    chain.insert = vi.fn((v: Row | Row[]) => {
+      inserted.push(...(Array.isArray(v) ? v : [v]))
+      return self()
+    })
+
     // Terminal await (no .single()).
-    chain.then = (onResolve: (v: unknown) => unknown) => onResolve(resolve())
+    chain.then = (onResolve: (v: unknown) => unknown) => {
+      if (isDelete) {
+        const doomed = new Set(resolve().data)
+        tables[table] = (tables[table] ?? []).filter((r) => !doomed.has(r))
+        return onResolve({ data: null, error: null })
+      }
+      if (inserted.length) {
+        tables[table] = [...(tables[table] ?? []), ...inserted]
+        return onResolve({ data: inserted, error: null })
+      }
+      return onResolve(resolve())
+    }
     chain.single = async () => {
       const { data } = resolve()
       return { data: data[0] ?? null, error: data.length ? null : { message: 'No rows' } }
@@ -146,6 +178,9 @@ export function createPredicateDb(initial: Record<string, Row[]> = {}): Predicat
     calls,
     seed(table: string, rows: Row[]) {
       tables[table] = rows
+    },
+    rows(table: string) {
+      return tables[table] ?? []
     },
     supabase: { from },
   }
