@@ -126,6 +126,18 @@ const TOOLS: Anthropic.Tool[] = [
   },
 ]
 
+// The tool definitions plus SYSTEM are identical on every turn of the agentic
+// loop and across requests, so they are cached as a shared prefix. The marker
+// goes on the last tool because tools are ordered before `system` in the
+// prefix: marking `system` instead would leave the tools uncached, and SYSTEM
+// alone measures 398 tokens — under the 1024-token minimum for this model, so
+// it would silently not cache at all. Measured prefix: 1903 tokens.
+const CACHED_TOOLS: Anthropic.Tool[] = TOOLS.map((tool, i) =>
+  i === TOOLS.length - 1
+    ? { ...tool, cache_control: { type: 'ephemeral' as const } }
+    : tool
+)
+
 // ---------------------------------------------------------------------------
 // Tool handlers
 // ---------------------------------------------------------------------------
@@ -433,7 +445,7 @@ export async function POST(req: NextRequest) {
       model: 'claude-sonnet-4-6',
       max_tokens: 4096,
       system: SYSTEM,
-      tools: TOOLS,
+      tools: CACHED_TOOLS,
       messages: anthropicMessages,
     })
 
