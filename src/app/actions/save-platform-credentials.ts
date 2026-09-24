@@ -1,6 +1,7 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
+import { isNuStackAdmin } from "@/lib/nustack-admin";
+import { WRITABLE_CREDENTIAL_ENV_KEYS } from "@/lib/integration-status";
 
 const VERCEL_TOKEN = process.env.VERCEL_TOKEN;
 const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID;
@@ -57,8 +58,25 @@ export async function savePlatformCredentials(
   platform: string,
   credentials: Record<string, string>
 ): Promise<SaveResult> {
-  const { userId } = await auth();
-  if (!userId) return { success: false, error: "Unauthorized" };
+  // This writes Vercel PRODUCTION environment variables. A signed-in session is
+  // not sufficient authority for that: before this check any authenticated user
+  // could set any env var to any value on production and preview. Staff only.
+  if (!(await isNuStackAdmin(null))) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  // Only names this app actually owns may be written. Without this, the
+  // credentials object is an arbitrary key/value channel into deploy config —
+  // the caller chooses the NAME, not just the value.
+  const rejected = Object.keys(credentials).filter(
+    (k) => !WRITABLE_CREDENTIAL_ENV_KEYS.has(k)
+  );
+  if (rejected.length > 0) {
+    return {
+      success: false,
+      error: `Not a writable credential key: ${rejected.join(", ")}`,
+    };
+  }
 
   if (!VERCEL_TOKEN || !VERCEL_PROJECT_ID) {
     return {

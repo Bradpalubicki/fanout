@@ -87,6 +87,18 @@ function hasEnvVars(keys: string[]): boolean {
 }
 
 /**
+ * Every env var name the developer-apps UI is allowed to write.
+ *
+ * Derived from PLATFORMS above so the two cannot drift: adding a platform there
+ * extends this set automatically. savePlatformCredentials writes into Vercel
+ * production config, so an unlisted key must be refused rather than forwarded —
+ * see the allowlist check in src/app/actions/save-platform-credentials.ts.
+ */
+export const WRITABLE_CREDENTIAL_ENV_KEYS: ReadonlySet<string> = new Set(
+  PLATFORMS.flatMap((p) => p.envKeys)
+)
+
+/**
  * Reads observed state from the database. This is the whole point of the file:
  * status is derived from what happened, never from configuration.
  */

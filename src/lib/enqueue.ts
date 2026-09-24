@@ -39,7 +39,8 @@ export async function enqueuePostEvent(
             platform,
             status: 'failed',
             error_message: reason,
-          }))
+          })),
+          { onConflict: 'post_id,platform' }
         )
       }
     } catch {

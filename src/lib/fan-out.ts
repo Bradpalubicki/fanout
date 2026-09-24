@@ -149,6 +149,8 @@ export async function fanOut(
           platform,
           status: 'failed',
           error_message: error,
+        }, {
+          onConflict: 'post_id,platform',
         })
         return { platform, success: false, error }
       }
@@ -161,6 +163,8 @@ export async function fanOut(
           platform,
           status: 'failed',
           error_message: error,
+        }, {
+          onConflict: 'post_id,platform',
         })
         return { platform, success: false, error }
       }
@@ -186,6 +190,8 @@ export async function fanOut(
           platform_post_url: result.platformPostUrl,
           error_message: result.error,
           posted_at: result.success ? new Date().toISOString() : null,
+        }, {
+          onConflict: 'post_id,platform',
         })
 
         // Audit log
@@ -205,7 +211,9 @@ export async function fanOut(
             platform,
             status: 'failed',
             error_message: err.message,
-          })
+          }, {
+          onConflict: 'post_id,platform',
+        })
           return {
             platform,
             success: false,
@@ -220,6 +228,8 @@ export async function fanOut(
           platform,
           status: 'failed',
           error_message: error,
+        }, {
+          onConflict: 'post_id,platform',
         })
         return { platform, success: false, error }
       }
@@ -244,7 +254,8 @@ export async function fanOut(
         platform: x.platform,
         status: 'failed',
         error_message: String((x.r as PromiseRejectedResult).reason),
-      }))
+      })),
+      { onConflict: 'post_id,platform' }
     )
   }
 

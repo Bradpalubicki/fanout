@@ -35,7 +35,15 @@ export const retryFailedPosts = inngest.createFunction(
     // Increment attempt counter
     const resultIds = failedPosts.map((r) => r.post_id)
     await step.run('increment-attempts', async () => {
-      await supabase.rpc('increment_post_attempts', { post_ids: resultIds })
+      // Checked, not swallowed: this RPC had no definition at all until
+      // migration 020, and the unchecked await hid that for every retry cycle —
+      // attempts stayed 0, so the .lt('attempts', 3) cap above never engaged and
+      // a permanently failing post retried forever. Throwing surfaces a missing
+      // or broken function instead of silently disabling the retry limit.
+      const { error } = await supabase.rpc('increment_post_attempts', {
+        post_ids: resultIds,
+      })
+      if (error) throw new Error(`increment_post_attempts failed: ${error.message}`)
     })
 
     return { retried: failedPosts.length }
