@@ -1,5 +1,29 @@
 import { NonRetriableError } from 'inngest'
 import { supabase } from './supabase'
+
+/**
+ * Write a post_results row, surfacing a failed write instead of discarding it.
+ *
+ * These upserts are bookkeeping inside the delivery path, so they must NOT throw:
+ * a thrown bookkeeping error would mask the real publish outcome. But a silently
+ * dropped write is how a published post ends up with no result row — the UI shows
+ * nothing and the retry cron has nothing to find, which is the same class of
+ * invisible failure this file already fixed once for the missing-token path.
+ */
+async function writePostResult(
+  row: Record<string, unknown> | Record<string, unknown>[]
+): Promise<void> {
+  const { error } = await supabase
+    .from('post_results')
+    .upsert(row as never, { onConflict: 'post_id,platform' })
+  if (error) {
+    console.error(
+      '[fan-out] post_results write FAILED — delivery record lost:',
+      error.message,
+      JSON.stringify(row)
+    )
+  }
+}
 import { decryptToken } from './crypto'
 import { TwitterDistributor } from '@/distributors/twitter'
 import { LinkedInDistributor } from '@/distributors/linkedin'
@@ -144,13 +168,11 @@ export async function fanOut(
         const error = `No OAuth token found for ${platform}`
         // Persist the failure: without this the caller sees a failed result but the post
         // has no post_results row, so the UI shows nothing and retry has nothing to find.
-        await supabase.from('post_results').upsert({
+        await writePostResult({
           post_id: postId,
           platform,
           status: 'failed',
           error_message: error,
-        }, {
-          onConflict: 'post_id,platform',
         })
         return { platform, success: false, error }
       }
@@ -158,13 +180,11 @@ export async function fanOut(
       const distributor = DISTRIBUTORS[platform]
       if (!distributor) {
         const error = `Platform ${platform} not supported`
-        await supabase.from('post_results').upsert({
+        await writePostResult({
           post_id: postId,
           platform,
           status: 'failed',
           error_message: error,
-        }, {
-          onConflict: 'post_id,platform',
         })
         return { platform, success: false, error }
       }
@@ -182,7 +202,7 @@ export async function fanOut(
         )
 
         // Save result
-        await supabase.from('post_results').upsert({
+        await writePostResult({
           post_id: postId,
           platform,
           status: result.success ? 'success' : 'failed',
@@ -190,8 +210,6 @@ export async function fanOut(
           platform_post_url: result.platformPostUrl,
           error_message: result.error,
           posted_at: result.success ? new Date().toISOString() : null,
-        }, {
-          onConflict: 'post_id,platform',
         })
 
         // Audit log
@@ -206,14 +224,12 @@ export async function fanOut(
         return { platform, ...result }
       } catch (err) {
         if (err instanceof RateLimitError) {
-          await supabase.from('post_results').upsert({
+          await writePostResult({
             post_id: postId,
             platform,
             status: 'failed',
             error_message: err.message,
-          }, {
-          onConflict: 'post_id,platform',
-        })
+          })
           return {
             platform,
             success: false,
@@ -223,13 +239,11 @@ export async function fanOut(
           }
         }
         const error = err instanceof Error ? err.message : 'Unknown error'
-        await supabase.from('post_results').upsert({
+        await writePostResult({
           post_id: postId,
           platform,
           status: 'failed',
           error_message: error,
-        }, {
-          onConflict: 'post_id,platform',
         })
         return { platform, success: false, error }
       }
@@ -248,15 +262,13 @@ export async function fanOut(
     .map((r, i) => ({ r, platform: platforms[i] }))
     .filter((x) => x.r.status === 'rejected')
   if (rejected.length) {
-    await supabase.from('post_results').upsert(
+    await writePostResult(
       rejected.map((x) => ({
         post_id: postId,
         platform: x.platform,
         status: 'failed',
         error_message: String((x.r as PromiseRejectedResult).reason),
-      })),
-      { onConflict: 'post_id,platform' }
-    )
+      })))
   }
 
   // Update post status

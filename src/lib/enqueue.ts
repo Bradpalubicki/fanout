@@ -33,7 +33,10 @@ export async function enqueuePostEvent(
 
       const platforms = context.platforms ?? []
       if (platforms.length) {
-        await supabase.from('post_results').upsert(
+        // Checked, not discarded. If this write fails the post is marked failed
+        // but carries no per-platform rows, so the dashboard shows an empty
+        // failure and the retry cron (which reads post_results) cannot see it.
+        const { error } = await supabase.from('post_results').upsert(
           platforms.map((platform) => ({
             post_id: context.postId,
             platform,
@@ -42,6 +45,13 @@ export async function enqueuePostEvent(
           })),
           { onConflict: 'post_id,platform' }
         )
+        if (error) {
+          console.error(
+            '[enqueue] post_results write FAILED — failure is invisible to retry:',
+            error.message,
+            context.postId
+          )
+        }
       }
     } catch {
       // Never let bookkeeping mask the original queue failure.
