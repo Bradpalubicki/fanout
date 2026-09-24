@@ -82,6 +82,22 @@ describe('scheduled post honours current database state on wake', () => {
     expect(fanOutMock).not.toHaveBeenCalled()
   })
 
+  // CX probe: a +30s reschedule slipped through the old 60s tolerance window
+  // and published at the OLD time. Any tolerance publishes early by its width.
+  it('does NOT publish a post rescheduled only 30 seconds later', async () => {
+    const soon = new Date(Date.parse('2020-01-01T00:00:00.000Z') + 30_000).toISOString()
+    const res = await runWith({ status: 'pending', scheduled_for: soon })
+    expect(fanOutMock).not.toHaveBeenCalled()
+    expect(res).toMatchObject({ skipped: true })
+  })
+
+  it('does NOT publish a post rescheduled one second later', async () => {
+    const soon = new Date(Date.parse('2020-01-01T00:00:00.000Z') + 1_000).toISOString()
+    const res = await runWith({ status: 'pending', scheduled_for: soon })
+    expect(fanOutMock).not.toHaveBeenCalled()
+    expect(res).toMatchObject({ skipped: true })
+  })
+
   it('DOES publish a post still pending at its scheduled time', async () => {
     const res = await runWith({ status: 'pending', scheduled_for: '2020-01-01T00:00:00.000Z' })
     expect(fanOutMock).toHaveBeenCalledWith('p1', ['twitter'], 'prof1')

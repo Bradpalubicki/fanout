@@ -43,10 +43,17 @@ export const scheduledPost = inngest.createFunction(
         return { send: false as const, reason: `status is "${data.status}", not "pending"` }
       }
 
-      // Rescheduled into the future while we slept: this event is for the old
-      // time. The reschedule route owns re-dispatch; this one must stand down.
-      if (data.scheduled_for && new Date(data.scheduled_for).getTime() > Date.now() + 60_000) {
-        return { send: false as const, reason: `rescheduled to ${data.scheduled_for}` }
+      // Rescheduled while we slept: this event is for the OLD time, so it must
+      // stand down and let the reschedule route own re-dispatch. Compared
+      // against the time this event was enqueued for — not against "now" with a
+      // tolerance window. A tolerance publishes early by exactly its own width:
+      // a +30s reschedule under a 60s window still fired at the old time.
+      if (data.scheduled_for && scheduledFor) {
+        const current = new Date(data.scheduled_for).getTime()
+        const mine = new Date(scheduledFor).getTime()
+        if (Number.isFinite(current) && Number.isFinite(mine) && current !== mine) {
+          return { send: false as const, reason: `rescheduled to ${data.scheduled_for}` }
+        }
       }
 
       return { send: true as const }

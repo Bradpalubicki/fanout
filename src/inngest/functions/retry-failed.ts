@@ -30,9 +30,13 @@ export const retryFailedPosts = inngest.createFunction(
       }
     })
 
-    await step.sendEvent('send-retry-events', events)
-
-    // Increment attempt counter
+    // Incremented BEFORE dispatch, deliberately. Emitting first meant a failed
+    // RPC still sent the retry events while attempts stayed 0, so the
+    // .lt('attempts', 3) cap never engaged and a permanently failing post
+    // retried every cycle forever — the very bug this was meant to close.
+    // Throwing here aborts before any event is emitted; at worst a cycle is
+    // skipped, which is recoverable. Over-counting a retry is safer than
+    // uncapped re-sending.
     const resultIds = failedPosts.map((r) => r.post_id)
     await step.run('increment-attempts', async () => {
       // Checked, not swallowed: this RPC had no definition at all until
@@ -45,6 +49,9 @@ export const retryFailedPosts = inngest.createFunction(
       })
       if (error) throw new Error(`increment_post_attempts failed: ${error.message}`)
     })
+
+    await step.sendEvent('send-retry-events', events)
+
 
     return { retried: failedPosts.length }
   }
