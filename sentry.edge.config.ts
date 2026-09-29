@@ -25,22 +25,34 @@ Sentry.init({
  */
 function isUsableDsn(dsn: string | undefined): boolean {
   if (!dsn) return false
-  // Delegate to the SDK PARSER rather than re-implementing it. A hand-rolled
-  // check drifted from Sentry in both directions (CX audit 2026-09-28): it
-  // accepted `bad-key@...` (the SDK requires a 32-hex public key) and a
-  // trailing-slash path, both of which Sentry.init would then reject at runtime,
-  // leaving Sentry silently disabled while the guard reported the DSN usable.
-  // makeDsn signals rejection by RETURNING UNDEFINED, not by throwing, so the
-  // return value is what must be tested. It also rejects untrimmed, non-http
-  // and placeholder values, which the previous branches handled by hand.
-  // Untrimmed is rejected BEFORE delegating. makeDsn accepts a trailing
-  // newline (verified 2026-09-28), and Sentry.init receives the PADDED original,
-  // so validating a trimmed copy would answer a question about a different
-  // string than the one actually used. Delegation alone is not sufficient here.
+  // Untrimmed is rejected BEFORE anything else. makeDsn accepts a trailing
+  // newline and normalises it away, but Sentry.init receives the PADDED
+  // original, so validating a trimmed copy would answer a question about a
+  // different string than the one actually used.
   if (dsn !== dsn.trim()) return false
+
+  // Parse with the SDK so this cannot drift from Sentry's own grammar (the
+  // previous hand-rolled parser accepted `bad-key@...` and a trailing-slash
+  // path, which Sentry then rejected — enabled=true with reporting silently
+  // broken).
+  let parsed: ReturnType<typeof makeDsn>
   try {
-    return !!makeDsn(dsn)
+    parsed = makeDsn(dsn)
   } catch {
     return false
   }
+  if (!parsed) return false
+
+  // The SDK's structural validation is COMPILED OUT of release builds:
+  // validateDsn() returns true immediately when DEBUG_BUILD is false, and
+  // `disableLogger: true` in next.config.ts strips debug from production. So
+  // delegation ALONE is stricter in dev and LOOSER in prod — it would accept
+  // ftp:// and a non-numeric project id in the build that actually ships.
+  // Found by CX 2026-09-28. These checks are therefore asserted here, on the
+  // parsed components, independent of compilation mode.
+  if (parsed.protocol !== 'http' && parsed.protocol !== 'https') return false
+  if (!parsed.publicKey) return false
+  if (!parsed.host) return false
+  if (!/^\d+$/.test(parsed.projectId)) return false
+  return true
 }

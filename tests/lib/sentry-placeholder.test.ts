@@ -31,6 +31,12 @@ describe('sentry enables only on a DSN Sentry can parse', () => {
       expect(src).not.toMatch(/enabled:\s*!!process\.env\.NEXT_PUBLIC_SENTRY_DSN,/)
       expect(src).not.toMatch(/NEXT_PUBLIC_SENTRY_DSN !== 'placeholder'/)
       expect(src).toMatch(/enabled: isUsableDsn\(/)
+      // MUST be wired to the DSN actually handed to Sentry.init. CX 2026-09-28
+      // replaced all three init args with `enabled: isUsableDsn(undefined)` and
+      // 24/24 still passed: the suite extracted the function but never checked
+      // that its result gates the real initialisation.
+      expect(src).toMatch(/enabled: isUsableDsn\(process\.env\.NEXT_PUBLIC_SENTRY_DSN\)/)
+      expect(src).toMatch(/dsn: process\.env\.NEXT_PUBLIC_SENTRY_DSN/)
       expect(src).toMatch(/function isUsableDsn/)
 
       // MUST delegate. Asserting the old implementation's internals
@@ -41,6 +47,15 @@ describe('sentry enables only on a DSN Sentry can parse', () => {
       // And must not regress to re-implementing the parse by hand.
       expect(src).not.toMatch(/u\.username/)
       expect(src).not.toMatch(/pathname\.split/)
+      // The SDK's structural validation is COMPILED OUT of release builds:
+      // validateDsn() returns true when DEBUG_BUILD is false, and
+      // disableLogger:true in next.config.ts strips debug from production. So
+      // delegation ALONE is stricter in dev and LOOSER in the build that ships
+      // (it would accept ftp:// and a non-numeric project id). Found by CX
+      // 2026-09-28. These component checks must remain, compile-mode independent.
+      expect(src).toMatch(/parsed.protocol/)
+      expect(src).toMatch(/parsed.publicKey/)
+      expect(src).toMatch(/parsed.projectId/)
     })
   }
 })
@@ -78,6 +93,9 @@ function loadValidator(configFile: string): (dsn: string | undefined) => boolean
   const fnSrc = src
     .slice(start, end)
     .replace('function isUsableDsn(dsn: string | undefined): boolean', 'function isUsableDsn(dsn)')
+    // The body also declares a typed local; strip that annotation too. Only
+    // annotations are removed — the logic under test is untouched.
+    .replace('let parsed: ReturnType<typeof makeDsn>', 'let parsed')
   // The extracted body calls makeDsn, so the REAL SDK function is injected into
   // the eval scope. Injecting the genuine parser keeps this a test of the
   // shipped file's behaviour; a local stand-in would recreate the mirror trap.

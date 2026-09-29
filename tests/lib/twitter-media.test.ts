@@ -83,6 +83,18 @@ describe('twitter post()', () => {
     expect(body!.text).toBe('hello')
     expect(body!.media).toBeUndefined()
     expect(calls.some((c) => c.url.includes('upload.twitter.com'))).toBe(false)
+
+    // Endpoint, METHOD and auth. CX 2026-09-28: switching these POSTs to GET
+    // survived all six tests, and a GET with this body cannot publish anything.
+    const tweet = calls.find((c) => c.url.includes('api.twitter.com/2/tweets'))!
+    expect(tweet.url).toBe('https://api.twitter.com/2/tweets')
+    expect(tweet.init?.method).toBe('POST')
+    expect((tweet.init?.headers as Record<string, string>).Authorization).toBe('Bearer tok')
+
+    // The published identity must come back, or fan-out.ts:223 persists nothing.
+    // Deleting these two fields from the success result also survived before.
+    expect(res.platformPostId).toBe('t1')
+    expect(res.platformPostUrl).toContain('t1')
   })
 
   it('attaches media_ids to the tweet when media is uploaded', async () => {
@@ -108,6 +120,8 @@ describe('twitter post()', () => {
 
     const upload = calls.find((c) => c.url.includes('upload.twitter.com'))
     expect(upload, 'never uploaded the bytes').toBeDefined()
+    expect(upload!.url).toBe('https://upload.twitter.com/1.1/media/upload.json')
+    expect(upload!.init?.method).toBe('POST')
     const form = upload!.init?.body as FormData
     // Twitter differs from reddit/mastodon: it sends base64 TEXT in 'media_data',
     // not a Blob. Assert the real contract, not the shape the siblings use.
