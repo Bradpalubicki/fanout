@@ -31,12 +31,18 @@ function jsonRes(body: unknown, ok = true) {
   } as unknown as Response
 }
 
+/** Non-zero, non-uniform bytes so an empty or zero-filled upload cannot pass. */
+const IMAGE_BYTES = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46])
+
 function imageRes() {
   return {
     ok: true,
     status: 200,
     headers: new Headers({ 'content-type': 'image/jpeg' }),
-    arrayBuffer: async () => new ArrayBuffer(64),
+    // A DISTINGUISHABLE fixture. ArrayBuffer(64) is all zeros, so a stub that
+    // discarded the bytes and sent an empty or zero-filled Blob was indistinguishable
+    // from a correct upload. These bytes are asserted for equality below.
+    arrayBuffer: async () => IMAGE_BYTES.buffer.slice(0),
   } as unknown as Response
 }
 
@@ -101,7 +107,13 @@ describe('reddit media upload', () => {
     const form = upload!.init?.body as FormData
     expect(form.get('key')).toBe('abc123/upload.jpg')
     expect(form.get('x-amz-signature')).toBe('sig')
-    expect(form.get('file')).toBeInstanceOf(Blob)
+    const file = form.get('file')
+    expect(file).toBeInstanceOf(Blob)
+    // BYTE EQUALITY, not just 'is a Blob'. A stub discarding the file contents
+    // sent a 0-byte Blob and satisfied the old instanceof-only assertion.
+    const sent = new Uint8Array(await (file as Blob).arrayBuffer())
+    expect(sent.byteLength).toBe(IMAGE_BYTES.byteLength)
+    expect(Array.from(sent)).toEqual(Array.from(IMAGE_BYTES))
   })
 
   it('FAILS the post when the upload fails — never silently posts text instead', async () => {

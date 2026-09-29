@@ -11,6 +11,9 @@ import { MastodonDistributor } from '@/distributors/mastodon'
  * success, which it did throughout the entire defect.
  */
 
+/** Non-zero, non-uniform bytes so an empty or zero-filled upload cannot pass. */
+const IMAGE_BYTES = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46])
+
 const INSTANCE = 'https://mastodon.social'
 
 function jsonRes(body: unknown, ok = true) {
@@ -27,7 +30,9 @@ function imageRes() {
     ok: true,
     status: 200,
     headers: new Headers({ 'content-type': 'image/jpeg' }),
-    arrayBuffer: async () => new ArrayBuffer(64),
+    // Distinguishable bytes; ArrayBuffer(64) was all zeros and a discarded-bytes
+    // stub was indistinguishable from a correct upload. Asserted for equality below.
+    arrayBuffer: async () => IMAGE_BYTES.buffer.slice(0),
   } as unknown as Response
 }
 
@@ -87,7 +92,12 @@ describe('mastodon media upload', () => {
     expect(upload!.url).toBe(`${INSTANCE}/api/v2/media`)
     const form = upload!.init?.body as FormData
     expect(form).toBeInstanceOf(FormData)
-    expect(form.get('file')).toBeInstanceOf(Blob)
+    const file = form.get('file')
+    expect(file).toBeInstanceOf(Blob)
+    // BYTE EQUALITY. A stub sending a 0-byte Blob passed the old instanceof check.
+    const sent = new Uint8Array(await (file as Blob).arrayBuffer())
+    expect(sent.byteLength).toBe(IMAGE_BYTES.byteLength)
+    expect(Array.from(sent)).toEqual(Array.from(IMAGE_BYTES))
   })
 
   it('attaches up to 4 images and ignores the rest', async () => {
