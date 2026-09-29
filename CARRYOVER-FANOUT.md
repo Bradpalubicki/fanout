@@ -1,3 +1,18 @@
+> **SUPERSEDED 2026-09-28 — READ `HANDOFF-CC-AUDIT-2026-09-28.md` (v2) FIRST.**
+> This file is a REQUIREMENTS INPUT, not a completion record.
+> END GOAL IS NOT IN THIS FILE. It is BUILD.md, quoted in the handoff: a
+> self-hosted Ayrshare replacement with FOUR revenue roles (internal infra at
+> $2,995/mo, agency backend, standalone SaaS, product marketing). "Done" is NOT
+> one successful post.
+> CORRECTIONS: (1) rescheduling does NOT permanently strand a post — a 5-min
+> cron recovers it; the real defect is that a replayed or stale cron event
+> PUBLISHES A CANCELLED POST (fan-out.ts:175 never rechecks pending).
+> (2) "trust integration-status.ts — it is authoritative" is WRONG: it carries
+> the stale Meta blocker, pinned green by a test, repeated in 4 more files.
+> (3) Facebook publishing live does NOT clear Instagram/Threads permissions.
+> (4) Threads image: say "no verified live evidence", not "never run live".
+> Sequencing SUPERSEDED: PKG-7 fleet security is FIRST. Findings below valid.
+
 cd C:\Users\bradp\dev\fanout
 
 Fanout needs NO code work to resume. Read DECIDE FIRST — every open item is
