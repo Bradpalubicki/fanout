@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/nextjs'
+import { makeDsn } from '@sentry/core'
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
@@ -24,16 +25,21 @@ Sentry.init({
  */
 function isUsableDsn(dsn: string | undefined): boolean {
   if (!dsn) return false
-  // Compared AND passed untrimmed: validating a trimmed copy while handing the
-  // padded original to Sentry.init means the check answers a question about a
-  // different string than the one that is actually used.
+  // Delegate to the SDK PARSER rather than re-implementing it. A hand-rolled
+  // check drifted from Sentry in both directions (CX audit 2026-09-28): it
+  // accepted `bad-key@...` (the SDK requires a 32-hex public key) and a
+  // trailing-slash path, both of which Sentry.init would then reject at runtime,
+  // leaving Sentry silently disabled while the guard reported the DSN usable.
+  // makeDsn signals rejection by RETURNING UNDEFINED, not by throwing, so the
+  // return value is what must be tested. It also rejects untrimmed, non-http
+  // and placeholder values, which the previous branches handled by hand.
+  // Untrimmed is rejected BEFORE delegating. makeDsn accepts a trailing
+  // newline (verified 2026-09-28), and Sentry.init receives the PADDED original,
+  // so validating a trimmed copy would answer a question about a different
+  // string than the one actually used. Delegation alone is not sufficient here.
   if (dsn !== dsn.trim()) return false
   try {
-    const u = new URL(dsn)
-    if (u.protocol !== 'http:' && u.protocol !== 'https:') return false
-    if (!u.username) return false
-    const projectId = u.pathname.split('/').filter(Boolean).pop()
-    return !!projectId && /^\d+$/.test(projectId)
+    return !!makeDsn(dsn)
   } catch {
     return false
   }
